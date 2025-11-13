@@ -1,0 +1,56 @@
+/* General reset for body */
+body {
+    /*background: #480048FF;
+    font-family: 'Open Sans', sans-serif;*/
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    height: 100vh; /* Full height for the body */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Ensure no scrollbars */
+    background-image: url("../img/fondo cesped.jpg.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: rgba(128, 0, 128, 0.5); /* Color negro con transparencia */
+    background-blend-mode: color-dodge; /* Modo de mezcla */
+}
+
+#container {
+    width: 100%;
+    max-width: 1000px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center horizontally */
+    justify-content: center; /* Center vertically */
+    text-align: center;
+    position: relative;
+}
+
+#svg-spinner {
+    width: 80px; /* Adjust size if necessary */
+    height: 80px; /* Adjust size if necessary */
+    border-radius: 50%;
+    animation: rotate 1.2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+#svg-para {
+    margin-top: 20px; /* Space between spinner and text */
+}
+
+/* iframe hidden in the background */
+#iframe-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Place iframe behind everything */
+    visibility: hidden; /* Hide iframe initially */
+}
