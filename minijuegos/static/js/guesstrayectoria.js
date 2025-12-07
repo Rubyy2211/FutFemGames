@@ -20,7 +20,7 @@ async function iniciar(dificultad) {
     jugadoraInput = document.getElementById('jugadoraInput');
     boton = document.getElementById('botonVerificar');
     answer = localStorage.getItem('Attr1');
-    //const name = await sacarJugadora(jugadoraId);
+    const name = localStorage.getItem('nombre');
     
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
@@ -55,7 +55,7 @@ async function iniciar(dificultad) {
         await loadJugadoraById(jugadoraId, true);
         stopCounter("trayectoria");  // ⬅️ Detenemos el temporizador si el usuario gana
         Ganaste('trayectoria');
-        //resultText.textContent = name[0].Nombre_Completo;
+        resultText.textContent = name;
     } else {
         await loadJugadoraById(jugadoraId, false);
 
@@ -145,6 +145,18 @@ function displayTrayectoria(data, acertaste) {
             if (item.imagen) {
                 const jugadoraImg = document.createElement('img');
                 jugadoraImg.src = item.imagen;
+                jugadoraImg.alt = 'Imagen de la Jugadora';
+                back.appendChild(jugadoraImg);
+
+                const anyos = document.createElement('p');
+                anyos.textContent = item.años;
+                anyos.style.textAlign = 'center';
+                back.appendChild(anyos);
+
+                flipper.appendChild(back);
+            }else{
+                const jugadoraImg = document.createElement('img');
+                jugadoraImg.src = "/static/img/predeterm.jpg";
                 jugadoraImg.alt = 'Imagen de la Jugadora';
                 back.appendChild(jugadoraImg);
 

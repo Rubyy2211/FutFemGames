@@ -337,20 +337,29 @@ function cambiarImagenConFlip() {
     const flipContainers = document.querySelectorAll('.flip-container');
 
     flipContainers.forEach(container => {
-        const imagenTrasera = container.querySelector('.back img');
-        const imagenFrontal = container.querySelector('.front img');
+        const flippers = container.querySelectorAll('.flipper');
 
+        // Iterar sobre cada flipper dentro del contenedor
+        flippers.forEach(flipper => {
+            // Quitar clase si ya estaba aplicada
+            flipper.classList.remove('flipping');
 
-        // Añadir la clase para empezar el volteo
-        container.querySelector('.flipper').classList.add('flipping');
+            // Forzar reflow para reiniciar la animación
+            void flipper.offsetHeight;
 
-        // Opcional: Si deseas cambiar la imagen frontal a la misma que la trasera después del volteo
-        setTimeout(() => {
+            // Añadir la clase para empezar el volteo
+            flipper.classList.add('flipping');
 
-
-        }, 600); // Ajusta el tiempo según la duración de tu animación
+            // Opcional: cambiar la imagen frontal a la trasera después del flip
+            const imagenTrasera = container.querySelector('.back img');
+            const imagenFrontal = container.querySelector('.front img');
+            setTimeout(() => {
+                imagenFrontal.src = imagenTrasera.src;
+            }, 600); // Ajusta según la duración de tu animación
+        });
     });
 }
+
 
 
 async function handleAutocompletePlayer(event) {
