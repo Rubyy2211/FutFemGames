@@ -552,7 +552,7 @@ function stopCounter(juego) {
     }
 }
 
-function crearPopupInicialJuego(titulo, explicacion, imagen) {
+function crearPopupInicialJuego(titulo, explicacion, imagen, tipo) {
     // Crear el contenedor del popup
     const popup = document.createElement('div');
     popup.classList.add('popup-ex');
@@ -582,6 +582,19 @@ function crearPopupInicialJuego(titulo, explicacion, imagen) {
     // Añadir la imagen y la explicación al contenedor "explicar"
     explicar.appendChild(imagenDiv);
     explicar.appendChild(textoExplicacion);
+
+    if(tipo){
+        // BOTÓN ÚNICO DE INICIAR
+        const contenedorBoton = document.createElement('div');
+        contenedorBoton.classList.add('boton-unico');
+
+        const botonIniciar = document.createElement('button');
+        botonIniciar.textContent = "Iniciar";
+        botonIniciar.onclick = () => iniciar();
+
+        contenedorBoton.appendChild(botonIniciar);
+        popup.appendChild(contenedorBoton);
+    } else{
 
     // Crear el contenedor de los botones de dificultad
     const selectorDificultad = document.createElement('div');
@@ -615,7 +628,7 @@ function crearPopupInicialJuego(titulo, explicacion, imagen) {
     // Añadir los contenedores de la explicación y los botones al popup
     popup.appendChild(explicar);
     popup.appendChild(selectorDificultad);
-
+    }
     // Añadir el popup al cuerpo del documento o a un contenedor específico
     document.body.appendChild(popup);
 }

@@ -1,19 +1,34 @@
+// Variables de Juego
 let jugadoraId;
 let nombreCompleto;
-// Función principal que controla el flujo de carga
 
+// Componentes html usados recurrentemente
+let popup;
+let resultText;
+let trayectoriaDiv;
+let myst;
+let jugadoraInput;
+let boton;
+// Función principal que controla el flujo de carga
 async function iniciar(dificultad) {
-    const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
-    const answer = localStorage.getItem('Attr1');
-    const name = await sacarJugadora(jugadoraId);
+
+    // Componentes html usados recurrentemente
+    popup = document.getElementById('popup-ex');
+    resultText =  document.getElementById('result');
+    trayectoriaDiv = document.getElementById('trayectoria');
+    myst = document.getElementById('jugadora');
+    jugadoraInput = document.getElementById('jugadoraInput');
+    boton = document.getElementById('botonVerificar');
+    answer = localStorage.getItem('Attr1');
+    //const name = await sacarJugadora(jugadoraId);
+    
     if (popup) {
-    popup.style.display = 'none'; // Cambia el estilo para ocultarlo
+        popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
+    
     let jugadora = await fetchData(1);
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     localStorage.setItem('res1', jugadoraId);
-
-    console.log(jugadora.idJugadora);
 
     // Definir los segundos según la dificultad
     let segundos;
@@ -31,9 +46,6 @@ async function iniciar(dificultad) {
             segundos = localStorage.getItem('trayectoria'); // Valor por defecto si la dificultad no es válida
     }
 
-    // Obtener valores de localStorage
-    const nombre = localStorage.getItem('nombre');
-
     // Verificar si el usuario ha ganado
     const isAnswerTrue = (answer === jugadoraId);
     console.log('Has won:', isAnswerTrue);
@@ -43,7 +55,7 @@ async function iniciar(dificultad) {
         await loadJugadoraById(jugadoraId, true);
         stopCounter("trayectoria");  // ⬅️ Detenemos el temporizador si el usuario gana
         Ganaste('trayectoria');
-        document.getElementById('result').textContent = name[0].Nombre_Completo;
+        //resultText.textContent = name[0].Nombre_Completo;
     } else {
         await loadJugadoraById(jugadoraId, false);
 
@@ -80,15 +92,13 @@ async function loadJugadoraById(id, ganaste) {
         }
     } catch (error) {
         console.error('Error al cargar la jugadora:', error);
-        document.getElementById('result').textContent = 'Error al cargar los datos.';
+        resultText.textContent = 'Error al cargar los datos.';
     }
 }
 
 function displayTrayectoria(data, acertaste) {
-    const trayectoriaDiv = document.getElementById('trayectoria');
     trayectoriaDiv.setAttribute('Attr1', data[0].jugadora)
     trayectoriaDiv.innerHTML = ''; // Limpiar contenido previo
-    const myst = document.getElementById('jugadora');
 
     const maxPerRow = 5;
     let currentRow;
@@ -153,22 +163,19 @@ function displayTrayectoria(data, acertaste) {
 }
 
 async function checkAnswer() {
-    const textoInput = document.getElementById('jugadoraInput');
-    const nombreCompleto = textoInput.value.trim();
-    const idJugadora = textoInput.getAttribute('data-id');
-    const div = document.getElementById('trayectoria');
-    const result = document.getElementById('result');
+    const nombreCompleto = jugadoraInput.value.trim();
+    const idJugadora = jugadoraInput.getAttribute('data-id');
 
     if (!idJugadora) {
         console.warn('No se encontró data-id en el input.');
         return;
-    }else if(div.getAttribute('Attr1')===idJugadora){
+    }else if(trayectoriaDiv.getAttribute('Attr1')===idJugadora){
         if(!localStorage.getItem('Attr1')){
             await updateRacha(1, 2);
         }else{
             //await updateRacha(1, 1);
     }
-        result.textContent = nombreCompleto;
+        resultText.textContent = nombreCompleto;
         localStorage.setItem('Attr1', idJugadora);
         localStorage.setItem('nombre', nombreCompleto);
 
@@ -176,22 +183,18 @@ async function checkAnswer() {
         stopCounter('trayectoria');
         Ganaste('trayectoria');
     }else{
-        result.textContent = 'Sigue intentando!'
+        resultText.textContent = 'Sigue intentando!'
     }
 }
 
 async function trayectoriaPerder() {
     // Bloquear el botón y el input
-    const boton = document.getElementById('botonVerificar');
-    const input = document.getElementById('jugadoraInput');
-    const resultDiv = document.getElementById('result');
     const jugadora = await sacarJugadora(jugadoraId);
 
     boton.disabled = true;
-    input.disabled = true;
+    jugadoraInput.disabled = true;
 
-    resultDiv.textContent = 'Has perdido, era: '+jugadora[0].Nombre_Completo;
-    const div = document.getElementById('trayectoria');
+    resultText.textContent = 'Has perdido, era: '+jugadora[0].Nombre_Completo;
     const jugadora_id = 'loss';
     localStorage.setItem('Attr1', jugadora_id);
     await loadJugadoraById(jugadoraId, true);

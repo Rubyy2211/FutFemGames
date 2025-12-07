@@ -24,6 +24,11 @@ def futfemBingo(request):
 def futfemWordle(request):
         return render(request, 'minijuegos/wordle.html')
 
+
+
+def futfemMates(request):
+        return render(request, 'minijuegos/companyeras.html')
+
 def juegoxid(request):
     id_juego = request.GET.get('id_juego')
 
