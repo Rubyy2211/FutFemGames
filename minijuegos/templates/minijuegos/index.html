@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
-    <!--<link rel="stylesheet" href="css/efectos/fade.css">-->
     <link rel="stylesheet" href="{% static 'css/glow-border.css' %}">
 </head>
 <body>
@@ -20,21 +19,9 @@
 <section class="juegos">
 <div class="container mt-5 sibling-fade">
     <div class="row sibling-fade d-flex justify-content-center">
-        <div class="col-md-4">
-            <div id="#racha-1" class="fire"></div>
-            <div class="game-button glow" onclick="redireccionarA('career')">
-                <img src="{% static 'img/trayectoria.jpg' %}" alt="Game 1">
-                <h4>Futfem Career</h4>
-                <button class="btn btn-primary btn-block" onclick="window.location.href='trayectoria.php'">PLAY</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="game-button glow" onclick="redireccionarA('grid')">
-                <img src="{% static 'img/Captura de pantalla 2024-09-01 192457.png' %}" alt="Game 2">
-                <h4>Futfem Grid</h4>
-                <button class="btn btn-primary btn-block" onclick="window.location.href='grid.php'">PLAY</button>
-            </div>
-        </div>
+        {% include 'partials/game_card.html' with racha_id="racha-1" destino_js="career" imagen="img/trayectoria.jpg" titulo="Futfem Career" %}
+        {% include 'partials/game_card.html' with racha_id="racha-4" destino_js="grid" imagen="img/grid.png" titulo="Futfem Grid" %}
+        {% include 'partials/game_card.html' with racha_id="racha-6" destino_js="bingo" imagen="img/Bingo.png" titulo="Futfem Bingo" %}
         <div class="col-md-4" style="display: none;">
             <div class="game-button glow" onclick="redireccionarA('XI_Clubs')">
                 <img src="{% static 'img/ComingSoon.png' %}" alt="Game 3">
@@ -42,43 +29,11 @@
                 <button class="btn btn-primary btn-block" onclick="window.location.href='XI_Clubs.php'">PLAY</button>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="game-button glow" onclick="redireccionarA('bingo')">
-                <img src="{% static 'img/Bingo.png' %}" alt="Game 4">
-                <h4>Futfem Bingo</h4>
-                <button class="btn btn-primary btn-block" onclick="window.location.href='bingo.php'">PLAY</button>
-            </div>
-        </div>
     </div>
     <div class="row sibling-fade d-flex justify-content-center">
-        <div class="col-md-3" style="display: none">
-            <div class="game-button glow" onclick="redireccionarA('XI_Nations.php')">
-                <img src=" #img/XI_Nations.png" alt="Game 3">
-                <h4>Futfem Nations</h4>
-                <button class="btn btn-primary btn-block" onclick="window.location.href='XI_Nations.php'">PLAY</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="game-button glow" onclick="redireccionarA('wordle')">
-                <img src="{% static 'img/Captura de pantalla 2024-09-01 201329.png' %}" alt="Game 6">
-                <h4>Futfem Wordle</h4>
-                <button class="btn btn-primary btn-block" onclick="window.location.href='wordle.php'">PLAY</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="game-button glow" onclick="redireccionarA('guess')">
-                <img src="{% static 'img/ComingSoon.png' %}" alt="Game 5">
-                <h4>Futfem Guess</h4>
-                <button class="btn btn-primary btn-block">PLAY</button>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="game-button glow" onclick="redireccionarA('mates')">
-                <img src="{% static 'img/ComingSoon.png' %}" alt="Game 6">
-                <h4>Futfem Partners</h4>
-                <button class="btn btn-primary btn-block">PLAY</button>
-            </div>
-        </div>
+        {% include 'partials/game_card.html' with racha_id="racha-2" destino_js="wordle" imagen="img/wordle.png" titulo="Futfem Wordle" %}
+        {% include 'partials/game_card.html' with racha_id="racha-3" destino_js="guess" imagen="img/ComingSoon.png" titulo="Futfem Guess" %}
+        {% include 'partials/game_card.html' with racha_id="racha-5" destino_js="mates" imagen="img/ComingSoon.png" titulo="Futfem Partners" %}        
     </div>
 </div>
 </section>

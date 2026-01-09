@@ -282,6 +282,38 @@ async function obtenerPosicion(id) {
     }
 }
 
+async function obtenerEquipos(nombre) {
+    try {
+        // Realizar la solicitud fetch
+        const response = await fetch(`../api/jugadora_trayectoria?id=${encodeURIComponent(nombre)}`);
+
+        // Verificar que la solicitud fue exitosa
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.statusText}`);
+        }
+
+        // Convertir la respuesta a JSON
+        const data = await response.json();
+        console.log("Respuesta del servidor:", data);
+
+        // Verificar si hubo un error en el JSON recibido
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Comprobar si data es una lista de objetos
+        if (Array.isArray(data)) {
+            return data; // Devuelve la lista de objetos
+        } else {
+            console.warn('La respuesta no es una lista válida de objetos:', data);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error al obtener los equipos:', error);
+        return null;
+    }
+}
+
 async function paisesAll() {
     try {
         const response = await fetch('../api/paisesall');
@@ -299,16 +331,8 @@ async function paisesAll() {
 const resultDiv = document.getElementById('result');
 
 function Ganaste(modo) {
-    // Bloquear el botón y el input
-    /*const boton = document.getElementById('botonVerificar');
-    const input = document.getElementById('jugadoraInput');
-
-    boton.disabled = true;
-    input.disabled = true;*/
-
     // Guardar en localStorage que el usuario ha ganado
     localStorage.setItem('hasWon', 'true');
-    //if(modo!=='grid') localStorage.setItem('nombre',resultDiv.textContent)
     // Llamar a la función que cambia la imagen con flip
     if(modo==='grid'){
         const input = document.querySelector('input');
