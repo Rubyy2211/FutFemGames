@@ -5,12 +5,13 @@ const maxRows = 6;
 async function iniciar() {
     jugadora = await fetchData(2);
     localStorage.setItem('res2', jugadora.idJugadora);
+    answer = jugadora.idJugadora;
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
-    let userAnswer = localStorage.getItem('hasWon2');
-        console.log('Respuesta del usuario:', userAnswer);
+    let userAnswer = localStorage.getItem('Attr2');
+    console.log('Respuesta del usuario:', answer);
     //let res = att[att.length - 1].guess;
     //console.log('Respuesta:', answer);
     // Verificar si el usuario ha ganado
@@ -27,11 +28,14 @@ async function iniciar() {
         await loadJugadoraApodo(jugadora.idJugadora, false);
 
         if (!userAnswer || userAnswer.trim() === '') {
-            await wordlePerder();
+            console.log("El usuario no ha respondido aún.");
+            return; // Esperar a que el usuario responda
 
         } else if (userAnswer === 'loss') {
+            console.log("El usuario ya ha perdido anteriormente.");
             await wordlePerder();
         } else {
+            console.log("El usuario ha respondido incorrectamente.");
             await wordlePerder();
         }
     }   
