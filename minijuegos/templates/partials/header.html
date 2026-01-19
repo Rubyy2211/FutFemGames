@@ -2,29 +2,45 @@
 <header class="navbar">
   <div class="container">
 
-    <!-- Logo de GTI -->
-    <a href="{% url 'index' %}" class="navbar-brand1"><img src="{% static 'img/logo.png' %}" alt="logo futfem"></a>
+    <!-- Logo de vSports -->
+    <div id="header-izquierda"> 
+      <a href="{% url 'index' %}" class="navbar-brand1"><img src="{% static 'img/logo.png' %}" alt="logo futfem"></a>
+      <nav id="main-nav">
+        <ul>
+          <li><a href="{% url 'index' %}">Inicio</a></li>
+          <li><a href="#wiki">Wiki</a></li>
+          <li><a href="#nosotros">Nosotros</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
+    </div>
     <!-- Barra de navegación -->
     <a href="{% url 'index' %}" class="navbar-brand"><img src="{% static 'img/logo 1.png' %}" alt="logo futfem"></a>
-    <!-- Botones de inicio de sesión y registro -->
-    <div class="botones">
-      <a href="#login">Iniciar Sesión</a> <!-- Enlace a la página de inicio de sesión -->
-      <a href="#registro">Registrarse</a> <!-- Enlace a la página de registro -->
-    </div>
     <!-- Botón de menú hamburguesa -->
     <div class="hamburger-menu" onclick="toggleMenu()">
       <div class="bar"></div>
       <div class="bar"></div>
       <div class="bar"></div>
     </div>
-    <!-- Menú desplegable -->
+        <!-- Menú desplegable -->
     <div class="dropdown-menu">
+      <nav>
+        <ul>
+          <li><a href="{% url 'index' %}">Inicio</a></li>
+          <li><a href="#wiki">Wiki</a></li>
+          <li><a href="#nosotros">Nosotros</a></li>
+          <li><a href="#contacto">Contacto</a></li>
+        </ul>
+      </nav>
       <div>
-        <a href="login">Iniciar Sesión</a>
+        <button class="iniciar-sesion-button">Iniciar Sesión</button> <!-- Enlace a la página de inicio de sesión -->
+        <button class="registro-button">Registrarse</button> <!-- Enlace a la página de registro -->
       </div>
-      <div>
-        <a href="registro">Registrarse</a>
-      </div>
+    </div>
+    <!-- Botones de inicio de sesión y registro -->
+    <div class="botones">
+      <button class="iniciar-sesion-button">Iniciar Sesión</button> <!-- Enlace a la página de inicio de sesión -->
+      <button class="registro-button">Registrarse</button> <!-- Enlace a la página de registro -->
     </div>
   </div>
 </header>
@@ -32,8 +48,18 @@
   function toggleMenu() {
     const menu = document.querySelector('.dropdown-menu');
     const hamburger = document.querySelector('.hamburger-menu');
+    const navBrand = document.querySelector('.navbar-brand');
     hamburger.classList.toggle('open');
-    menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
+    menu.classList.toggle('open');
+    //navBrand.style.display = menu.classList.contains('open') ? 'none' : 'block';
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        menu.classList.remove('open');
+        hamburger.classList.remove('open');
+      }
+    });
+
   }
 </script>
 
