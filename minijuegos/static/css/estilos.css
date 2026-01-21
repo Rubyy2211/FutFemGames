@@ -27,11 +27,11 @@ body {
     /*animation: movimientoOlas 10s ease-in-out infinite;*/
     color: var(--color-detalles);
     overflow-x: hidden;
-    background-image: url("../img/fondo cesped.jpg.png");
+    /*background-image: url("../img/fondo cesped.jpg.png");
     background-size: cover;
-    background-repeat: no-repeat;
-    background-color: rgba(128, 0, 128, 0.5); /* Color negro con transparencia */
-    background-blend-mode: color-dodge; /* Modo de mezcla */
+    background-repeat: no-repeat;*/
+    background: rgb(37, 0, 37); /* Color negro con transparencia */
+    /*background-blend-mode: color-dodge; /* Modo de mezcla */
     min-height: 100vh;
 }
 /* Estilos de la barra de scroll */
@@ -194,6 +194,32 @@ input::placeholder{
     display: flex;         /* Usamos flexbox para centrar el contenido */
     align-items: center;   /* Centra el contenido verticalmente */
     justify-content: center; /* Centra el contenido horizontalmente */
+}
+
+.glass{
+    border-radius: 20px; /* Bordes redondeados */
+    text-align: center; /* Centrar el contenido dentro del botón */
+    padding-inline: 10px; /* Espaciado interior */
+        /* Glass base */
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-primario) 30%, transparent),
+        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+    );
+
+    color: white; /* Color del texto */
+    margin-bottom: 10px; /* Espaciado inferior entre botones */
+    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    border: 0.5px solid rgb(255, 255, 255);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transform: translateY(10px);
+    cursor: pointer;
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s ease,
+        box-shadow 0.3s ease;
 }
 
 .popup-ex {

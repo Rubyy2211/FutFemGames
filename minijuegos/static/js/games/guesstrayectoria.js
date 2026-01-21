@@ -96,6 +96,7 @@ async function loadJugadoraById(id, ganaste) {
 function displayTrayectoria(data, acertaste) {
     trayectoriaDiv.setAttribute('Attr1', data[0].jugadora)
     trayectoriaDiv.innerHTML = ''; // Limpiar contenido previo
+    trayectoriaDiv.classList.add('glass');
 
     const maxPerRow = 5;
     let currentRow;

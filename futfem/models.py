@@ -34,6 +34,7 @@ class Equipo(models.Model):
     liga = models.ForeignKey(Liga, on_delete=models.CASCADE, db_column='liga')
     nombre = models.TextField()
     escudo = models.TextField(null=True, blank=True)
+    color = models.CharField(max_length=7, null=True, blank=True)  # Color en formato hexadecimal
 
     class Meta:
         db_table = 'equipos'

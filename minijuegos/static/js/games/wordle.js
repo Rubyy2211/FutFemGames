@@ -75,6 +75,7 @@ function createBoard() {
             input.type = "text";
             input.maxLength = 1; // Limitar a un solo carácter
             input.classList.add("tile");
+            input.classList.add("glass");
             input.setAttribute("id", `row-${i}-tile-${j}`);
             input.addEventListener("input", handleInputChange); // Mover al siguiente input automáticamente
             input.addEventListener("keydown", handleKeyDown); // Manejar el retroceso

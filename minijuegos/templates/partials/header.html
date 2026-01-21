@@ -7,8 +7,8 @@
       <a href="{% url 'index' %}" class="navbar-brand1"><img src="{% static 'img/logo.png' %}" alt="logo futfem"></a>
       <nav id="main-nav">
         <ul>
-          <li><a href="{% url 'index' %}">Inicio</a></li>
-          <li><a href="#wiki">Wiki</a></li>
+          <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Inicio</a></li>
+          <li><a href="{% url 'wiki' %}" class="{% if request.resolver_match.url_name == 'wiki' %}active{% endif %}">Wiki</a></li>
           <li><a href="#nosotros">Nosotros</a></li>
           <li><a href="#contacto">Contacto</a></li>
         </ul>
@@ -26,8 +26,8 @@
     <div class="dropdown-menu">
       <nav>
         <ul>
-          <li><a href="{% url 'index' %}">Inicio</a></li>
-          <li><a href="#wiki">Wiki</a></li>
+          <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Inicio</a></li>
+          <li><a href="{% url 'wiki' %}" class="{% if request.resolver_match.url_name == 'wiki' %}active{% endif %}">Wiki</a></li>
           <li><a href="#nosotros">Nosotros</a></li>
           <li><a href="#contacto">Contacto</a></li>
         </ul>
@@ -48,15 +48,16 @@
   function toggleMenu() {
     const menu = document.querySelector('.dropdown-menu');
     const hamburger = document.querySelector('.hamburger-menu');
-    const navBrand = document.querySelector('.navbar-brand');
+    const header = document.querySelector('header');
     hamburger.classList.toggle('open');
     menu.classList.toggle('open');
-    //navBrand.style.display = menu.classList.contains('open') ? 'none' : 'block';
+    header.style.background = menu.classList.contains('open') ?  'var(--color-secundario)' : 'transparent';
 
     window.addEventListener('resize', () => {
       if (window.innerWidth > 768) {
         menu.classList.remove('open');
         hamburger.classList.remove('open');
+        header.style.background = 'transparent';
       }
     });
 

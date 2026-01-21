@@ -1,5 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, Http404
+from django.shortcuts import get_object_or_404
+
+from futfem.models import Equipo
 from .models import Pista  # Asegúrate de tener el modelo Pista
 
 # Create your views here.
@@ -49,3 +52,9 @@ def juegoxid(request):
 
     return JsonResponse({'success': valor})
 
+def wiki(request):
+    return render(request, 'wiki/index.html')
+
+def equipo_detalle(request, equipo_id):
+    equipo = get_object_or_404(Equipo, id_equipo=equipo_id)
+    return render(request, 'wiki/equipo_ficha.html', {'equipo': equipo})

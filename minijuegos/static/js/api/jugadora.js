@@ -101,3 +101,29 @@ async function fetchJugadoraById(id) {
         console.error("Error al obtener los datos:", error);
     }
 }
+
+/** 
+ * Obtener TODAS las jugadoras
+ * @param
+ * @returns {Promise<array>}
+ */
+export async function fetchAllJugadoras() {
+    try{
+        const url = `../api/jugadoras`;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (data !== null) {
+            return data.success;
+        } else {
+            return null;
+        }
+
+    } catch (error) {
+        console.error("Error al obtener los datos:", error);
+    }
+}
