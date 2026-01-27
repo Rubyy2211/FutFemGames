@@ -1,4 +1,4 @@
-import { updateRacha } from "../user/rachas.js";
+import { updateRacha, obtenerUltimaRespuesta } from "../user/rachas.js";
 
 let answer = "";
 let currentRow = 0;
@@ -7,18 +7,35 @@ const maxRows = 6;
 async function iniciar() {
     jugadora = await fetchData(2);
     localStorage.setItem('res2', jugadora.idJugadora);
+    const ultima = await obtenerUltimaRespuesta(2);
+    let ultimaArray = JSON.parse(ultima);   // ← AQUÍ sí
+    const usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer;
+    if(usuarioAnswer === jugadora.idJugadora){
+        console.log('Se ha guardado la respuesta'); 
+        localStorage.setItem('Attr2', ultima);
+    }
+
+    if(usuarioAnswer === 'loss'+jugadora.idJugadora){
+        console.log('Se ha guardado la perdida'); 
+        localStorage.setItem('Attr2', ultima);
+    }
+
     answer = jugadora.idJugadora;
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
-    let userAnswer = localStorage.getItem('Attr2');
-    console.log('Respuesta del usuario:', answer);
+    let userAnswer = JSON.parse(localStorage.getItem('Attr2')) || [];
+    let userRes = null;
+    if(userAnswer.length > 0){
+        userRes = userAnswer[userAnswer.length - 1].answer || null;
+    }
+
     //let res = att[att.length - 1].guess;
     //console.log('Respuesta:', answer);
     // Verificar si el usuario ha ganado
-    const isAnswerTrue = (userAnswer === answer);
-
+    const isAnswerTrue = (userRes === answer);
+    console.log('¿La respuesta es correcta?', answer, isAnswerTrue);
     if (isAnswerTrue) {
         console.log("Deteniendo contador..."); // Verificar si llega aquí
         await loadJugadoraApodo(jugadora.idJugadora, true);
@@ -45,7 +62,10 @@ async function iniciar() {
 
 async function loadJugadoraApodo(id, ganaste) {
     let answers = localStorage.getItem("Attr2");
-    let intentosPrevios = answers ? JSON.parse(answers) : [];
+    let intentosPrevios = [];
+
+    intentosPrevios = answers ? JSON.parse(answers) : [];
+
         // Llamada a la API para obtener la palabra
     fetch(`../api/jugadora_apodo?id_jugadora=${id}`)
         .then(response => response.json())
@@ -128,8 +148,10 @@ async function checkWord() {
     if (guessSanitized === answerSanitized) {
         displayMessage("¡Correcto! Has ganado.");
         if(localStorage.length>0){
-            await updateRacha(2, 1);
-            localStorage.setItem('Attr2', jugadora.idJugadora);
+            setTimeout(async () => {
+                await updateRacha(2, 1, localStorage.getItem('Attr2'));
+            }, 0);
+            //localStorage.setItem('Attr2', jugadora.idJugadora);
         }
         localStorage.setItem('hasWon2', jugadora.idJugadora);
         colorTiles(guess);
@@ -242,11 +264,25 @@ function saveWordleRow(guess, resultStates) {
     // Si no existe, iniciar vacío
     let arr = data ? JSON.parse(data) : [];
 
-    // Añadir entrada
-    arr.push({
-        guess: guess,     // letras
-        result: resultStates        // correct/present/absent
-    });
+    if(localStorage.getItem('hasWon2')===jugadora.idJugadora){
+        arr.push({
+            guess: guess,     // letras
+            result: resultStates,        // correct/present/absent
+            answer: jugadora.idJugadora
+        });
+    }else if(currentRow === maxRows){
+        arr.push({
+            guess: guess,     // letras
+            result: resultStates,        // correct/present/absent
+            answer: 'loss'+jugadora.idJugadora
+        });
+    }else{
+        // Añadir entrada
+        arr.push({
+            guess: guess,     // letras
+            result: resultStates        // correct/present/absent
+        });
+    }
 
     // Guardar de vuelta
     localStorage.setItem("Attr2", JSON.stringify(arr));
@@ -280,16 +316,16 @@ async function wordlePerder() {
     //lockAllRows();
     
     const resultDiv = document.getElementById('message');
-    const jugadora = await sacarJugadora(jugadoraId);
+    const player = await sacarJugadora(jugadora.idJugadora);
 
-    resultDiv.textContent = 'Has perdido, era: '+jugadora.Nombre_Completo;
+    resultDiv.textContent = 'Has perdido, era: '+player.Nombre_Completo;
     const div = document.getElementById('trayectoria');
     /*const jugadora_id = 'loss';
     localStorage.setItem('Attr2', jugadora_id);*/
     //await loadJugadoraById(jugadoraId, true);
     // Agregar un delay de 2 segundos (2000 ms)
     if(localStorage.length>0){
-        await updateRacha(2, 0);
+        await updateRacha(2, 0, localStorage.getItem('Attr2'));
     }
     setTimeout(() => {
         cambiarImagenConFlip();
@@ -306,9 +342,9 @@ async function play() {
     let jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res2');
     if(res !== jugadoraId || !res){
-        if(lastAnswer !== res || !lastAnswer){
+        /*if(lastAnswer !== res || !lastAnswer){
             await updateRacha(2, 0);
-        }
+        }*/
         localStorage.removeItem('Attr2');
         crearPopupInicialJuego('Wordle', texto, imagen, 'wordle', iniciar);
     } else {
