@@ -98,49 +98,39 @@ function updateRachaCookies(juego, condicion) {
 }
 
 async function updateRachaUser(juego, condicion) {
-    let rachaActual;
     try {
-        // Verificar la condición, si es 0, establecer la racha como 0
+        let rachaActual;
+
+        // Obtener racha actual según condición
         if (condicion === 0) {
             rachaActual = 0;
-        }else if(condicion === 2){
-            rachaActual = await obtenerRacha(juego);
-            rachaActual = rachaActual[0].racha_actual; // Asumimos que 'obtenerRacha' devuelve un array
         } else {
-            // Si la condición no es 0, obtenemos la racha actual
-            rachaActual = await obtenerRacha(juego);
-            rachaActual = rachaActual[0].racha_actual; // Asumimos que 'obtenerRacha' devuelve un array
-            rachaActual = rachaActual + 1;
+            const data = await obtenerRacha(juego); // tu función obtenerRacha devuelve array
+            rachaActual = (data?.[0]?.racha_actual || 0) + (condicion === 1 ? 1 : 0);
         }
 
-        // Crear una nueva instancia de FormData
+        // Crear FormData
         const formData = new FormData();
-
-        // Agregar los datos al FormData
         formData.append('racha', rachaActual);
         formData.append('juego', juego);
-        formData.append('user', parseInt(usuario, 10));  // Convertir usuario a entero
+        formData.append('user', parseInt(usuario, 10));
 
-        console.log(formData); // Verificar el contenido del FormData (para debugging)
-
-        // Realizamos el POST con fetch
-        const response = await fetch('/accounts/juego_racha', {
+        // POST al endpoint
+        const response = await fetch('/accounts/juego_racha/', {
             method: 'POST',
-            body: formData // Usar FormData directamente
+            body: formData
         });
 
-        // Verificar si la solicitud fue exitosa
         if (!response.ok) {
             throw new Error(`Error al actualizar la racha: ${response.statusText}`);
         }
 
-        // Si la respuesta es exitosa, puedes hacer algo con los datos
-        const responseData = await response.json();
-        console.log('Racha actualizada:', responseData);
-        return responseData;
+        const result = await response.json();
+        console.log('Racha actualizada:', result);
+        return result;
 
     } catch (error) {
-        console.error("Error al obtener los datos:", error);
+        console.error('Error al actualizar racha:', error);
         return null;
     }
 }

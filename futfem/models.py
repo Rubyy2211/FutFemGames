@@ -100,6 +100,7 @@ class Trayectoria(models.Model):
         return f"{self.jugadora} - {self.equipo} ({self.años})"
 
 class Juego(models.Model):
+    id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=100)
     slug = models.CharField(max_length=50, unique=True)
 

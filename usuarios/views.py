@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
-from .models import Usuario, Racha
+from .models import Usuario, Racha, Juego
 from django.db import connection, IntegrityError
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
+from django.views.decorators.csrf import csrf_exempt
+
 # Create your views here.
 def login_view(request):
     if request.method == 'POST':
@@ -148,49 +150,46 @@ def obtener_rachas(request):
 
     return JsonResponse(data, safe=False)
 
+@csrf_exempt
 @require_POST
 def juego_racha(request):
+    """
+    Actualiza o crea la racha de un usuario para un juego.
+    Recibe POST con:
+        - racha: int
+        - juego: id del juego
+        - user: id del usuario
+    """
     try:
-        usuario_id = request.POST.get('user')
-        juego_id = request.POST.get('juego')
-        racha_actual = request.POST.get('racha')
+        racha_actual = int(request.POST.get('racha', 0))
+        juego_id = int(request.POST.get('juego'))
+        usuario_id = int(request.POST.get('user'))
 
-        if not usuario_id or not juego_id or racha_actual is None:
-            return JsonResponse(
-                {'error': 'Faltan datos'},
-                status=400
-            )
+        # Obtener instancias
+        usuario = Usuario.objects.get(id=usuario_id)
+        juego = Juego.objects.get(id=juego_id)
 
-        racha_actual = int(racha_actual)
+        # Buscar si ya existe
+        racha_obj = Racha.objects.filter(usuario=usuario, juego=juego).first()
 
-        racha_obj, created = Racha.objects.get_or_create(
-            usuario_id=usuario_id,
-            juego_id=juego_id,
-            defaults={
-                'racha_actual': racha_actual,
-                'mejor_racha': racha_actual
-            }
-        )
-
-        if not created:
+        if racha_obj:
+            # Actualizar racha existente
             racha_obj.racha_actual = racha_actual
-
-            # actualizar mejor racha si procede
-            if racha_actual > racha_obj.mejor_racha:
-                racha_obj.mejor_racha = racha_actual
-
-            racha_obj.save()
+            racha_obj.save(update_fields=['racha_actual'])
+        else:
+            # Crear nueva racha sin campo id
+            Racha.objects.create(usuario=usuario, juego=juego, racha_actual=racha_actual)
 
         return JsonResponse({
-            'usuario': usuario_id,
-            'juego': juego_id,
-            'racha_actual': racha_obj.racha_actual,
-            'mejor_racha': racha_obj.mejor_racha,
-            'created': created
+            'success': True,
+            'usuario': usuario.id,
+            'juego': juego.id,
+            'racha_actual': racha_actual,
         })
 
-    except ValueError:
-        return JsonResponse({'error': 'Racha inválida'}, status=400)
-
+    except Usuario.DoesNotExist:
+        return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    except Juego.DoesNotExist:
+        return JsonResponse({'error': 'Juego no encontrado'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
