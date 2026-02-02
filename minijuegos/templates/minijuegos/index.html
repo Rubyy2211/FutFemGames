@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutFemGames</title>
+    <link rel="icon" href="{% static 'img/prueba logo.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/glow-border.css' %}">
+</head>
+<body class="loading">
+{% include 'partials/header.html' %}
+<section class="juegos">
+<div class="container mt-5 sibling-fade">
+    <div class="row sibling-fade d-flex justify-content-center">
+        {% include 'partials/game_card.html' with racha_id="racha-1" destino_js="career" imagen="img/trayectoria.jpg" titulo="Futfem Career" %}
+        {% include 'partials/game_card.html' with racha_id="racha-4" destino_js="grid" imagen="img/grid.png" titulo="Futfem Grid" %}
+        {% include 'partials/game_card.html' with racha_id="racha-6" destino_js="bingo" imagen="img/Bingo.png" titulo="Futfem Bingo" %}
+        <div class="col-md-4" style="display: none;">
+            <div class="game-button glow" onclick="redireccionarA('XI_Clubs')">
+                <img src="{% static 'img/ComingSoon.png' %}" alt="Game 3">
+                <h4>Futfem Clubs</h4>
+                <button class="btn btn-primary btn-block" onclick="window.location.href='XI_Clubs.php'">PLAY</button>
+            </div>
+        </div>
+    </div>
+    <div class="row sibling-fade d-flex justify-content-center">
+        {% include 'partials/game_card.html' with racha_id="racha-2" destino_js="wordle" imagen="img/wordle.png" titulo="Futfem Wordle" %}
+        {% include 'partials/game_card.html' with racha_id="racha-3" destino_js="guess" imagen="img/ComingSoon.png" titulo="Futfem Guess" %}
+        {% include 'partials/game_card.html' with racha_id="racha-5" destino_js="mates" imagen="img/ComingSoon.png" titulo="Futfem Partners" %}        
+    </div>
+</div>
+</section>
+<link rel="" href="app/widgets/language.html">
+<script src="{% static 'js/redireccion.js' %}"></script>
+<script src="{% static 'js/funciones-tablas.js' %}"></script>
+<script type="module" src="{% static 'js/user/rachas.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script type="module" id="control-acceso" src="{% static 'js/user/control-acceso.js' %}" data-allowed-roles="1,2"></script>
+<script type="module">
+    import { obtenerRacha, displayRacha } from '{% static "js/user/rachas.js" %}';
+    const racha1 = await obtenerRacha(1);
+    const racha2 = await obtenerRacha(2);
+    const racha3 = await obtenerRacha(3);
+    const racha4 = await obtenerRacha(4);  
+    const racha5 = await obtenerRacha(5);
+    const racha6 = await obtenerRacha(6);
+    
+    displayRacha(racha1[0].racha_actual, racha1[0].juego.id);
+    displayRacha(racha2[0].racha_actual, racha2[0].juego.id);
+    displayRacha(racha3[0].racha_actual, racha3[0].juego.id);
+    displayRacha(racha4[0].racha_actual, racha4[0].juego.id);
+    displayRacha(racha5[0].racha_actual, racha5[0].juego.id);
+    displayRacha(racha6[0].racha_actual, racha6[0].juego.id);
+</script>
+</body>
+</html>

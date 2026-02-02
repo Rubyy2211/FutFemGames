@@ -1,0 +1,77 @@
+#sugerencias-container{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+#sugerencias,
+#sugerenciasLiga,
+#sugerencias-pais,
+#sugerencias-equipo{
+    position: absolute;
+    padding: unset;
+    margin: unset;
+    width: max-content;
+    z-index: 10;
+}
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-primario) 30%, transparent),
+        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+    );
+    border: 0.5px solid rgb(255, 255, 255);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+
+}
+
+.suggestion-item:first-child{
+    border-radius: 20px 20px 0px 0px;
+}
+
+.suggestion-item:last-child{
+    border-radius: 0px 0px 20px 20px;
+}
+
+.suggestion-item:hover {
+    background-color: #f0f0f0;
+    color: var(--color-primario);
+}
+
+p{
+    margin-bottom: unset;
+}
+
+.suggestion-item:hover .jugadora-info p{
+    color: var(--color-primario);
+}
+
+.jugadora-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.jugadora-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.equipo-img {
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+}
+
+.equipo-info {
+    display: flex;
+    flex-direction: column;
+}

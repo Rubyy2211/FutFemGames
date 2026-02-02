@@ -1,0 +1,330 @@
+@import url("header.css");
+:root {
+    /* Colores principales */
+    --color-primario: rgb(172, 0, 172);
+    --color-secundario: #480048;
+    --color-terciario: #009e79;
+
+    /* Colores neutrales */
+    --color-detalles: #ffffff;
+    --color-texto: #000000;
+    --color-gray-light: #ecf0f1;
+    --color-gray-dark: #7f8c8d;
+
+    /* Colores de alerta */
+    --color-danger: #e74c3c; /* Rojo */
+    --color-warning: #f39c12; /* Naranja */
+    --color-success: #2ecc71; /* Verde */
+}
+body {
+    font-family: "Montserrat", sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    overflow-y: auto;
+    z-index: -1; /* Colocamos el pseudo-elemento detrás del contenido del botón */
+    /*animation: movimientoOlas 10s ease-in-out infinite;*/
+    color: var(--color-detalles);
+    overflow-x: hidden;
+    /*background-image: url("../img/fondo cesped.jpg.png");
+    background-size: cover;
+    background-repeat: no-repeat;*/
+    background: rgb(37, 0, 37); /* Color negro con transparencia */
+    /*background-blend-mode: color-dodge; /* Modo de mezcla */
+    min-height: 100vh;
+}
+/* Estilos de la barra de scroll */
+/* Estilo general para la scrollbar */
+html::-webkit-scrollbar {
+    display: none; /* Ancho de la scrollbar */
+}
+h1{
+    text-align: center;
+    margin-top: unset;
+    font-family: "Bauhaus 93", sans-serif;
+}
+body.loading{
+    display: none;
+}
+body>div.cont{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+body>div.cont button{
+    margin: 0;
+}
+body>div.cont label{
+    margin: 0 20px;
+}
+h1,p{
+    color: white;
+}
+button{
+    border-radius: 20px;
+    height: 35px;
+    border: none;
+    width: 100px;
+    color: white;
+    font-weight: bold;
+    background: purple;
+}
+
+input {
+    padding: 10px;
+    font-size: 16px;
+    width: 200px;
+    background: rgba(128, 0, 128, 0.3);
+    border: 2px solid purple;
+    border-radius: 20px;
+    color: white;
+}
+input::placeholder{
+    color:white;
+}
+/* Basic modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: var(--color-secundario);
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid var(--color-primario);
+    width: 80%;
+    max-width: 600px;
+    color: white;
+}
+.modal-content #jugadoraList{
+    list-style: none;
+    background-color: var(--color-primario);
+    margin: 0 auto;
+    width: 100%;
+    padding-inline-start: 0;
+}
+.modal-content #jugadoraList .jugadora-option{
+    border-top: 1px solid #480048;
+    border-bottom: 1px solid #480048;
+    padding-inline-start: 10px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-close {
+    padding: 10px 20px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+#trayectoria .flip-container {
+    perspective: 1000px;
+    width: 150px;
+    height: 125px;
+    position: relative;
+}
+
+.flipper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 1.2s ease-in-out;
+    transform-style: preserve-3d;
+}
+
+.flipping {
+    transform: rotateY(180deg); /* Voltea 180 grados para revelar la parte trasera y se mantiene ahí */
+}
+
+.front, .back {
+    position: absolute;
+    width: 100%;
+    backface-visibility: hidden; /* Oculta la parte trasera cuando no se está viendo */
+}
+
+.front {
+    z-index: 2; /* Mostrar primero la cara frontal */
+    transform: rotateY(0deg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.back {
+    transform: rotateY(180deg); /* La parte trasera está volteada inicialmente */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.disabled {
+    pointer-events: none; /* No permite hacer clic */
+    opacity: 0.8; /* Aplica un efecto visual para parecer deshabilitado */
+    cursor: not-allowed; /* Cambia el cursor al de "no permitido" */
+}
+
+/* Selecciona cualquier ID que empiece con "racha-" */
+[id^="racha-"] {
+    position: absolute;
+    z-index: 50;
+    right: 0;
+    top: -30px;
+    background-image: url(".././img/fuego.gif");  /* Fondo con el GIF */
+    background-size: cover;  /* Para que el GIF cubra completamente el área del div */
+    background-position: bottom; /* Alinea el GIF al centro */    padding: 15px;
+    width: 90px;           /* Ancho del círculo */
+    height: 100px;          /* Alto del círculo (igual que el ancho) */
+    /*border-radius: 50%;    /* Hace que el fondo sea un círculo */
+    font-size: 25px;
+    display: flex;         /* Usamos flexbox para centrar el contenido */
+    align-items: center;   /* Centra el contenido verticalmente */
+    justify-content: center; /* Centra el contenido horizontalmente */
+}
+
+.glass{
+    border-radius: 20px; /* Bordes redondeados */
+    text-align: center; /* Centrar el contenido dentro del botón */
+    padding-inline: 10px; /* Espaciado interior */
+        /* Glass base */
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-primario) 30%, transparent),
+        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+    );
+
+    color: white; /* Color del texto */
+    margin-bottom: 10px; /* Espaciado inferior entre botones */
+    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    border: 0.5px solid rgb(255, 255, 255);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    transform: translateY(10px);
+    cursor: pointer;
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s ease,
+        box-shadow 0.3s ease;
+}
+
+.popup-ex {
+    display: flex; /* Establece el contenedor como un flexbox */
+    flex-direction: column; /* Organiza los elementos dentro del popup de arriba a abajo */
+    position: absolute; /* Posiciona el popup de manera absoluta dentro del contenedor más cercano */
+    top: 50%; /* Centrado verticalmente */
+    left: 50%; /* Centrado horizontalmente */
+    transform: translate(-50%, -50%); /* Ajusta el desplazamiento para un verdadero centrado */
+    width: 75%; /* El popup ocupará el 75% del ancho de su contenedor principal */
+    /*max-width: 600px; /* Establece un límite de ancho máximo para evitar que se haga demasiado grande */
+    background: var(--color-gray-dark); /* Color de fondo con una variable CSS */
+    z-index: 1000; /* Asegura que el popup esté por encima de otros elementos */
+    overflow: hidden; /* Previene que el contenido se desborde */
+    opacity: 0; /* Inicialmente oculto para efectos de transición */
+    animation: fadeIn 0.3s forwards; /* Animación para mostrar el popup de manera suave */
+    align-items: center;
+    border-radius: 20px; /* Bordes redondeados */
+    text-align: center; /* Centrar el contenido dentro del botón */
+    padding: 10px; /* Espaciado interior */
+    background-color: rgba(128,0,128,0.45); /* Color de fondo primario */
+    color: white; /* Color del texto */
+    margin-bottom: 20px; /* Espaciado inferior entre botones */
+    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    border: 0.5px solid rgb(255, 255, 255);
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.25);
+
+    backdrop-filter: blur(10px);
+}
+
+/* Animación de desvanecimiento */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+.popup-ex>h2{
+    font-family: "Bauhaus 93", sans-serif;
+}
+.popup-ex .explicar{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+.popup-ex .explicar img{
+    max-width: 200px;
+}
+.popup-ex .explicar div:nth-child(2){
+    text-align: right;
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    width: 75%;
+}
+.popup-ex .selector-dificultad{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.popup-ex .selector-dificultad div{
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+.popup-ex .selector-dificultad div button{
+    width: 30%;
+}
+@media (max-width: 768px){
+    .popup-ex .explicar img{
+        max-width: 100px;
+    }
+    .popup-ex .explicar{
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+    }
+    .popup-ex .explicar div:nth-child(2) {
+        text-align: center;
+    }
+    .col-md-4{
+        padding-inline: 5px;
+    }
+    .popup-ex>h2 {
+        font-size: 1.5rem;
+    }
+
+    [id^="racha-"] {
+        width: 70px;           /* Ancho del círculo */
+        height: 80px;          /* Alto del círculo (igual que el ancho) */
+        font-size: 20px;
+    }
+}
+@media (max-width: 650px) {
+    body>div.cont{
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
