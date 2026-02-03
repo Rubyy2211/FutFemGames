@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/combo.css' %}">
     <link rel="stylesheet" href="{% static 'FutFemWiki/css/wiki.css' %}">
@@ -19,15 +20,22 @@
 
 <section id="wiki-equipos">
     <div id="cabecera-wiki-equipos">
-        <div id="selector">
-            <nav>
-                <ul>
-                    <li><button onclick="eleccion('equipo')">Equipos</button></li>
-                    <li><button id="jugadoras-btn" onclick="eleccion('jugadora')">Jugadoras</button></li>
-                </ul>
-            </nav>
+        <div id="selector" class="selector">
+            <i class="bi bi-chevron-left arrow" id="arrow-left"></i>
+
+            <div class="selector-center">
+                <p id="selector-text">Equipos</p>
+                <div class="dots">
+                    <span id="dot-equipo" class="dot active"></span>
+                    <span id="dot-jugadora" class="dot"></span>
+                </div>
+            </div>
+
+            <i class="bi bi-chevron-right arrow" id="arrow-right"></i>
         </div>
-        <div id="cabecera-equipo">
+
+
+        <div id="cabecera-equipo" class="panel active">
             <p>Seleccione un país</p>
             <div id="input-y-boton">
                 <input id="input-pais" class="input-pais" type="text" placeholder="Buscar por país..." autocomplete="off">
@@ -35,7 +43,7 @@
             </div>
             <div id="ligas-container"></div>
         </div>
-        <div id="cabecera-jugadora">
+        <div id="cabecera-jugadora" class="panel">
             <div id="filtros">
                 <label for="equipo">Equipo:</label>
                 <input id="input-equipo" type="text" name="equipo" placeholder="Buscar por equipo..." autocomplete="off">
@@ -52,26 +60,105 @@
         
     </div>
     <div id="items-container"></div>
+    <div id="pagination" class="pagination">
+    </div>
+
 </section>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/color-thief/2.3.2/color-thief.umd.js"></script>
-<script type="module" src="{% static 'FutFemWiki/js/wiki.js' %}"></script>
 <script src="{% static 'js/funciones-tablas.js' %}"></script>
-<script>
-    function eleccion(tipo){
-        const equipo = document.getElementById('cabecera-equipo');
-        const jugadora = document.getElementById('cabecera-jugadora');
-        const container = document.getElementById('items-container');
+<script type="module">
+    import { manejarJugadoras } from '../static/FutFemWiki/js/wiki.js';
+    let modoActual = 'equipo';
+    let jugadoras = [];
 
-        if(tipo==='jugadora'){
-            container.innerHTML = '';
-            equipo.style.display = 'none';
-            jugadora.style.display = 'flex';
-        }else if(tipo==='equipo'){
-            container.innerHTML = '';
-            jugadora.style.display = 'none';
-            equipo.style.display = 'flex';
-        }
+    function actualizarSelector() {
+    const texto = document.getElementById('selector-text');
+    const dotEquipo = document.getElementById('dot-equipo');
+    const dotJugadora = document.getElementById('dot-jugadora');
+    const arrowLeft = document.getElementById('arrow-left');
+    const arrowRight = document.getElementById('arrow-right');
+
+    // Animación suave del texto
+    texto.style.opacity = 0;
+    texto.style.transform = 'translateY(4px)';
+
+    setTimeout(() => {
+        texto.textContent = modoActual === 'equipo' ? 'Equipos' : 'Jugadoras';
+        texto.style.opacity = 1;
+        texto.style.transform = 'translateY(0)';
+    }, 150);
+
+    // Puntitos
+    dotEquipo.classList.toggle('active', modoActual === 'equipo');
+    dotJugadora.classList.toggle('active', modoActual === 'jugadora');
+
+    // Flechas activas / desactivadas
+    arrowLeft.classList.toggle('disabled', modoActual === 'equipo');
+    arrowRight.classList.toggle('disabled', modoActual === 'jugadora');
+
+    // Mostrar contenido
+    eleccion(modoActual);
     }
+
+
+    // Dots
+    document.getElementById('dot-equipo').addEventListener('click', () => {
+        if (modoActual !== 'equipo') eleccion('equipo');
+    });
+
+    document.getElementById('dot-jugadora').addEventListener('click', () => {
+        if (modoActual !== 'jugadora') eleccion('jugadora');
+    });
+
+
+
+    // Flechas
+    document.getElementById('arrow-left').addEventListener('click', () => {
+        if (modoActual !== 'equipo') {
+            modoActual = 'equipo';
+            actualizarSelector();
+        }
+    });
+
+    document.getElementById('arrow-right').addEventListener('click', () => {
+        if (modoActual !== 'jugadora') {
+            modoActual = 'jugadora';
+            actualizarSelector();
+        }
+    });
+
+    function eleccion(tipo){
+    const equipo = document.getElementById('cabecera-equipo');
+    const jugadora = document.getElementById('cabecera-jugadora');
+    const container = document.getElementById('items-container');
+    const pagination = document.getElementById('pagination');
+
+    container.innerHTML = '';
+
+    if(tipo === 'jugadora'){
+        if(jugadoras.length === 0){
+            jugadoras = manejarJugadoras();
+        }
+        equipo.classList.remove('active');
+        jugadora.classList.add('active');
+        pagination.style.display = 'flex';
+    } else {
+        jugadora.classList.remove('active');
+        equipo.classList.add('active');
+        pagination.style.display = 'none';
+    }
+}
+
+
+document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        eleccion(tab.dataset.tipo);
+    });
+});
+eleccion('equipo');
+
+
 </script>
+<script type="module" src="{% static 'FutFemWiki/js/wiki.js' %}"></script>
 </body>
 </html>

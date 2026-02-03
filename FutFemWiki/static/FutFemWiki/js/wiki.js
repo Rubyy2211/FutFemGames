@@ -9,11 +9,15 @@ function inicializarWiki() {
 
     const inputPaises = document.getElementsByClassName('input-pais');
 
+    const cabeceraLigas = document.getElementById('cabecera-equipo');
+
+    const ligasContainer = document.getElementById('ligas-container');
+
     const inputEquipo = document.getElementById('input-equipo');
 
     const botonConfirmar = document.getElementById('confirmarPais');
 
-    const botonJugadoras = document.getElementById('jugadoras-btn');
+    //const botonJugadoras = document.getElementById('jugadoras-btn');
 
     const botonFiltro = document.getElementById('jugadoras-filtros');
 
@@ -24,9 +28,9 @@ function inicializarWiki() {
         filtroJugadoras(Number(inputEquipo.dataset.id), Number(paisInput.dataset.id), null);
     });
 
-    botonJugadoras.addEventListener('click', async (event) => {
+    /*botonJugadoras.addEventListener('click', async (event) => {
         manejarJugadoras();
-    });
+    });*/
 
     inputEquipo.addEventListener('input', async (event) => {
         handleAutocompleteEquipo(event, 'sugerencias-equipo');
@@ -37,7 +41,7 @@ function inicializarWiki() {
             handleAutocompletePais(event, 'sugerencias-pais');
         });
     }
-    
+
 
     botonConfirmar.addEventListener('click', async () => {
         const paisId = Number(inputPaises[0].dataset.id);
@@ -47,13 +51,24 @@ function inicializarWiki() {
             alert('Por favor, selecciona un país válido de las sugerencias.');
         }
     });
+
+    // default equipo display
+    ligasxpais(1).then(ligas => {
+        ligasContainer.firstElementChild.classList.add('selected');
+        cabeceraLigas.style.display = 'flex';
+    });
+    equiposxliga(1).then(equipos => {
+        displayEquipos(equipos.success);
+    });
+
+    
 }
 
 
 inicializarWiki();
 
 
-async function manejarJugadoras() {
+export async function manejarJugadoras() {
     if (jugadorasOriginal && jugadorasOriginal.length > 0) {
         return;
     }
@@ -68,17 +83,33 @@ async function manejarJugadoras() {
         }
     }
 
-    //return jugadorasOriginal;
+    return jugadorasOriginal.length;
 }
 
 
 function displayJugadoras(jugadoras){
+    jugadorasGlobal = jugadoras; // Guardar todas las jugadoras
+    currentPage = 1;
+    totalPages = Math.ceil(jugadorasGlobal.length / itemsPerPage);
+    renderJugadorasPage(currentPage);
+}
+
+let currentPage = 1;
+const itemsPerPage = 25;
+let totalPages = 1;
+let jugadorasGlobal = []; // Guardaremos todas las jugadoras aquí
+
+
+function renderJugadorasPage(page = 1) {
     const container = document.getElementById('items-container');
     const containerLigas = document.getElementById('ligas-container');
     container.innerHTML = '';
     containerLigas.innerHTML = '';
     container.className = '';
     container.className = 'jugadoras';
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const jugadoras = jugadorasGlobal.slice(start, end);
     jugadoras.forEach((jugadora, index) => { 
         const nombreCompleto = jugadora.nombre + jugadora.apellido;
         const div = document.createElement('div');
@@ -136,11 +167,53 @@ function displayJugadoras(jugadoras){
         setTimeout(() => {
             div.classList.add('visible');
         }, index * 150); // cada liga 150ms después de la anterior
-
-
     });
-   
+    // Actualizar paginación
+    updatePaginationUI();
 }
+
+function updatePaginationUI() {
+    const paginationContainer = document.getElementById('pagination');
+    if (!paginationContainer) return;
+
+    const prevBtn = document.createElement('button');
+    prevBtn.id = 'prevPage';
+    prevBtn.textContent = '←';
+
+    const nextBtn = document.createElement('button');
+    nextBtn.id = 'nextPage';
+    nextBtn.textContent = '→';
+
+    const indicator = document.createElement('span');
+    indicator.id = 'pageIndicator';
+
+    paginationContainer.innerHTML = '';
+    paginationContainer.appendChild(prevBtn);
+    paginationContainer.appendChild(indicator);
+    paginationContainer.appendChild(nextBtn);
+
+    // Texto tipo "Página 2 / 8"
+    indicator.textContent = `Página ${currentPage} / ${totalPages}`;
+
+    // Estado de botones
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+
+    prevBtn.onclick = () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderJugadorasPage(currentPage);
+        }
+    };
+
+    nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderJugadorasPage(currentPage);
+        }
+    };
+}
+
 
 
 async function ligasxpais(id_pais) {
@@ -148,7 +221,13 @@ async function ligasxpais(id_pais) {
         const response = await fetch(`/api/ligasxpais?pais=${id_pais}`); 
         const data = await response.json();
         console.log(data);
-        displayLigas(data.success);
+        if (data.success) {
+            displayLigas(data.success);
+        } 
+        else{
+            displayLigas(data);
+        }
+        return data;
     } catch (error) {
         console.error("Error fetching ligas:", error);
         return { error: "Error fetching ligas" };
@@ -194,12 +273,31 @@ function displayLigas(data) {
                     )
                 `;
                 ligaElement.style.borderColor = rgbToRgba(colors[2], 0.7);
+                var css = `.liga-item:hover {
+                    box-shadow:
+                        0 12px 40px rgba(0, 0, 0, 0.35),
+                        0 0 20px ${rgbToRgba(colors[2], 0.5)};
+
+                    border-color: ${rgbToRgba(colors[2], 0.9)};
+                    
+                }
+                        
+                .liga-item.selected {
+                    box-shadow:
+                        0 12px 40px rgba(0, 0, 0, 0.35),
+                        0 0 20px ${rgbToRgba(colors[2], 0.75)};
+                    border-color: ${rgbToRgba(colors[2], 0.9)}
+                }`;
+                var style = document.createElement('style');
+                style.textContent = css;
+                document.head.appendChild(style);
         } catch (err) {
             console.error("Error obteniendo colores:", err);
         }
         };
 
         ligaElement.addEventListener('click', async () => {
+            seleccionarLiga(ligaElement);
             const equipos = await equiposxliga(liga.liga);
             displayEquipos(equipos.success);
         });
@@ -213,8 +311,18 @@ function displayLigas(data) {
     });
 }
 
-function displayEquipos(equipos) {
-    const container = document.getElementById('items-container');
+function seleccionarLiga(ligaElement) {
+    const ligas = document.getElementsByClassName('liga-item');
+    for (const liga of ligas) {
+        liga.classList.remove('selected');
+    }
+    ligaElement.classList.add('selected');
+}
+
+export function displayEquipos(equipos, container) {
+    if (!container) {
+        container = document.getElementById('items-container');
+    }
     container.innerHTML = '';
     container.className = '';
     container.className = 'equipos';
