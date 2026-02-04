@@ -253,7 +253,7 @@ def jugadoraxnombre(request):
         data.append({
             'id_jugadora': j.id_jugadora,
             'Nombre_Completo': f"{j.Nombre} {j.Apellidos}",
-            'imagen': j.imagen or './static/img/predeterm.jpg',
+            'imagen': j.imagen or '/static/img/predeterm.jpg',
             'Apodo': j.Apodo,
             'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d"),
             'Nacionalidad': j.Nacionalidad.nombre if j.Nacionalidad else None,
@@ -661,7 +661,7 @@ def paisxnombre(request):
         salida.append({
             "pais": p.id_pais,
             "nombre": p.nombre,
-            "bandera": p.bandera
+            "iso": p.iso
         })
 
     return JsonResponse(salida, safe=False)

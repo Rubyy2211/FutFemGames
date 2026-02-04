@@ -81,6 +81,11 @@ input {
     border-radius: 20px;
     color: white;
 }
+
+input#jugadoraInput{
+    width: 300px;
+}
+
 input::placeholder{
     color:white;
 }

@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('minijuegos.urls')),
     path('api/', include('futfem.urls')),
-    path('accounts/', include('usuarios.urls')),
+    path('', include('usuarios.urls')),
     path('', include('FutFemWiki.urls')),
 ]
 

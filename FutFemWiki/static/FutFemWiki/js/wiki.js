@@ -1,8 +1,7 @@
-import { handleAutocompletePais } from '../../../static/js/api/pais.js';
-import { equiposxliga, handleAutocompleteEquipo } from '/static/js/api/equipos.js';
-import { fetchAllJugadoras } from '../../../static/js/api/jugadora.js';
-import { fetchEquipoById } from '../../../static/js/api/equipos.js';
-import { getDominantColors, rgbToRgba } from '../../../static/js/utils/color.thief.js';
+import { handleAutocompletePais } from '/static/futfem/js/pais.js';
+import { equiposxliga, handleAutocompleteEquipo, fetchEquipoById } from '/static/futfem/js/equipos.js';
+import { fetchAllJugadoras } from '/static/futfem/js/jugadora.js';
+import { getDominantColors, rgbToRgba } from '/static/js/utils/color.thief.js';
 let jugadorasOriginal;
 
 function inicializarWiki() {

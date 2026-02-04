@@ -434,7 +434,7 @@ async function handleAutocompletePlayer(event) {
             const idsMostrados = new Set();
 
             results.forEach(jugadora => {
-                const { id_jugadora, Nombre_Completo, imagen, Nacimiento } = jugadora;
+                const { id_jugadora, Nombre_Completo, imagen, Nacimiento, Apodo } = jugadora;
 
                 if (!idsMostrados.has(id_jugadora)) { // Verificar que no se haya mostrado este ID
                     idsMostrados.add(id_jugadora);
@@ -446,7 +446,7 @@ async function handleAutocompletePlayer(event) {
                         <img src="${imagen}" alt="${Nombre_Completo}" class="jugadora-img">
                         <div class="jugadora-info">
                             <strong>${Nombre_Completo}</strong>
-                            <p>Nacimiento: ${Nacimiento}</p>
+                            <!--<p>Nacimiento: ${Nacimiento}</p>-->
                         </div>
                     `;
 

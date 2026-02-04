@@ -1,5 +1,5 @@
-import {calcularEdad, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById} from '../../../minijuegos/static/js/api/jugadora.js'; 
-import {fetchEquipoById} from '../../../minijuegos/static/js/api/equipos.js'; 
+import {calcularEdad, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById} from '/static/futfem/js/jugadora.js'; 
+import {fetchEquipoById} from '/static/futfem/js/equipos.js'; 
 
     const mostrador = document.getElementById('mostrador-tarjetas');
 

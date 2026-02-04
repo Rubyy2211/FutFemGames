@@ -7,7 +7,7 @@ export async function handleAutocompletePais(event, id) {
     suggestionsList.innerHTML = '';
 
     if (texto.length > 2) { // Solo si hay más de 2 caracteres
-        const url = `../api/paisxnombre?nombre=${encodeURIComponent(texto)}`;
+        const url = `/api/paisxnombre?nombre=${encodeURIComponent(texto)}`;
 
         try {
             const response = await fetch(url);
@@ -17,16 +17,23 @@ export async function handleAutocompletePais(event, id) {
             // Evitar duplicados
             const idsMostrados = new Set();
 
-            results.forEach(equipo => {
-                const { pais, nombre, bandera } = equipo;
+            results.forEach(nation => {
+                const { pais, nombre, iso } = nation;
                 if (!idsMostrados.has(pais)) { // Verificar que no se haya mostrado este ID
                     idsMostrados.add(pais);
 
                     const listItem = document.createElement('li');
                     listItem.classList.add('suggestion-item');
 
-                    listItem.innerHTML = `
+                   /* listItem.innerHTML = `
                         <img src="/${bandera}" alt="${nombre}" class="jugadora-img">
+                        <div class="jugadora-info">
+                            <strong>${nombre}</strong>
+                        </div>
+                    `;*/
+
+                    listItem.innerHTML = `
+                        <span class="fi fi-${iso} fis"></span>
                         <div class="jugadora-info">
                             <strong>${nombre}</strong>
                         </div>

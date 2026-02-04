@@ -4,7 +4,7 @@ from django.db import models
 class Pais(models.Model):
     id_pais = models.AutoField(primary_key=True)
     nombre = models.TextField()
-    bandera = models.CharField(max_length=5)
+    iso = models.CharField(max_length=10, null=True, blank=True)  # Código ISO del país
 
     class Meta:
         db_table = 'paises'

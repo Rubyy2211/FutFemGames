@@ -15,6 +15,7 @@
     margin: unset;
     width: max-content;
     z-index: 10;
+    width: 100%;
 }
 .suggestion-item {
     display: flex;
@@ -34,12 +35,21 @@
 
 }
 
+.fi{
+    font-size: xx-large;
+    border-radius: 100%;
+}
+
 .suggestion-item:first-child{
     border-radius: 20px 20px 0px 0px;
 }
 
 .suggestion-item:last-child{
     border-radius: 0px 0px 20px 20px;
+}
+
+.suggestion-item:only-child{
+    border-radius: 20px;
 }
 
 .suggestion-item:hover {
