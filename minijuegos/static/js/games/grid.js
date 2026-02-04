@@ -1,5 +1,5 @@
-import { fetchJugadoraTrayectoriaById } from "../api/jugadora.js";
-import { updateRacha, obtenerUltimaRespuesta } from "../user/rachas.js";
+import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
+import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 
 let idres;
 let jugadorasProhibidas = [];

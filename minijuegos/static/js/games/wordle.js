@@ -1,4 +1,4 @@
-import { updateRacha, obtenerUltimaRespuesta } from "../user/rachas.js";
+import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 
 let answer = "";
 let currentRow = 0;

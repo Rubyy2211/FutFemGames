@@ -1,5 +1,5 @@
-import { fetchJugadoraNacionalidadById, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById } from "../api/jugadora.js";
-import { updateRacha, obtenerUltimaRespuesta } from '../user/rachas.js';
+import { fetchJugadoraNacionalidadById, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById } from "/static/futfem/js/jugadora.js";
+import { updateRacha, obtenerUltimaRespuesta } from '/static/usuarios/js/rachas.js';
 import { getDominantColors } from '../utils/color.thief.js';
 
 let idres;
@@ -179,12 +179,19 @@ function handleCellClick(event, jugador) {
             let trofeoMatch = false;
             let trofeosIndividuales = [];
             let trofeosEquipo = [];
-            for (let index = 0; index < jugador.trofeos.individual.length; index++) {
-                trofeosIndividuales.push(...jugador.trofeos.individual[index].success);
-            }
-            for (let index = 0; index < jugador.trofeos.equipo.length; index++) {
-                trofeosEquipo.push(...jugador.trofeos.equipo[index].success);
-            }
+
+            jugador.trofeos.individual.forEach(item => {
+                if (Array.isArray(item.success)) {
+                    trofeosIndividuales.push(...item.success);
+                }
+            });
+
+            jugador.trofeos.equipo.forEach(item => {
+                if (Array.isArray(item.success)) {
+                    trofeosEquipo.push(...item.success);
+                }
+            });
+
 
             if(img.id === 'individual'){
                 trofeoMatch = trofeosIndividuales.some(trofeo => `trofeo${trofeo.id}` === imgClass);
@@ -306,7 +313,7 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
     document.getElementById("player-name").textContent = jugadora.nombre;
     const img = document.getElementById("player-image");
     localStorage.setItem('last-player-bingo', JSON.stringify(jugadora));
-    img.src = (!jugadora.imagend)
+    img.src = (!jugadora.imagen)
         ? "/static/img/predeterm.jpg"
         : jugadora.imagen;
     img.className = jugadora.id;

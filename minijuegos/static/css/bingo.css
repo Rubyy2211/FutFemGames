@@ -28,6 +28,22 @@ img {
     align-items: center;      /* Centra verticalmente */
     gap: 1rem;                /* Espacio entre el player y el botón */
     padding: 0.5rem;
+    position: relative;
+    width: 100%;
+}
+
+#cabecera-bingo button {
+    position: absolute;
+    right: 0; /* Alinea el botón a la derecha */
+    top: 35%; /* Centra verticalmente */
+    transform: translateY(-50%); /* Ajusta la posición vertical */
+    background-color: #e200ff;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
 }
 
 .player {
@@ -38,8 +54,17 @@ img {
     border-radius: 50%;
     width: 125px;
     height: 125px;
-    background: var(--color-primario);
-    border: 1px solid var(--color-detalles);
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-primario) 30%, transparent),
+        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+    );
+
+    color: white; /* Color del texto */
+    margin-bottom: 10px; /* Espaciado inferior entre botones */
+    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    border: 0.25px solid rgb(128, 0, 128);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
 .info-player{

@@ -428,49 +428,6 @@ async function handleAutocompleteJ(event, listaId) {
     }
 }
 
-async function handleAutocompleteEquipo(event, id) {
-    const input = event.target;
-    const texto = input.value.trim();
-    const suggestionsList = document.getElementById(id);
-
-    // Limpiar sugerencias previas
-    suggestionsList.innerHTML = '';
-
-    if (texto.length > 2) { // Solo si hay más de 2 caracteres
-        const url = `../api/equipoxnombre?nombre=${encodeURIComponent(texto)}`;
-
-        try {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const results = await response.json();
-
-            results.forEach(equipo => {
-                const { club, nombre, escudo } = equipo;
-                const listItem = document.createElement('li');
-                listItem.classList.add('suggestion-item');
-
-                listItem.innerHTML = `
-                        <img src="${escudo}" alt="${nombre}" class="equipo-img">
-                        <div class="equipo-info">
-                            <strong>${nombre}</strong>
-                        </div>
-                    `;
-
-                listItem.addEventListener('click', () => {
-                    // Insertar el nombre del equipo en el input al hacer clic
-                    input.value = nombre;
-                    input.setAttribute('data-id', club); // Guardar el ID del equipo
-                    suggestionsList.innerHTML = '';  // Limpiar las sugerencias
-                });
-
-                suggestionsList.appendChild(listItem);
-
-            });
-        } catch (error) {
-            console.error('Error al buscar el equipo:', error);
-        }
-    }
-}
 
 async function handleAutocompleteLiga(event, id) {
     const input = event.target;

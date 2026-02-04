@@ -1,5 +1,5 @@
-import { fetchJugadoraCompanyerasById } from "../api/jugadora.js";
-import { updateRacha, obtenerUltimaRespuesta } from "../user/rachas.js";
+import { fetchJugadoraCompanyerasById } from "/static/futfem/js/jugadora.js";
+import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 
 let jugadoraId;
 

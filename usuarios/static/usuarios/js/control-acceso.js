@@ -1,4 +1,4 @@
-import { getSesion } from '/static/js/user/rachas.js';
+import { getSesion } from './rachas.js';
 
 (async () => {
     try {

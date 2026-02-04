@@ -11,8 +11,8 @@ let jugadoraInput;
 let boton;
 let answer;
 
-import { fetchJugadoraTrayectoriaById } from "../api/jugadora.js";
-import { updateRacha, obtenerUltimaRespuesta } from "../user/rachas.js";
+import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
+import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 // Función principal que controla el flujo de carga
 async function iniciar(dificultad) {
 

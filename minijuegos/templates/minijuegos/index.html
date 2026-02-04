@@ -40,12 +40,12 @@
 <link rel="" href="app/widgets/language.html">
 <script src="{% static 'js/redireccion.js' %}"></script>
 <script src="{% static 'js/funciones-tablas.js' %}"></script>
-<script type="module" src="{% static 'js/user/rachas.js' %}"></script>
+<script type="module" src="{% static 'usuarios/js/rachas.js' %}"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script type="module" id="control-acceso" src="{% static 'js/user/control-acceso.js' %}" data-allowed-roles="1,2"></script>
+<script type="module" id="control-acceso" src="{% static 'usuarios/js/control-acceso.js' %}" data-allowed-roles="1,2"></script>
 <script type="module">
-    import { obtenerRacha, displayRacha } from '{% static "js/user/rachas.js" %}';
+    import { obtenerRacha, displayRacha } from '{% static "usuarios/js/rachas.js" %}';
     const racha1 = await obtenerRacha(1);
     const racha2 = await obtenerRacha(2);
     const racha3 = await obtenerRacha(3);
