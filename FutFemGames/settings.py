@@ -77,7 +77,7 @@ TEMPLATES = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    'futfemgames.gti-ia.upv.es'
+    'http://futfemgames.gti-ia.upv.es'
 ]
 
 WSGI_APPLICATION = 'FutFemGames.wsgi.application'
