@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'FutFemWiki/css/tarjeta-jugadora.css' %}">
 </head>
@@ -95,12 +96,17 @@
                 <div class="equipo-pais">
                 <p>{{ jugadora.Posicion.abreviatura }}</p>
                 <img src="/${equipo[0].escudo}" alt="${equipo.nombre}">
-                <span class="fi fi-/{{ jugadora.Nacionalidad.iso }}" alt="{{ jugadora.Nacionalidad.nombre }}">
+                <span alt="{{ jugadora.Nacionalidad.nombre }}"></span>
                 </div>
                 <p>${trayectoria.años}</p>
             </div>
             
         `;
+
+        const span = front.querySelector('span');
+        span.classList.add("fi")
+        span.classList.add('fi-{{ jugadora.Nacionalidad.iso }}')
+        span.style.fontSize = 'xx-large';
 
         const trofeosEquipo = palmares.equipo[index].success || [];
         const trofeosAgrupados = agruparTrofeos(trofeosEquipo);
