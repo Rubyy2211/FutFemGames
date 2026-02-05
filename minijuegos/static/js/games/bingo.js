@@ -376,6 +376,14 @@ function bloquearCeldaEstilo(celda, jugadoraImagen) {
         console.warn('No se encontró una imagen de fondo en la celda. Se continuará de todas formas.');
     }
 
+    // Buscar imagen de fondo (la que ya estaba antes)
+    const span = celda.querySelector('span');
+    if (span) {
+        span.classList.add('background-img');
+    } else {
+        console.warn('No se encontró una imagen de fondo en la celda. Se continuará de todas formas.');
+    }
+
     // Verificar si ya existe una imagen de jugador para evitar duplicados
     const yaTieneJugador = celda.querySelector('img.player-imagen');
     if (yaTieneJugador) {

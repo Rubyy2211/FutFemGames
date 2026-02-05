@@ -34,17 +34,24 @@ function ponerBanderas(ids, posiciones) {
                         if(p){
                             p.textContent = pais.nombre;
                         }
+                        console.log(pais)
                         // Crear y configurar la imagen
                         const img = document.createElement('img');
+                        const span = document.createElement('span');
+                        span.classList.add(`fi`);
+                        span.classList.add(`fi-${pais.iso}`);
+                        span.style.fontSize = 'xx-large';
                         img.alt = pais.nombre;
                         img.src = pais.bandera;
                         img.id='logo';
                         img.style.width = "50px";
                         img.style.height = "auto";
                         img.classList.add('pais'+pais.pais);
+                        img.style.display = 'none'
 
                         // Añadir imagen y texto al elemento th
                         th.appendChild(img);
+                        th.appendChild(span);
                     } else {
                         console.error(`Elemento con id ${posiciones[index]} no encontrado.`);
                     }

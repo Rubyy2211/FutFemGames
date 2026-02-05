@@ -610,17 +610,10 @@ def paisesxid(request):
 
     salida = []
     for p in paises:
-        escudo_base64 = None
-        if p.bandera: 
-            try:
-                escudo_base64 = p.bandera
-            except Exception:
-                escudo_base64 = None
-
         salida.append({
             "pais": p.id_pais,
             "nombre": p.nombre,
-            "bandera": escudo_base64
+            "iso": p.iso
         })
 
     return JsonResponse({"success": salida})
@@ -635,11 +628,11 @@ def paisesall(request):
         filas = cursor.fetchall()
 
     paises = []
-    for id_pais, nombre, bandera in filas:
+    for id_pais, nombre, iso in filas:
         paises.append({
             "nombre": nombre,
             "id": id_pais,
-            "bandera": bandera
+            "iso": iso
         })
     
     return JsonResponse({"success": paises})
