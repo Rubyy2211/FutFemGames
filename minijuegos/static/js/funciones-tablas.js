@@ -484,40 +484,6 @@ function debounce(func, wait) {
     };
 }
 
-let intervalos = {}; // Objeto para almacenar los intervalos
-
-function startCounter(segundos, juego, onFinish) {
-    let reloj = document.getElementById('reloj');
-
-    // Limpiar cualquier intervalo previo asociado a este juego
-    if (intervalos[juego]) clearInterval(intervalos[juego]);
-
-    intervalos[juego] = setInterval(() => {
-        reloj.textContent = segundos;
-
-        if (segundos <= 0) {
-            clearInterval(intervalos[juego]);
-            delete intervalos[juego];
-            console.log("Tiempo agotado");
-            if (onFinish) onFinish();
-        } else {
-            localStorage.setItem(juego, segundos);
-            segundos--;
-           //console.log(segundos);
-        }
-    }, 1000);
-}
-
-function stopCounter(juego) {
-    if (intervalos[juego]) {
-        clearInterval(intervalos[juego]); // Detiene el intervalo
-        delete intervalos[juego]; // Elimina la referencia
-        console.log(`Contador de ${juego} detenido`);
-    } else {
-        console.log(`No hay un contador en ejecución para ${juego}`);
-    }
-}
-
 function crearPopupInicialJuego(titulo, explicacion, imagen, tipo, iniciarCallback) {
     // Crear el contenedor del popup
     const popup = document.createElement('div');
@@ -572,6 +538,10 @@ function crearPopupInicialJuego(titulo, explicacion, imagen, tipo, iniciarCallba
 
 
     // Crear los botones de dificultad
+    const botonSinTiempo = document.createElement('button');
+    botonSinTiempo.textContent = 'Sin Tiempo';
+    botonSinTiempo.addEventListener('click', () => iniciarCallback('infinito'));  // Usamos una función de flecha para pasar el parámetro 'facil'
+    
     const botonFacil = document.createElement('button');
     botonFacil.textContent = 'Fácil';
     botonFacil.addEventListener('click', () => iniciarCallback('facil'));  // Usamos una función de flecha para pasar el parámetro 'facil'
@@ -586,6 +556,7 @@ function crearPopupInicialJuego(titulo, explicacion, imagen, tipo, iniciarCallba
 
     // Añadir los botones al contenedor de dificultad
     selectorDificultad.appendChild(textoSelectorDificultad);
+    botonesSelectorDificultad.appendChild(botonSinTiempo);
     botonesSelectorDificultad.appendChild(botonFacil);
     botonesSelectorDificultad.appendChild(botonMedio);
     botonesSelectorDificultad.appendChild(botonDificil);
@@ -598,6 +569,3 @@ function crearPopupInicialJuego(titulo, explicacion, imagen, tipo, iniciarCallba
     // Añadir el popup al cuerpo del documento o a un contenedor específico
     document.body.appendChild(popup);
 }
-
-
-

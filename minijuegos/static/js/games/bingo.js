@@ -1,10 +1,17 @@
 import { fetchJugadoraNacionalidadById, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from '/static/usuarios/js/rachas.js';
 import { getDominantColors, rgbToRgba } from '../utils/color.thief.js';
+import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
 
 let idres;
 let paises, equipos, ligas, trofeos;
 let lastPlayer;
+const texto = '¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria.\n' +
+    'Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero.\n' +
+    'Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!\n';
+const imagen = '../img/Captura de pantalla 2024-09-01 192457.png';
+
+
 async function iniciar(dificultad) {
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     const btn = document.getElementsByClassName('skip-button')[0];
@@ -46,20 +53,8 @@ async function iniciar(dificultad) {
         skipPlayer(paises, equipos, ligas, trofeos);
     }
     // Definir los segundos según la dificultad
-    let segundos;
-    switch (dificultad) {
-        case "facil":
-            segundos = 180000000000000000000000000000000000000000000000000000000000;
-            break;
-        case "medio":
-            segundos = 120;
-            break;
-        case "dificil":
-            segundos = 60;
-            break;
-        default:
-            segundos = localStorage.getItem('bingo'); // Valor por defecto si la dificultad no es válida
-    }
+    let segundos = inicializarCounter(180000000000000000000000000000000000000000000000000000000000, 120 , 60, 'bingo', dificultad);
+
     ponerBanderas(paises, ["c21", "c32", "c33"]); // Asigna banderas a ciertos países por su ID.
     await ponerLigas(ligas, ["c13", "c34",'c23']); // Asigna ligas a los países por su ID.
     ponerClubes(equipos, ["c12", "c14", "c31"]); // Asigna clubes a los países.
@@ -578,9 +573,3 @@ async function bingoPerder() {
         await updateRacha(6, 0, localStorage.getItem('Attr6'));
     }
 }
-
-
-const texto = '¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria.\n' +
-    'Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero.\n' +
-    'Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!\n';
-const imagen = '../img/Captura de pantalla 2024-09-01 192457.png';

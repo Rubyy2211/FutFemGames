@@ -1,8 +1,32 @@
 import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
+import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
+
+// ----------------------------------------------------- 
+// Declaracion de variables
+// -----------------------------------------------------
 let idres;
+let ultimaJugadoraId = null; // Aquí guardamos la ID de la última jugadora verificada
 let jugadorasProhibidas = [];
+const input = document.getElementById('jugadoraInput');
+const boton = document.getElementById('botonVerificar');
+const resultDiv = document.getElementById('resultado');
+
+const texto = '¡Demuestra tu conocimiento sobre fútbol femenino! En "Futfem Grid", los jugadores se enfrentan a una cuadrícula llena de escudos de equipos de fútbol. El objetivo del juego es rellenar correctamente las casillas de la tabla con los nombres de las jugadoras que coinciden con los equipos de las filas y columnas. ' +
+    'El tablero es una rejilla (Grid) con filas y columnas. Cada celda contiene el escudo de un equipo de fútbol.\n' +
+    'Tu misión es rellenar cada celda con el nombre de una jugadora que haya jugado en ese equipo, tanto en la fila como en la columna correspondiente.\n' +
+    'Los jugadores deben completar el tablero lo más rápido posible, identificando correctamente las jugadoras que han jugado en esos equipos.\n';
+const imagen = 'static/img/grid.png';
+
+
+// --------------------------------------------------------- 
+// INICIAR JUEGO (modo grid) 
+// dificultad = "facil" | "medio" | "dificil" 
+// ---------------------------------------------------------
 async function iniciar(dificultad) {
+    // ----------------------------------------------------- 
+    // 1. Preparar popup y botón de verificar 
+    // -----------------------------------------------------
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     const btn = document.getElementById('botonVerificar');
     
@@ -12,54 +36,78 @@ async function iniciar(dificultad) {
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
+
+    // ----------------------------------------------------- 
+    // 2. Obtener datos de API (paises y clubes) 
+    // -----------------------------------------------------
     let valor = await fetchData(4);
     let paises = [valor.pais1, valor.pais2, valor.pais3];
     let clubes = [valor.club1, valor.club2, valor.club3];
+
+    // ID de la respuesta correcta (concatenación)
     idres = paises.map(String).concat(clubes.map(String)).join('');
 
+    // ----------------------------------------------------- 
+    // 3. Comprobar si el usuario ya jugó antes 
+    // -----------------------------------------------------
     const ultima = await obtenerUltimaRespuesta(4);
-
     let ultimaArray = JSON.parse(ultima);
     let usuarioAnswer = null;   // ← AQUÍ sí
-    if(Array.isArray(ultimaArray)){usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer || null;}
+    
+    if(Array.isArray(ultimaArray)){
+        usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer || null;
+    }
 
+    // Guardar si coincide con la respuesta correcta
     if(usuarioAnswer === idres){
         console.log('Se ha guardado la respuesta'); 
         localStorage.setItem('Attr4', ultima);
     }
     
+    // Guardar si coincide con la respuesta incorrecta
     if(usuarioAnswer === 'loss'+idres){
         console.log('Se ha guardado la perdida'); 
         localStorage.setItem('Attr4', ultima);
     }
 
-    // Definir los segundos según la dificultad
-    let segundos;
-    switch (dificultad) {
-        case "facil":
-            segundos = 18000000000000000000000000000000000000000;
-            break;
-        case "medio":
-            segundos = 120;
-            break;
-        case "dificil":
-            segundos = 60;
-            break;
-        default:
-            segundos = localStorage.getItem('grid'); // Valor por defecto si la dificultad no es válida
-    }
+    // ----------------------------------------------------- 
+    // 4. Configurar tiempo según dificultad 
+    // -----------------------------------------------------
+    let segundos = inicializarCounter(18000000000000000000000000000000000000000, 120, 60, 'grid', dificultad);
+
+    // ----------------------------------------------------- 
+    // 5. Colocar clubes y países en la tabla 
+    // -----------------------------------------------------
     ponerClubes(paises, ["Equipo4", "Equipo5", "Equipo6"]);
     ponerClubes(clubes, ["Equipo1", "Equipo2", "Equipo3"]);
+
+    // ----------------------------------------------------- 
+    // 6. Cargar respuestas previas del usuario 
+    // -----------------------------------------------------
     let userAnswer = JSON.parse(localStorage.getItem('Attr4')) || [];
     let userRes = null;
+    
     if(userAnswer.length > 0){
         userRes = userAnswer[userAnswer.length - 1].answer || null;
     }
+
+    // Guardar respuesta correcta en localStorage
     localStorage.setItem('res4', idres);
+
+    // ----------------------------------------------------- 
+    // 7. Colocar aciertos previos en la tabla 
+    // -----------------------------------------------------
     await colocarAciertos();
     const isAnswerTrue = (idres === userRes);
-    //startCounter(segundos, 'grid')
+
+    // ----------------------------------------------------- 
+    // 8. Comprobar si ya están todas las fotos colocadas 
+    // -----------------------------------------------------
     const celdas = comprobarFotosEnCeldas();
+
+    // ----------------------------------------------------- 
+    // 9. Lógica de victoria / derrota 
+    // -----------------------------------------------------
     if (isAnswerTrue && celdas) {
         console.log("Deteniendo contador..."); // Verificar si llega aquí
         //await loadJugadoraById(jugadoraId, true);
@@ -84,161 +132,226 @@ async function iniciar(dificultad) {
     }
 }
 
-async function Verificar() {
-    const input = document.getElementById('jugadoraInput');
-    input.value = "";
-    const nombreJugadora = input.getAttribute('data-id');
-    console.log('Procesando jugadora:', nombreJugadora);
-
-    if (!nombreJugadora) {
-        alert("Por favor, introduce el nombre de la jugadora.");
-        return;
-    }if (jugadorasProhibidas.includes(nombreJugadora)) {
-        console.log(`La jugadora "${nombreJugadora}" está prohibida.`);
-        return; // opcional: salir de la función
+// --------------------------------------------------------- 
+// Play (modo grid) 
+// Inicia el juego 
+// ---------------------------------------------------------
+play().then(r => r);
+async function play() {
+    let jugadora = await fetchData(4);
+    let paises = [jugadora.pais1, jugadora.pais2, jugadora.pais3];
+    let clubes = [jugadora.club1, jugadora.club2, jugadora.club3];
+    idres = paises.map(String).concat(clubes.map(String)).join('');
+    const res = localStorage.getItem('res4');
+    if(res !== idres || !res){
+        localStorage.removeItem('Attr4');
+        jugadorasProhibidas.pop()
+        crearPopupInicialJuego('Futfem Grid', texto, imagen, '', iniciar);
     } else {
-        console.log(`La jugadora "${nombreJugadora}" está permitida.`);
-        // Aquí va tu lógica normal
+        await iniciar('');
     }
+}
 
-    // 🔹 Limpiar resaltados de jugadoras anteriores
-    document.querySelectorAll('.resaltado').forEach(td => {
-        td.classList.remove('resaltado');
-        td.replaceWith(td.cloneNode(true)); // elimina event listeners previos
-    });
+// --------------------------------------------------------- 
+// VERIFICAR 
+// Al pulsar el botón, esta función verifica todos los casos
+// ---------------------------------------------------------
+async function Verificar() {
+
+    // 1. Validar entrada
+    const nombreJugadora = validarEntrada();
+    if (!nombreJugadora) return;
+
+    // 2. Limpiar resaltados previos
+    limpiarResaltadosPrevios();
 
     try {
-        // Obtener los equipos
-        const equipos = await fetchJugadoraTrayectoriaById(nombreJugadora);
+        // 3. Obtener coincidencias
+        const coincidencias = await obtenerCoincidenciasJugadora(nombreJugadora);
+        if (coincidencias.length === 0) return;
 
-        // Verificar la nacionalidad y obtener las columnas posibles
+        // 4. Filtrar celdas libres
+        const libres = filtrarCoincidenciasLibres(coincidencias);
+        if (libres.length === 0) return;
+
+        // 5. Caso único → colocar directamente
+        if (libres.length === 1) {
+            await colocarDirecto(libres[0], nombreJugadora);
+            return;
+        }
+
+        // 6. Caso múltiple → resaltar y esperar clic
+        colocarConSeleccion(libres, nombreJugadora);
+
+    } catch (error) {
+        console.error('Error en Verificar():', error);
+    }
+}
+
+    // -----------------------------------------------------------------------
+    // VALIDAR ENTRADA
+    // Se ejecuta en verificar, comprueba que la jugadora es válida para jugar
+    // -----------------------------------------------------------------------
+    function validarEntrada() {
+        input.value = "";
+        const nombreJugadora = input.getAttribute('data-id');
+
+        if (!nombreJugadora) {
+            alert("Por favor, introduce el nombre de la jugadora.");
+            return null;
+        }
+
+        if (jugadorasProhibidas.includes(nombreJugadora)) {
+            console.log(`La jugadora "${nombreJugadora}" está prohibida.`);
+            return null;
+        }
+
+        return nombreJugadora;
+    }
+
+    // --------------------------------------------------------- 
+    // LIMPIAR RESALTADOS PREVIOS 
+    // Inicia el juego 
+    // ---------------------------------------------------------
+    function limpiarResaltadosPrevios() {
+        document.querySelectorAll('.resaltado').forEach(td => {
+            td.classList.remove('resaltado');
+            td.replaceWith(td.cloneNode(true)); // elimina listeners previos
+        });
+    }
+
+    // --------------------------------------------------------- 
+    // VERIFICAR COLUMNA
+    // Compara los equipos de la jugadora con las columnas
+    // ---------------------------------------------------------
+    function verificarColumna(equipos, idJugadoraActual) {
+        const columnas = ["Equipo4", "Equipo5", "Equipo6"];
+        let columnasEncontradas = [];
+
+        // Si es una jugadora nueva, reiniciar contadores
+        if (ultimaJugadoraId !== idJugadoraActual) {
+            columnas.forEach(id => columnaContadores[id] = 0);
+            ultimaJugadoraId = idJugadoraActual;
+        }
+
+        // Limpiar resaltado previo
+        columnas.forEach(id => {
+            const th = document.getElementById(id);
+            //if (th) th.classList.remove("resaltado");
+        });
+
+        // Revisar todas las columnas
+        columnas.forEach((id, index) => {
+            if (columnaContadores[id] >= 2) return; // max 2 veces
+
+            const th = document.getElementById(id);
+            if (!th) return;
+
+            const imgs = th.querySelectorAll('img');
+            const encontrada = equipos.some(equipo => {
+                const idClub = equipo.equipo;
+                return Array.from(imgs).some(img => {
+                    return img.className === "club" + idClub;
+                });
+            });
+
+            if (encontrada) {
+                columnaContadores[id]++;
+                columnasEncontradas.push(index + 1); // guardo el número de columna
+                //th.classList.add("resaltado");
+            }
+        });
+
+        // Mostrar resultado
+        //const resultado = document.getElementById("resultado");
+        resultado.textContent = columnasEncontradas.length > 0
+            ? `Equipos encontrados en columnas: ${columnasEncontradas.join(", ")}.`
+            : `Nacionalidad no encontrada en las columnas.`;
+        console.log(`Equipos encontrados en columnas: ${columnasEncontradas.join(", ")}.`)
+
+        return columnasEncontradas;
+    }
+
+    // --------------------------------------------------------- 
+    // VERIFICAR FILAS
+    // Compara los equipos de la jugadora con las filas teniendo ya las columnas válidas
+    // ---------------------------------------------------------
+    function verificarFila(equipos, columna) {
+        console.log("Equipos para verificar:", equipos);
+        const trayectoria = equipos.slice().reverse(); // evitar modificar el original
+        const columnas = ["Equipo1", "Equipo2", "Equipo3"];
+        let resultadosEncontrados = [];
+
+        for (let equipo of trayectoria) {
+            for (let index = 0; index < columnas.length; index++) {
+                const th = document.getElementById(columnas[index]);
+                if (th) {
+                    const img = th.querySelector('img');
+                    if (img && img.className === 'club' + equipo.equipo) {
+
+                        // Calcular fila
+                        const fila = index + 1;
+                        const idCelda = `c${fila}${columna}`;
+                        const td = document.getElementById(idCelda);
+
+                        // Guardar coincidencia
+                        resultadosEncontrados.push({
+                            fila: fila,
+                            columna: columna,
+                            equipo: equipo.equipo,
+                            foto: equipo.ImagenJugadora || equipo.imagen || null
+                        });
+
+                        // (Opcional) marcar visualmente
+                        // if (td) td.classList.add("resaltado");
+                    }
+                }
+            }
+        }
+
+        // Mostrar resultados
+        const resultado = document.getElementById("resultado");
+        if (resultadosEncontrados.length > 0) {
+            const lista = resultadosEncontrados
+                .map(r => `c${r.fila},${r.columna}`)
+                .join(" | ");
+            resultado.textContent = `La jugadora tiene coincidencias en: ${lista}.`;
+            return resultadosEncontrados;
+        } else {
+            resultado.textContent = `No se han encontrado coincidencias.`;
+            return [];
+        }
+    }
+
+    // --------------------------------------------------------- 
+    // obtener Coincidencias Jugadora
+    // Onbtiene las coincidencias de jugadora
+    // ---------------------------------------------------------
+    async function obtenerCoincidenciasJugadora(nombreJugadora) {
+        const equipos = await fetchJugadoraTrayectoriaById(nombreJugadora);
         const columnas = verificarColumna(equipos, nombreJugadora);
-        let todasCoincidencias = [];
+
+        let coincidencias = [];
 
         if (columnas && columnas.length > 0) {
             for (let columna of columnas) {
-                const coincidencias = verificarEquipo(equipos, columna);
-                todasCoincidencias.push(...coincidencias);
+                coincidencias.push(...verificarFila(equipos, columna));
             }
         }
 
-        if (todasCoincidencias.length === 0) {
-            console.log('No se encontró ninguna coincidencia.');
-            return;
-        }
+        return coincidencias;
+    }
 
-        // Filtrar coincidencias para celdas libres
-        let coincidenciasLibres = todasCoincidencias.filter(({ fila, columna }) => {
+    // --------------------------------------------------------- 
+    // FILTRAR COINCIDENCIAS
+    // Filtra las coincidencias obtenidas, y saca solo las que están libres
+    // ---------------------------------------------------------
+    function filtrarCoincidenciasLibres(coincidencias) {
+        return coincidencias.filter(({ fila, columna }) => {
             const td = document.getElementById(`c${fila}${columna}`);
-            return td && td.children.length === 0; // solo celdas vacías
+            return td && td.children.length === 0;
         });
-
-        if (coincidenciasLibres.length === 0) {
-            console.log('No hay celdas disponibles para esta jugadora.');
-            return;
-        }
-
-        if (coincidenciasLibres.length === 1) {
-            // 🔹 Caso único → colocar directamente
-            const { fila, columna, foto } = coincidenciasLibres[0];
-            const idCelda = `c${fila}${columna}`;
-            await colocarImagenEnTabla(fila, columna, foto);
-            gestionarAciertos(idCelda, foto);
-            jugadorasProhibidas.push(nombreJugadora)
-
-            if (comprobarFotosEnCeldas()) {
-                console.log("Deteniendo contador...");
-                stopCounter("grid");
-                updateRacha(4, 1, localStorage.getItem('Attr4'));
-                Ganaste('grid');
-            }
-
-        } else {
-            // 🔹 Caso múltiple → resaltar y esperar clic
-            let celdasDisponibles = [];
-
-            coincidenciasLibres.forEach(({ fila, columna, foto }) => {
-                const idCelda = `c${fila}${columna}`;
-                const td = document.getElementById(idCelda);
-
-                if (td) {
-                    td.classList.add("resaltado");
-                    celdasDisponibles.push(td);
-
-                    td.addEventListener("click", async function handler() {
-                        await colocarImagenEnTabla(fila, columna, foto);
-                        gestionarAciertos(idCelda, foto);
-                        jugadorasProhibidas.push(nombreJugadora)
-
-                        if (comprobarFotosEnCeldas()) {
-                            console.log("Deteniendo contador...");
-                            stopCounter("grid");
-                            Ganaste('grid');
-                        }
-
-                        // 🧹 Limpiar las demás opciones
-                        celdasDisponibles.forEach(celda => {
-                            celda.classList.remove("resaltado");
-                            celda.replaceWith(celda.cloneNode(true));
-                        });
-                    }, { once: true });
-                }
-            });
-        }
-
-    } catch (error) {
-        console.error('Error en el proceso de verificación:', error);
     }
-}
-
-let ultimaJugadoraId = null; // Aquí guardamos la ID de la última jugadora verificada
-function verificarColumna(equipos, idJugadoraActual) {
-    const columnas = ["Equipo4", "Equipo5", "Equipo6"];
-    let columnasEncontradas = [];
-
-    // Si es una jugadora nueva, reiniciar contadores
-    if (ultimaJugadoraId !== idJugadoraActual) {
-        columnas.forEach(id => columnaContadores[id] = 0);
-        ultimaJugadoraId = idJugadoraActual;
-    }
-
-    // Limpiar resaltado previo
-    columnas.forEach(id => {
-        const th = document.getElementById(id);
-        //if (th) th.classList.remove("resaltado");
-    });
-
-    // Revisar todas las columnas
-    columnas.forEach((id, index) => {
-        if (columnaContadores[id] >= 2) return; // max 2 veces
-
-        const th = document.getElementById(id);
-        if (!th) return;
-
-        const imgs = th.querySelectorAll('img');
-        const encontrada = equipos.some(equipo => {
-            const idClub = equipo.equipo;
-            return Array.from(imgs).some(img => {
-                return img.className === "club" + idClub;
-            });
-        });
-
-        if (encontrada) {
-            columnaContadores[id]++;
-            columnasEncontradas.push(index + 1); // guardo el número de columna
-            //th.classList.add("resaltado");
-        }
-    });
-
-    // Mostrar resultado
-    //const resultado = document.getElementById("resultado");
-    resultado.textContent = columnasEncontradas.length > 0
-        ? `Equipos encontrados en columnas: ${columnasEncontradas.join(", ")}.`
-        : `Nacionalidad no encontrada en las columnas.`;
-    console.log(`Equipos encontrados en columnas: ${columnasEncontradas.join(", ")}.`)
-
-    return columnasEncontradas;
-}
 
 // Función que compara el ID del país con los ID de las imágenes en la tabla
 const columnaContadores = {
@@ -247,121 +360,130 @@ const columnaContadores = {
     "Equipo6": 0
 };
 
-// Función que compara el ID del país con los ID de las imágenes en la tabla
-function verificarEquipo(equipos, columna) {
-    console.log("Equipos para verificar:", equipos);
-    const trayectoria = equipos.slice().reverse(); // evitar modificar el original
-    const columnas = ["Equipo1", "Equipo2", "Equipo3"];
-    let resultadosEncontrados = [];
+    // ===================================================== 
+    // ============ BLOQUE: COLOCACIÓN DE FOTOS ========== 
+    // =====================================================
+    async function colocarDirecto({ fila, columna, foto }, nombreJugadora) {
+        const idCelda = `c${fila}${columna}`;
 
-    for (let equipo of trayectoria) {
-        for (let index = 0; index < columnas.length; index++) {
-            const th = document.getElementById(columnas[index]);
-            if (th) {
-                const img = th.querySelector('img');
-                if (img && img.className === 'club' + equipo.equipo) {
+        await colocarImagenEnTabla(fila, columna, foto);
+        gestionarAciertos(idCelda, foto);
+        jugadorasProhibidas.push(nombreJugadora);
 
-                    // Calcular fila
-                    const fila = index + 1;
-                    const idCelda = `c${fila}${columna}`;
-                    const td = document.getElementById(idCelda);
+        comprobarVictoriaGrid();
+    }
 
-                    // Guardar coincidencia
-                    resultadosEncontrados.push({
-                        fila: fila,
-                        columna: columna,
-                        equipo: equipo.equipo,
-                        foto: equipo.ImagenJugadora || equipo.imagen || null
+    // --------------------------------------------------------- 
+    // COLOCAR CON SELECCIÓN
+    // Si hay más de una coincidencia, deja elegir cuál
+    // ---------------------------------------------------------
+    function colocarConSeleccion(coincidenciasLibres, nombreJugadora) {
+        let celdasDisponibles = [];
+
+        coincidenciasLibres.forEach(({ fila, columna, foto }) => {
+            const idCelda = `c${fila}${columna}`;
+            const td = document.getElementById(idCelda);
+
+            if (td) {
+                td.classList.add("resaltado");
+                celdasDisponibles.push(td);
+
+                td.addEventListener("click", async function handler() {
+
+                    await colocarImagenEnTabla(fila, columna, foto);
+                    gestionarAciertos(idCelda, foto);
+                    jugadorasProhibidas.push(nombreJugadora);
+
+                    comprobarVictoriaGrid();
+
+                    // limpiar resaltados
+                    celdasDisponibles.forEach(celda => {
+                        celda.classList.remove("resaltado");
+                        celda.replaceWith(celda.cloneNode(true));
                     });
 
-                    // (Opcional) marcar visualmente
-                    // if (td) td.classList.add("resaltado");
-                }
+                }, { once: true });
+            }
+        });
+    }
+
+    // --------------------------------------------------------- 
+    // COLOCAR IMAGEN EN TABLA
+    // La función que coloca la imagen, llamada en las dos anteriores
+    // ---------------------------------------------------------
+    async function colocarImagenEnTabla(equipo, columna, player) {
+        // Construir el ID de la celda basado en la fila y columna
+        const idCelda = `c${equipo}${columna}`;
+        const td = document.getElementById(idCelda);
+        let res = comprobarFotosEnCeldas();
+
+        if (td) {
+            if(res===true){
+                Ganaste('grid');
+            }
+            // Verificar si la celda ya contiene una imagen
+            if (td.querySelector('img')) {
+                //console.log(`La celda con id ${idCelda} ya tiene una imagen. No se colocará una nueva imagen.`);
+                return; // Salir de la función si la celda ya tiene una imagen
+            }
+
+            // Si no tiene imagen, crear la imagen y agregarla a la celda
+            const img = document.createElement('img');
+            img.src = player; // Usar la URL de la imagen de la jugadora
+            img.alt = `Jugador en fila ${equipo}, columna ${columna}`;
+            img.style.width = '100%'; // Ajustar tamaño según sea necesario
+            img.style.height = '100%';
+            img.style.background = 'white';
+            img.classList.add('jugadora-imagen')
+            td.appendChild(img);
+            gsap.from(img, {
+            opacity: 0,
+            scale: 0.5,
+            duration: 0.6,
+            ease: "back.out(1.7)"
+            });
+
+            //console.log(`Imagen colocada en la celda con id ${idCelda}`);
+        } else {
+            //console.log(`No se encontró la celda con id ${idCelda}.`);
+        }
+    }
+
+    async function colocarAciertos() {
+        let grid = localStorage.getItem('Attr4');
+
+        // Asegurarse de que retrievedGrid es un array
+        let retrievedGrid = grid ? JSON.parse(grid) : [];
+        const celdas = comprobarFotosEnCeldas();
+        if(celdas){
+            stopCounter('grid');
+            Ganaste('grid');
+        }
+
+        // Verificar si retrievedGrid es un array (puede haber errores en la conversión)
+        if (!Array.isArray(retrievedGrid)) {
+            retrievedGrid = []; // Reiniciar como array vacío si no es un array válido
+            localStorage.setItem('Attr4', JSON.stringify(retrievedGrid));
+        } else {
+            for (let i = 0; i < retrievedGrid.length; i++) {
+                let celda = retrievedGrid[i].celda;
+                let equipo = celda.replace("c", "").split("")[0];
+                let pais = celda.replace("c", "").split("")[1];
+                await colocarImagenEnTabla(equipo, pais, retrievedGrid[i].foto);
             }
         }
     }
 
-    // Mostrar resultados
-    const resultado = document.getElementById("resultado");
-    if (resultadosEncontrados.length > 0) {
-        const lista = resultadosEncontrados
-            .map(r => `c${r.fila},${r.columna}`)
-            .join(" | ");
-        resultado.textContent = `La jugadora tiene coincidencias en: ${lista}.`;
-        return resultadosEncontrados;
-    } else {
-        resultado.textContent = `No se han encontrado coincidencias.`;
-        return [];
-    }
-}
-
-
-
-
-// Función que coloca la imagen en la celda correcta de la tabla
-async function colocarImagenEnTabla(equipo, columna, player) {
-    console.log("Lugar a colocar", equipo, columna);
-    // Construir el ID de la celda basado en la fila y columna
-    const idCelda = `c${equipo}${columna}`;
-    const td = document.getElementById(idCelda);
-    let res = comprobarFotosEnCeldas();
-
-    if (td) {
-        if(res===true){
+    // --------------------------------------------------------- 
+    // COMPROBAR VICTORIA GRID
+    // Al validar una jugadora, comprueba si con ella se ha llenado la tabla(se gana)
+    // ---------------------------------------------------------
+    function comprobarVictoriaGrid() {
+        if (comprobarFotosEnCeldas()) {
+            stopCounter("grid");
             Ganaste('grid');
         }
-        // Verificar si la celda ya contiene una imagen
-        if (td.querySelector('img')) {
-            console.log(`La celda con id ${idCelda} ya tiene una imagen. No se colocará una nueva imagen.`);
-            return; // Salir de la función si la celda ya tiene una imagen
-        }
-
-        // Si no tiene imagen, crear la imagen y agregarla a la celda
-        const img = document.createElement('img');
-        img.src = player; // Usar la URL de la imagen de la jugadora
-        img.alt = `Jugador en fila ${equipo}, columna ${columna}`;
-        img.style.width = '100%'; // Ajustar tamaño según sea necesario
-        img.style.height = '100%';
-        img.style.background = 'white';
-        img.classList.add('jugadora-img')
-        td.appendChild(img);
-        gsap.from(img, {
-        opacity: 0,
-        scale: 0.5,
-        duration: 0.6,
-        ease: "back.out(1.7)"
-        });
-
-        console.log(`Imagen colocada en la celda con id ${idCelda}`);
-    } else {
-        console.log(`No se encontró la celda con id ${idCelda}.`);
     }
-}
-
-async function colocarAciertos() {
-    let grid = localStorage.getItem('Attr4');
-
-    // Asegurarse de que retrievedGrid es un array
-    let retrievedGrid = grid ? JSON.parse(grid) : [];
-    const celdas = comprobarFotosEnCeldas();
-    if(celdas){
-        stopCounter('grid');
-        Ganaste('grid');
-    }
-
-    // Verificar si retrievedGrid es un array (puede haber errores en la conversión)
-    if (!Array.isArray(retrievedGrid)) {
-        retrievedGrid = []; // Reiniciar como array vacío si no es un array válido
-        localStorage.setItem('Attr4', JSON.stringify(retrievedGrid));
-    } else {
-        for (let i = 0; i < retrievedGrid.length; i++) {
-            let celda = retrievedGrid[i].celda;
-            let equipo = celda.replace("c", "").split("")[0];
-            let pais = celda.replace("c", "").split("")[1];
-            await colocarImagenEnTabla(equipo, pais, retrievedGrid[i].foto);
-        }
-    }
-}
 
 function gestionarAciertos(celda, foto) {
     let grid = localStorage.getItem('Attr4');
@@ -380,7 +502,6 @@ function gestionarAciertos(celda, foto) {
     // Guardar de nuevo en localStorage
     localStorage.setItem('Attr4', JSON.stringify(retrievedGrid));
 }
-
 
 function comprobarFotosEnCeldas() {
     // Selecciona todas las celdas que tienen id que empiece con 'c' y son números (ejemplo: c11, c12, c13, etc.)
@@ -401,7 +522,34 @@ function comprobarFotosEnCeldas() {
     // Devuelve si todas las celdas tienen una imagen
     return todasConFoto;
 }
-document.addEventListener('DOMContentLoaded', () => {
+
+async function gridPerder() {
+
+    boton.disabled = true;
+    input.disabled = true;
+
+    resultDiv.textContent = 'Has perdido';//+jugadora[0].Nombre_Completo;
+    //const div = document.getElementById('trayectoria');
+    const jugadora_id = 'loss';
+    let grid = localStorage.getItem('Attr4');
+    grid = grid ? JSON.parse(grid) : [];
+    grid.push({ "answer": 'loss'+idres });
+    localStorage.setItem('Attr4', JSON.stringify(grid));
+    
+    //localStorage.setItem('Attr4', jugadora_id);
+    //await loadJugadoraById(jugadoraId, true);
+    // Agregar un delay de 2 segundos (2000 ms)
+    if(localStorage.length>0){
+        await updateRacha(4, 0, localStorage.getItem('Attr4'));
+    }
+}
+
+
+// ----------------------------------------------------- 
+// Funciones Antiguas
+// -----------------------------------------------------
+
+/*document.addEventListener('DOMContentLoaded', () => {
     function aplicarImagenes() {
         // Obtener todos los encabezados (th) con ID que comienza con "Pais"
         const headers = document.querySelectorAll('#grid thead th[id^="Pais"]');
@@ -467,53 +615,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.onload = () => {
         setTimeout(aplicarImagenes, 500); // Esperar 1 segundo (1000 milisegundos)
     };
-});
-
-
-async function gridPerder() {
-    // Bloquear el botón y el input
-    const boton = document.getElementById('botonVerificar');
-    const input = document.getElementById('jugadoraInput');
-    const resultDiv = document.getElementById('resultado');
-    //const jugadora = await sacarJugadora(jugadoraId);
-
-    boton.disabled = true;
-    input.disabled = true;
-
-    resultDiv.textContent = 'Has perdido';//+jugadora[0].Nombre_Completo;
-    //const div = document.getElementById('trayectoria');
-    const jugadora_id = 'loss';
-    let grid = localStorage.getItem('Attr4');
-    grid = grid ? JSON.parse(grid) : [];
-    grid.push({ "answer": 'loss'+idres });
-    localStorage.setItem('Attr4', JSON.stringify(grid));
-    
-    //localStorage.setItem('Attr4', jugadora_id);
-    //await loadJugadoraById(jugadoraId, true);
-    // Agregar un delay de 2 segundos (2000 ms)
-    if(localStorage.length>0){
-        await updateRacha(4, 0, localStorage.getItem('Attr4'));
-    }
-}
-
-const texto = '¡Demuestra tu conocimiento sobre fútbol femenino! En "Futfem Grid", los jugadores se enfrentan a una cuadrícula llena de escudos de equipos de fútbol. El objetivo del juego es rellenar correctamente las casillas de la tabla con los nombres de las jugadoras que coinciden con los equipos de las filas y columnas. ' +
-    'El tablero es una rejilla (Grid) con filas y columnas. Cada celda contiene el escudo de un equipo de fútbol.\n' +
-    'Tu misión es rellenar cada celda con el nombre de una jugadora que haya jugado en ese equipo, tanto en la fila como en la columna correspondiente.\n' +
-    'Los jugadores deben completar el tablero lo más rápido posible, identificando correctamente las jugadoras que han jugado en esos equipos.\n';
-const imagen = 'static/img/grid.png';
-
-play().then(r => r);
-async function play() {
-    let jugadora = await fetchData(4);
-    let paises = [jugadora.pais1, jugadora.pais2, jugadora.pais3];
-    let clubes = [jugadora.club1, jugadora.club2, jugadora.club3];
-    idres = paises.map(String).concat(clubes.map(String)).join('');
-    const res = localStorage.getItem('res4');
-    if(res !== idres || !res){
-        localStorage.removeItem('Attr4');
-        jugadorasProhibidas.pop()
-        crearPopupInicialJuego('Futfem Grid', texto, imagen, '', iniciar);
-    } else {
-        await iniciar('');
-    }
-}
+});*/

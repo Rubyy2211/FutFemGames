@@ -48,6 +48,9 @@ h1{
     margin-top: unset;
     font-family: "Bauhaus 93", sans-serif;
 }
+img{
+    pointer-events: none;
+}
 body.loading{
     display: none;
 }

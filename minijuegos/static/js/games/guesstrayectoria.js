@@ -1,3 +1,7 @@
+import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
+import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
+import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
+
 // Variables de Juego
 let jugadoraId;
 let nombreCompleto;
@@ -11,8 +15,6 @@ let jugadoraInput;
 let boton;
 let answer;
 
-import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
-import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 // Función principal que controla el flujo de carga
 async function iniciar(dificultad) {
 
@@ -51,20 +53,7 @@ async function iniciar(dificultad) {
     }
 
     // Definir los segundos según la dificultad
-    let segundos;
-    switch (dificultad) {
-        case "facil":
-            segundos = 120000000000000000000000000000000000000000000000000000000000000000;
-            break;
-        case "medio":
-            segundos = 60;
-            break;
-        case "dificil":
-            segundos = 30;
-            break;
-        default:
-            segundos = localStorage.getItem('trayectoria'); // Valor por defecto si la dificultad no es válida
-    }
+    let segundos = inicializarCounter(120000000000000000000000000000000000000000000000000000000000000000, 60, 30, 'trayectoria', dificultad);
 
     // Verificar si el usuario ha ganado
     answer = localStorage.getItem('Attr1');

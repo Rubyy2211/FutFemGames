@@ -1,5 +1,6 @@
 import { fetchJugadoraCompanyerasById } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
+import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
 
 let jugadoraId;
 
@@ -34,20 +35,8 @@ async function iniciar(dificultad) {
     }
 
     // Definir los segundos según la dificultad
-    let segundos;
-    switch (dificultad) {
-        case "facil":
-            segundos = 90;
-            break;
-        case "medio":
-            segundos = 60;
-            break;
-        case "dificil":
-            segundos = 30;
-            break;
-        default:
-            segundos = localStorage.getItem('Futfem Relations'); // Valor por defecto si la dificultad no es válida
-    }
+    let segundos = inicializarCounter(90, 60, 30, 'Futfem Relations', dificultad);
+
     const div = document.getElementById('compañeras');
     div.classList.add(`id-${jugadoraId}`);
     div.setAttribute('Attr8', jugadoraId);

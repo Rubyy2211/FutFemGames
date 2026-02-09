@@ -181,6 +181,13 @@ header .botones button{
     width: max-content;
 }
 
+header .botones a{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
 header .container .iniciar-sesion-button {
     background: transparent;
     color: white;

@@ -169,10 +169,6 @@ def jugadora_companeras(request):
         ]
 
     # Convertir la imagen a base64 si existe
-    for r in results:
-        if r.get('imagen'):
-            import base64
-            r['imagen'] = f"data:image/jpeg;base64,{base64.b64encode(r['imagen']).decode()}"
 
     return JsonResponse(results, safe=False)
 
