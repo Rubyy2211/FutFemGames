@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess Player</title>
+    <link rel="icon" href="{% static 'img/logo.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/combo.css' %}">
+    <link rel="stylesheet" href="{% static 'css/adivina2.css' %}">
+    <link rel="stylesheet" href="{% static 'css/glow-border.css' %}">
+</head>
+<body>
+    {% include 'partials/header.html' %}
+    <div id="game">
+        <p id="vidas"></p>
+        <div id="game-results">
+            <template id="jugadora-template">
+            <div class="jugadora-item">
+                <div class="jugadora-item-header">
+                    <img class="player-img" src="{% static 'img/predeterm.jpg' %}">
+                    <p class="nombre">Nombre Jugadora</p>
+                </div>
+                <div class="jugadora-data">
+                    <div>
+                        <p></p>
+                    </div>
+                    <div class="equipo">
+                        <img class="equipo-escudo">
+                        <p class="equipo-nombre"></p>
+                    </div>
+                    <div>
+                        <p class="dato2"></p>
+                    </div>
+                    <div class="edad">
+                        <p class="edad-texto"></p>
+                    </div>
+                    <div class="pais">
+                        <span class="fi"></span>
+                        <p class="nacionalidad"></p>
+                    </div>
+                    <div class="posicion">
+                        <p class="posicion-texto"></p>
+                    </div>
+                </div>
+            </div>
+            </template>
+        </div>
+        <div id="game-header">
+            <div>
+                <input type="text" name="jugadora" id="jugadoraInput">
+                <div id="sugerencias-container">
+                    <ul id="sugerencias"></ul>
+                </div>
+            </div>
+            <button id="botonVerificar">Confirmar</button>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/admin.js' %}"></script>
+    <script src="{% static 'js/funciones-tablas.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+    <script type="module" src="{% static 'js/games/adivina2.js' %}"></script>
+    <script>
+    // Añadir el evento de input al campo de texto
+    const textoInput = document.getElementById("jugadoraInput");
+    textoInput.addEventListener('input', debounce(handleAutocompletePlayer, 1000)); // Debounce de 300ms
+    </script>
+</body>
+</html>

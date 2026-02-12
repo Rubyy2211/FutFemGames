@@ -1,0 +1,120 @@
+body{
+    height: 100vh;
+    max-height: 100vh;
+}
+.menor, .mayor{
+    background-color: #c9b458;
+}
+
+.mayor::after {
+    content: "\f148"; /* bi-chevron-up */
+    font-family: "Bootstrap-icons";
+}
+
+.menor::after {
+    content: "\f128"; /* bi-chevron-down */
+    font-family: "Bootstrap-icons";
+}
+
+.igual, .correct{
+    background-color: #6aaa64;
+}
+
+.incorrecto{
+    background-color: #262a25;
+}
+#game{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    max-width: 420px;
+}
+
+#game #game-results{
+    display: flex;
+    flex-direction: column;
+    height: 65%;
+    max-height: 664px;
+    overflow-y: auto;
+    gap: 40px;
+}
+
+
+#game #game-header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#game #game-results .jugadora-item{
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+#game #game-results>.jugadora-item:last-child{
+    margin-bottom: 40px;
+}
+
+#game #game-results .jugadora-item .jugadora-item-header{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5%;
+}
+#game #game-results .jugadora-item .jugadora-item-header p{
+    height: fit-content;
+}
+
+#game #game-results .jugadora-item .jugadora-item-header img {
+    border-radius: 50%;
+    width: 125px;
+    height: 125px;
+    background: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-primario) 30%, transparent),
+        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+    );
+
+    color: white; /* Color del texto */
+    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    border: 0.25px solid rgb(128, 0, 128);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+#game #game-results .jugadora-item .jugadora-data{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 20px;
+}
+
+#game #game-results .jugadora-item .jugadora-data > * {
+    aspect-ratio: 1 / 1;
+}
+
+#game #game-results .jugadora-item .jugadora-data div{
+    display: flex;
+    flex-direction: column;
+    height: 100px;
+    max-width: 100%;
+    padding: 15px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    background-image: linear-gradient(
+        to bottom,
+        color-mix(in srgb, var(--color-primario) 30%, transparent),
+        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+    );
+}
+
+#game #game-results .jugadora-item .jugadora-data div p{
+    max-width: 100%;
+}
+
+#game #game-results .jugadora-item .jugadora-data div img{
+    height: 100%;
+}

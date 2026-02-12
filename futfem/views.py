@@ -214,7 +214,7 @@ def jugadora_datos(request):
 
     for t in trayectorias:
         if t.equipo_actual:  # Asumimos que hay un campo booleano 'equipo_actual'
-            equipo_actual = t.equipo.id_equipo
+            equipo_actual = t.equipo
             liga_actual = t.equipo.liga.id_liga if t.equipo.liga else 0
         else:
             if t.equipo.id_equipo not in equipos_previos:
@@ -226,11 +226,15 @@ def jugadora_datos(request):
         "id": j.id_jugadora,
         "nombre": f"{j.Nombre} {j.Apellidos}",
         "apodo": j.Apodo,
+        "nacionalidad": j.Nacionalidad.nombre if j.Nacionalidad else None,
+        "pais_id": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+        "pais_iso": j.Nacionalidad.iso if j.Nacionalidad else None,
         "pais": j.Nacionalidad.id_pais if j.Nacionalidad else None,
         "imagen": j.imagen,
         "posicion": j.Posicion.idPosicion if j.Posicion else j.Posicion.idPosicion,
+        "posicionObj": posicion_to_dict(j.Posicion),
         "edad": edad,
-        "equipo": equipo_actual,
+        "equipo": equipo_to_dict(equipo_actual),
         "liga": liga_actual,
         "equipos": equipos_previos,
         "ligas": ligas_previas,
@@ -761,6 +765,22 @@ def equipoxnombre(request):
         })
 
     return JsonResponse(salida, safe=False)
+
+def equipo_to_dict(equipo):
+    if not equipo:
+        return None
+
+    return {
+        "id": equipo.id_equipo,
+        "nombre": equipo.nombre,
+        "escudo": equipo.escudo,
+        "color": equipo.color,
+        "liga": {
+            "id": equipo.liga.id_liga,
+            "nombre": equipo.liga.nombre
+        } if equipo.liga else None
+    }
+
 #################################################################################################
 #########################################PAISES##################################################
 #################################################################################################
@@ -951,6 +971,18 @@ def posicion_por_jugadora(request):
 
     return JsonResponse({"success": resultado})
 
+def posicion_to_dict(posicion):
+    if not posicion:
+        return None
+
+    return {
+        "id": posicion.idPosicion,
+        "nombre": posicion.nombre,
+        "abreviatura": posicion.abreviatura,
+        "PosicionPadre": {
+            "id": posicion_to_dict(posicion.idPosicionPadre),
+        } if posicion.idPosicionPadre else None
+    }
 #################################################################################################
 #########################################TROFEOS#################################################
 #################################################################################################
