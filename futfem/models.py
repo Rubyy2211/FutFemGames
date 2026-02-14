@@ -79,6 +79,7 @@ class Jugadora(models.Model):
     soccerdonna_url = models.URLField(unique=True)
     market_value = models.IntegerField(null=True, blank=True)    
     retiro = models.IntegerField()     
+    soccerdonna_last_updated = models.DateTimeField()
 
     class Meta:
             db_table = 'jugadoras'

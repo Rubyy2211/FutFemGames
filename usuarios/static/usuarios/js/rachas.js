@@ -29,6 +29,15 @@ export async function obtenerRacha(juego){
     
 }
 
+export async function updateRachaJuegoLineal(juego, racha){
+
+    if (!usuario) {
+        updateRachaCookiesLineal(juego, racha);
+    }else{
+        await updateRachaUserLineal(juego, racha);
+    }
+}
+
 export async function updateRacha(juego, condicion, ultima_respuesta){
 
     if (!usuario) {
@@ -111,6 +120,41 @@ async function updateRachaUser(juego, condicion, ultima_respuesta) {
         // Crear FormData
         const formData = new FormData();
         formData.append('racha', rachaActual);
+        formData.append('juego', juego);
+        formData.append('user', parseInt(usuario, 10));
+        formData.append('last_answer', ultima_respuesta);
+
+        // POST al endpoint
+        const response = await fetch('/accounts/juego_racha/', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error al actualizar la racha: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('Racha actualizada:', result);
+        return result;
+
+    } catch (error) {
+        console.error('Error al actualizar racha:', error);
+        return null;
+    }
+}
+
+async function updateRachaUserLineal(juego, racha, ultima_respuesta) {
+    try {
+
+        const game = await obtenerRachaUser(parseInt(usuario, 10), juego)
+
+        // Crear FormData
+        const formData = new FormData();
+        formData.append('racha', racha);
+        if(racha > game.mejor_racha){
+            formData.append('mejor_racha', racha);
+        }
         formData.append('juego', juego);
         formData.append('user', parseInt(usuario, 10));
         formData.append('last_answer', ultima_respuesta);

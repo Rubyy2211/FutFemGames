@@ -168,6 +168,7 @@ def juego_racha(request):
         racha_actual = int(request.POST.get('racha', 0))
         juego_id = int(request.POST.get('juego'))
         usuario_id = int(request.POST.get('user'))
+        mejor_racha = request.POST.get('mejor_racha')
         ultima_respuesta = request.POST.get('last_answer')
 
         # Obtener instancias
@@ -181,6 +182,8 @@ def juego_racha(request):
             # Actualizar racha existente
             racha_obj.racha_actual = racha_actual
             racha_obj.ultima_respuesta = ultima_respuesta
+            if mejor_racha:
+                racha_obj.mejor_racha = mejor_racha
             racha_obj.save(update_fields=['racha_actual', 'ultima_respuesta'] if ultima_respuesta else ['racha_actual'])
         else:
             # Crear nueva racha sin campo id

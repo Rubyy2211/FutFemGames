@@ -13,10 +13,7 @@ from django.views.decorators.csrf import csrf_exempt
 from bs4 import BeautifulSoup
 import requests
 from django.contrib.auth.hashers import make_password, check_password
-BASE_URL = "https://www.soccerdonna.de"
-HEADERS = {
-    "User-Agent": "Mozilla/5.0"
-}
+
 # Create your views here.
 def parse_temporada(temporada_str):
     año_actual = datetime.now().year
@@ -479,98 +476,6 @@ def jugadoras_por_equipo_y_temporada(request):
             jugadoras.append(fila_dict)
 
     return JsonResponse({"success": jugadoras})
-
-######
-#####
-#####
-@csrf_exempt
-def obtener_valor_mercado(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Método no permitido"}, status=405)
-
-    try:
-        data = json.loads(request.body)
-        url = data.get("url")
-
-        if not url:
-            return JsonResponse({"error": "URL no proporcionada"}, status=400)
-
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
-        response.raise_for_status()
-
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # Nombre de la jugadora
-        name_tag = soup.find("h1")
-        name = name_tag.get_text(strip=True) if name_tag else None
-
-        # Buscar Marktwert en la tabla
-        label = soup.find(
-            "td",
-            string=lambda t: t and ("Marktwert" in t or "Market value" in t)
-        )
-
-
-        if label:
-            raw_value = label.find_next("td").get_text(strip=True)
-            # Manejo de casos donde no hay valor
-            if raw_value in ["–", ""]:
-                market_value = None
-            else:
-                # Limpiar caracteres y convertir a entero
-                market_value = int(''.join(filter(str.isdigit, raw_value)))
-        else:
-            market_value = None
-
-        return JsonResponse({
-            "name": name,
-            "market_value": market_value
-        })
-
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
-
-def actualizar_market_value():
-    jugadoras = Jugadora.objects.all()
-    for j in jugadoras:
-        if not j.soccerdonna_url:
-            continue
-        try:
-            resp = requests.get(j.soccerdonna_url, headers=HEADERS)
-            soup = BeautifulSoup(resp.text, "html.parser")
-
-            # Buscar Marktwert o Market value
-            label = soup.find(
-                "td",
-                string=lambda t: t and ("Marktwert" in t or "Market value" in t)
-            )
-            if label:
-                raw_value = label.find_next("td").get_text(strip=True)
-                if raw_value in ["–", ""]:
-                    mv = None
-                else:
-                    mv = int(''.join(filter(str.isdigit, raw_value)))
-                j.market_value = mv
-            else:
-                j.market_value = None
-
-            j.soccerdonna_last_updated = timezone.now()
-            j.save()
-
-        except Exception as e:
-            print(f"Error actualizando {j.nombre}: {e}")
-
-@csrf_exempt
-def actualizar_valores_jugadoras(request):
-    if request.method != "POST":
-        return JsonResponse({"error": "Método no permitido"}, status=405)
-
-    try:
-        actualizar_market_value()
-        return JsonResponse({"status": "ok", "message": "Market values actualizados"})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt
 def actualizar_soccerdonna_url(request):
@@ -1095,26 +1000,3 @@ def trofeosxid (request):
         })
 
     return JsonResponse({"success": salida})
-
-
-def get_player_urls(club_url):
-    player_urls = []
-    resp = requests.get(club_url, headers=HEADERS)
-    soup = BeautifulSoup(resp.content, 'html.parser')
-    for a in soup.select("table#spieler a.fb"):
-        href = a.get("href", "")
-        if "/profil/spieler_" in href:
-            full_url = BASE_URL + href
-            player_urls.append(full_url)
-    return player_urls
-
-def api_club_players(request):
-    club_url = request.GET.get("club_url")
-    if not club_url:
-        return JsonResponse({"error": "No se proporcionó club_url"}, status=400)
-    
-    try:
-        urls = get_player_urls(club_url)
-        return JsonResponse({"player_urls": urls})
-    except Exception as e:
-        return JsonResponse({"error": str(e)}, status=500)

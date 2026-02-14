@@ -1,6 +1,7 @@
 import { fetchRandomPlayer } from '/static/futfem/js/jugadora.js'
 import { animarContador, animarEntrada, animarSalida } from '/static/js/animations/higher_lower.js'
 import { getDominantColors , rgbToRgba } from '/static/js/utils/color.thief.js'
+import { updateRachaJuegoLineal } from '/static/usuarios/js/rachas.js'
 const player1 = document.getElementById('option1');
 const player2 = document.getElementById('option2');
 const p2 = player2.querySelector('p');
@@ -73,7 +74,7 @@ async function verificar(event){
         siguienteRonda(pulsado.id);
     } else {
         console.log("Fallaste");
-        finDelJuego();
+        await finDelJuego();
     }
 }
 
@@ -126,7 +127,8 @@ async function siguienteRonda(ganadoraId){
 }
 
 
-function finDelJuego(){
+async function finDelJuego(){
+    await updateRachaJuegoLineal(7, rachaActual)
     alert("Game Over");
 }
 
