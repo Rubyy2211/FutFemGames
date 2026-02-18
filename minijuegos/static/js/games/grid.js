@@ -1,6 +1,7 @@
-import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
+import { fetchJugadoraTrayectoriaById, handleAutocompletePlayer } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
+import { ponerClubes, Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 
 // ----------------------------------------------------- 
 // Declaracion de variables
@@ -11,6 +12,8 @@ let jugadorasProhibidas = [];
 const input = document.getElementById('jugadoraInput');
 const boton = document.getElementById('botonVerificar');
 const resultDiv = document.getElementById('resultado');
+// Añadir el evento de input al campo de texto
+input.addEventListener('input', debounce(handleAutocompletePlayer, 300)); // Debounce de 300ms
 
 const texto = '¡Demuestra tu conocimiento sobre fútbol femenino! En "Futfem Grid", los jugadores se enfrentan a una cuadrícula llena de escudos de equipos de fútbol. El objetivo del juego es rellenar correctamente las casillas de la tabla con los nombres de las jugadoras que coinciden con los equipos de las filas y columnas. ' +
     'El tablero es una rejilla (Grid) con filas y columnas. Cada celda contiene el escudo de un equipo de fútbol.\n' +

@@ -1,13 +1,17 @@
-import { fetchJugadoraCompanyerasById } from "/static/futfem/js/jugadora.js";
+import { fetchJugadoraCompanyerasById, handleAutocompletePlayer } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
+import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 
 let jugadoraId;
+// Añadir el evento de input al campo de texto
+const textoInput = document.getElementById("jugadoraInput");
+textoInput.addEventListener('input', debounce(handleAutocompletePlayer, 1000)); // Debounce de 300ms
 
 // Función principal que controla el flujo de carga
 async function iniciar(dificultad) {
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
-    const name = await sacarJugadora(jugadoraId);
+    //const name = await sacarJugadora(jugadoraId);
     const ultima = await obtenerUltimaRespuesta(5);
 
     if (popup) {
@@ -35,7 +39,7 @@ async function iniciar(dificultad) {
     }
 
     // Definir los segundos según la dificultad
-    let segundos = inicializarCounter(90, 60, 30, 'Futfem Relations', dificultad);
+    let segundos = inicializarCounter(1000000000000000000000, 60, 30, 'Futfem Relations', dificultad);
 
     const div = document.getElementById('compañeras');
     div.classList.add(`id-${jugadoraId}`);
@@ -54,7 +58,7 @@ async function iniciar(dificultad) {
         //await loadJugadoraById(jugadoraId, true);
         stopCounter("Futfem Relations");  // ⬅️ Detenemos el temporizador si el usuario gana
         Ganaste('compañeras');
-        document.getElementById('result').textContent = name[0].Nombre_Completo;
+        //document.getElementById('result').textContent = name[0].Nombre_Completo;
     } else {
         await loadCompanyerasJugadoraById(jugadoraId);
         cambiarImagenFlipRonda(div);
@@ -199,12 +203,12 @@ async function companyerasPerder() {
     const boton = document.getElementById('botonVerificar');
     const input = document.getElementById('input');
     const resultDiv = document.getElementById('result');
-    const jugadora = await sacarJugadora(jugadoraId);
+    //const jugadora = await sacarJugadora(jugadoraId);
 
     boton.disabled = true;
     input.disabled = true;
 
-    resultDiv.textContent = 'Has perdido, era: '+jugadora[0].Nombre_Completo;
+    //resultDiv.textContent = 'Has perdido, era: '+jugadora[0].Nombre_Completo;
     const div = document.getElementById('trayectoria');
     const jugadora_id = 'loss';
     localStorage.setItem('Attr8', jugadora_id);

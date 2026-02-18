@@ -56,3 +56,17 @@ export async function handleAutocompletePais(event, id) {
         input.setAttribute('data-id', null); // Guardar el ID del equipo
     }
 }
+
+export async function fetchPaisesById(ids){
+    // Generar la URL para obtener las banderas con IDs como parámetros de consulta
+    const response = await fetch(`../api/paisesxid?id[]=${ids.join('&id[]=')}`)
+    if (!response.ok) {
+        throw new Error(`Error en la solicitud: ${response.statusText}`);
+    }
+    const data = await response.json();
+    if (data !== null) {
+        return data.success;
+    } else {
+        return null;
+    }
+} 

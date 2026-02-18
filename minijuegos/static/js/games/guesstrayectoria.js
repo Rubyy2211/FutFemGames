@@ -1,6 +1,7 @@
-import { fetchJugadoraTrayectoriaById } from "/static/futfem/js/jugadora.js";
+import { fetchJugadoraTrayectoriaById, handleAutocompletePlayer } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
+import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 
 // Variables de Juego
 let jugadoraId;
@@ -14,6 +15,12 @@ let myst;
 let jugadoraInput;
 let boton;
 let answer;
+// Añadir el evento de input al campo de texto
+const textoInput = document.getElementById("jugadoraInput");
+const btn = document.getElementById('botonVerificar');
+textoInput.addEventListener('input', debounce(handleAutocompletePlayer, 300)); // Debounce de 300ms
+const texto = 'Adivina la Jugadora de Fútbol es un juego de trivia donde debes identificar a una futbolista según los equipos en los que ha jugado. Usa las pistas, demuestra tu conocimiento y compite para ver quién acierta más.';
+const imagen = '/static/img/trayectoria.jpg';
 
 // Función principal que controla el flujo de carga
 async function iniciar(dificultad) {
@@ -27,7 +34,6 @@ async function iniciar(dificultad) {
     boton = document.getElementById('botonVerificar');
     const ultima = await obtenerUltimaRespuesta(1);
     const name = localStorage.getItem('nombre');
-    const btn = document.getElementById('botonVerificar');
     
     if (btn) {
         btn.addEventListener('click', checkAnswer); // Habilitar el botón al iniciar el juego
@@ -49,7 +55,7 @@ async function iniciar(dificultad) {
 
     if(ultima === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr1', 'loss');
+        localStorage.setItem('Attr1', 'loss'+idJugadora);
     }
 
     // Definir los segundos según la dificultad
@@ -74,7 +80,7 @@ async function iniciar(dificultad) {
                 console.log("El contador llegó a 0. Ejecutando acción...");
                 await trayectoriaPerder();
             });
-        } else if (answer === 'loss') {
+        } else if (answer === 'loss'+jugadoraId) {
             await trayectoriaPerder();
         } else {
             startCounter(segundos, "trayectoria", async () => {
@@ -82,6 +88,23 @@ async function iniciar(dificultad) {
                 await trayectoriaPerder();
             });
         }
+    }
+}
+
+play().then(r => r);
+async function play() {
+    const lastAnswer= localStorage.getItem('Attr1');
+    let jugadora = await fetchData(1);
+    jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
+    const res = localStorage.getItem('res1');
+    if(res !== jugadoraId || !res){
+        /*if(lastAnswer !== res || !lastAnswer){
+            updateRacha(1, 0, 'loss'+jugadoraId);
+        }*/
+        localStorage.removeItem('Attr1');
+        crearPopupInicialJuego('Guess Trayectoria', texto, imagen, '', iniciar);
+    } else {       
+        await iniciar('');
     }
 }
 
@@ -221,23 +244,4 @@ async function trayectoriaPerder() {
     setTimeout(() => {
         cambiarImagenConFlip();
     }, 1000);
-}
-
-const texto = 'Adivina la Jugadora de Fútbol es un juego de trivia donde debes identificar a una futbolista según los equipos en los que ha jugado. Usa las pistas, demuestra tu conocimiento y compite para ver quién acierta más.';
-const imagen = '/static/img/trayectoria.jpg';
-play().then(r => r);
-async function play() {
-    const lastAnswer= localStorage.getItem('Attr1');
-    let jugadora = await fetchData(1);
-    jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
-    const res = localStorage.getItem('res1');
-    if(res !== jugadoraId || !res){
-        /*if(lastAnswer !== res || !lastAnswer){
-            updateRacha(1, 0, 'loss'+jugadoraId);
-        }*/
-        localStorage.removeItem('Attr1');
-        crearPopupInicialJuego('Guess Trayectoria', texto, imagen, '', iniciar);
-    } else {       
-        await iniciar('');
-    }
 }

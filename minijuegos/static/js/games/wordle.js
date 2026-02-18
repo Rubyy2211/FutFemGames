@@ -1,4 +1,5 @@
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
+import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 
 let answer = "";
 let currentRow = 0;
@@ -8,8 +9,10 @@ async function iniciar() {
     jugadora = await fetchData(2);
     localStorage.setItem('res2', jugadora.idJugadora);
     const ultima = await obtenerUltimaRespuesta(2);
-    let ultimaArray = JSON.parse(ultima);   // ← AQUÍ sí
+    let ultimaArray = JSON.parse(ultima);
+    console.log(ultimaArray)
     const usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer;
+    console.log(usuarioAnswer, jugadora.idJugadora)
     if(usuarioAnswer === jugadora.idJugadora){
         console.log('Se ha guardado la respuesta'); 
         localStorage.setItem('Attr2', ultima);
@@ -46,15 +49,12 @@ async function iniciar() {
     } else {
         await loadJugadoraApodo(jugadora.idJugadora, false);
 
-        if (!userAnswer || userAnswer.trim() === '') {
+        if (!userAnswer || userAnswer === '') {
             console.log("El usuario no ha respondido aún.");
             return; // Esperar a que el usuario responda
 
-        } else if (userAnswer === 'loss') {
+        } else if (userAnswer === 'loss'+jugadora.idJugadora) {
             console.log("El usuario ya ha perdido anteriormente.");
-            await wordlePerder();
-        } else {
-            console.log("El usuario ha respondido incorrectamente.");
             await wordlePerder();
         }
     }   
@@ -165,6 +165,7 @@ async function checkWord() {
 
         if (currentRow === maxRows) {
             displayMessage(`¡Has perdido! La palabra era: ${answer}.`);
+            await updateRacha(2, 0, localStorage.getItem('Attr2'));
             lockAllRows();
         } else {
             updateActiveRow();
@@ -317,9 +318,9 @@ async function wordlePerder() {
     //lockAllRows();
     
     const resultDiv = document.getElementById('message');
-    const player = await sacarJugadora(jugadora.idJugadora);
+    //const player = await sacarJugadora(jugadora.idJugadora);
 
-    resultDiv.textContent = 'Has perdido, era: '+player.Nombre_Completo;
+    resultDiv.textContent = 'Has perdido';
     const div = document.getElementById('trayectoria');
     /*const jugadora_id = 'loss';
     localStorage.setItem('Attr2', jugadora_id);*/
@@ -329,7 +330,7 @@ async function wordlePerder() {
         await updateRacha(2, 0, localStorage.getItem('Attr2'));
     }
     setTimeout(() => {
-        cambiarImagenConFlip();
+        //cambiarImagenConFlip();
     }, 1000);
 }
 

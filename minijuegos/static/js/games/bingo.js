@@ -2,7 +2,7 @@ import { fetchJugadoraNacionalidadById, fetchJugadoraTrayectoriaById, fetchJugad
 import { updateRacha, obtenerUltimaRespuesta } from '/static/usuarios/js/rachas.js';
 import { getDominantColors, rgbToRgba } from '../utils/color.thief.js';
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
-
+import { ponerBanderas, ponerLigas, ponerClubes, ponerTrofeos, ponerEdades, crearPopupInicialJuego } from "./funciones-comunes.js";
 let idres;
 let paises, equipos, ligas, trofeos;
 let lastPlayer;
@@ -55,10 +55,10 @@ async function iniciar(dificultad) {
     // Definir los segundos según la dificultad
     let segundos = inicializarCounter(180000000000000000000000000000000000000000000000000000000000, 120 , 60, 'bingo', dificultad);
 
-    ponerBanderas(paises, ["c21", "c32", "c33"]); // Asigna banderas a ciertos países por su ID.
+    await ponerBanderas(paises, ["c21", "c32", "c33"]); // Asigna banderas a ciertos países por su ID.
     await ponerLigas(ligas, ["c13", "c34",'c23']); // Asigna ligas a los países por su ID.
-    ponerClubes(equipos, ["c12", "c14", "c31"]); // Asigna clubes a los países.
-    ponerTrofeos(trofeos, ["c11"]); // Asigna trofeos a los países.
+    await ponerClubes(equipos, ["c12", "c14", "c31"]); // Asigna clubes a los países.
+    await ponerTrofeos(trofeos, ["c11"]); // Asigna trofeos a los países.
     ponerEdades("c24", "c22", '/static/img/edades/mayor30.png', '/static/img/edades/igual25.png'); // Asigna imágenes basadas en las edades.
     localStorage.setItem('res6', idres);
     

@@ -98,7 +98,7 @@ function displayJugadoras(jugadoras){
 }
 
 let currentPage = 1;
-const itemsPerPage = 25;
+const itemsPerPage = 10;
 let totalPages = 1;
 let jugadorasGlobal = []; // Guardaremos todas las jugadoras aquí
 

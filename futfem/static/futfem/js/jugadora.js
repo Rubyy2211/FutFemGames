@@ -2,6 +2,65 @@
 import { fetchEquipoPalmaresByTemporadas } from "./equipos.js";
 let min = 1;
 let max = 476;
+
+/**
+ * Obtener jugadoras al escribir en un input
+ * @param {event}
+ * @returns {}
+ */
+export async function handleAutocompletePlayer(event) {
+    const input = event.target;
+    const texto = input.value.trim();
+    const suggestionsList = document.getElementById("sugerencias");
+
+    // Limpiar sugerencias previas
+    suggestionsList.innerHTML = '';
+
+    if (texto.length > 2) { // Solo si hay más de 2 caracteres
+        const url = `../api/jugadoraxnombre?nombre=${encodeURIComponent(texto)}`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const results = await response.json();
+
+            // Evitar duplicados
+            const idsMostrados = new Set();
+
+            results.forEach(jugadora => {
+                const { id_jugadora, Nombre_Completo, imagen, Nacimiento, Apodo } = jugadora;
+
+                if (!idsMostrados.has(id_jugadora)) { // Verificar que no se haya mostrado este ID
+                    idsMostrados.add(id_jugadora);
+
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('suggestion-item');
+
+                    listItem.innerHTML = `
+                        <img src="${imagen}" alt="${Nombre_Completo}" class="jugadora-img">
+                        <div class="jugadora-info">
+                            <strong>${Nombre_Completo}</strong>
+                            <!--<p>Nacimiento: ${Nacimiento}</p>-->
+                        </div>
+                    `;
+
+                    listItem.addEventListener('click', () => {
+                        // Insertar el nombre en el input al hacer clic
+                        input.value = Nombre_Completo;
+                        input.setAttribute('data-id', id_jugadora);
+                        suggestionsList.innerHTML = '';  // Limpiar las sugerencias
+                        /*document.getElementById("jugadora_id").value = id_jugadora;
+                        loadPlayerById(id_jugadora);  // Cargar los detalles de la jugadora*/
+                    });
+
+                    suggestionsList.appendChild(listItem);
+                }
+            });
+        } catch (error) {
+            console.error('Error al buscar la jugadora:', error);
+        }
+    }
+}
 /**
  * Obtener nacionalidad de una jugadora por ID
  * @param {number|string} id
@@ -242,7 +301,7 @@ export async function fetchClubPlayers(clubUrl) {
 }
 
 // Ejemplo de uso:
-const clubUrl = "https://www.soccerdonna.de/de/fc-bayern-muenchen/profil/verein_1241.html";
+/*const clubUrl = "https://www.soccerdonna.de/de/fc-bayern-muenchen/profil/verein_1241.html";
 const urls = await fetchClubPlayers(clubUrl);
-console.log("URLs de jugadoras:", urls);
+console.log("URLs de jugadoras:", urls);*/
 

@@ -1,4 +1,6 @@
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
+import { handleAutocompletePlayer } from "/static/futfem/js/jugadora.js";
+import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 
 const texto = 'Guess Player" es un juego de trivia en el que los jugadores deben adivinar el nombre de una jugadora de fútbol basándose en los equipos en los que ha jugado a lo largo de su carrera. El juego presenta una serie de pistas sobre los clubes y selecciones nacionales en los que la jugadora ha jugado, y el objetivo es identificar correctamente a la jugadora lo más rápido posible. A medida que avanzas, las pistas se hacen más desafiantes y los jugadores deben demostrar su conocimiento sobre el fútbol femenino y sus estrellas. ¡Pon a prueba tus conocimientos y compite para ver quién adivina más jugadoras correctamente!';
 const imagen = '/static/img/ComingSoon.png';
@@ -6,6 +8,8 @@ const btn = document.getElementById('botonVerificar');
 const div = document.getElementById('game-results');
 const vidasContainer = document.getElementById('vidas');
 const input = document.getElementById('jugadoraInput');
+// Añadir el evento de input al campo de texto
+input.addEventListener('input', debounce(handleAutocompletePlayer, 300)); // Debounce de 300ms
 
 let jugadora;
 let answer;
@@ -18,6 +22,7 @@ async function iniciar(dificultad) {
     btn.addEventListener('click', verificar); // Habilitar el botón al iniciar el juego
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     const ultima = await obtenerUltimaRespuesta(3);
+    const ultimaObj = JSON.parse(ultima); 
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
@@ -27,12 +32,12 @@ async function iniciar(dificultad) {
     localStorage.setItem('res3', jugadora);
     vidasContainer.textContent = 'Vidas restantes: '+vidas;
 
-     if(ultima === jugadoraId){
+     if(ultimaObj.answer === jugadoraId){
         console.log('Se ha guardado la respuesta'); 
         localStorage.setItem('Attr3', ultima);
     }
 
-    if(ultima === 'loss'+jugadoraId){
+    if(ultimaObj.answer === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
         localStorage.setItem('Attr3', ultima);
     }
@@ -62,7 +67,7 @@ async function iniciar(dificultad) {
         }else if (userRes === 'loss'+jugadoraId) {
             await adivinaJugadoraPerder();
         } else {
-            await adivinaJugadoraPerder();
+            //await adivinaJugadoraPerder();
         }
     }
 }
@@ -109,17 +114,20 @@ async function cargarJugadora(id, ganaste){
 }
 
 async function verificar(){
+    if(vidas===0){
+        updateRacha(3, 0, localStorage.getItem('Attr3'))
+    }
     // 1. Validar entrada
     const nombreJugadora = validarEntrada();
     if (!nombreJugadora) return;
 
     const jugadoraAnswer = await obtenerJugadora(nombreJugadora)
-    const edad = compararEdad(jugadora.edad, jugadoraAnswer.edad)
-    const altura = compararAltura(jugadora.altura, jugadoraAnswer.altura);
-    const equipo = compararEquipos(jugadora.equipo, jugadoraAnswer.equipo)
-    const pais = compararPaises(jugadora.pais, jugadoraAnswer.pais)
-    const pie = compararPies(jugadora.pie, jugadoraAnswer.pie)
-    const posicion = compararPosiciones(jugadora.posicionObj, jugadoraAnswer.posicionObj)
+    const edad = compararMayorMenorIgual(jugadora.edad, jugadoraAnswer.edad, "edad")
+    const altura = compararMayorMenorIgual(jugadora.altura, jugadoraAnswer.altura, "altura");
+    const equipo = compararIgualONo(jugadora.equipo, jugadoraAnswer.equipo, "equipo");
+    const pais = compararIgualONo(jugadora.pais, jugadoraAnswer.pais, "pais");
+    const pie = compararIgualONo(jugadora.pie, jugadoraAnswer.pie, "pie");
+    const posicion = compararIgualONo(jugadora.posicionObj, jugadoraAnswer.posicionObj, "posicion");
     jugadoraAnswer.pie = pie
     jugadoraAnswer.edad = edad
     jugadoraAnswer.altura = altura
@@ -197,12 +205,12 @@ async function verificar(){
         div.prepend(clone);
     }
 
-    function compararEdad(edad1, edad2){
-        let res = { "edad": edad2, "res": null }
+    function compararMayorMenorIgual(item1, item2, tipo){
+        let res = { [tipo]:item2, "res": null }
 
-        if(edad1>edad2){
+        if(item1>item2){
             res.res = "mayor"
-        }else if(edad1<edad2){
+        }else if(item1<item2){
             res.res = "menor"
         }else{
             res.res = "igual"
@@ -210,65 +218,17 @@ async function verificar(){
         return res;
     }
 
-    function compararAltura(altura1, altura2){
-        let res = { "altura": altura2, "res": null }
+    function compararIgualONo(item1, item2, tipo){
+        let res = { [tipo]:item2, "res": null }
 
-        if(altura1>altura2){
-            res.res = "mayor"
-        }else if(altura1<altura2){
-            res.res = "menor"
-        }else{
-            res.res = "igual"
+        let e1 = item1;
+        let e2 = item2;
+
+        if (typeof item1 === "object" && item1) {
+            e1 = item1.id
+            e2 = item2.id
         }
-        return res;
-    }
-
-    function compararEquipos(equipo1, equipo2){
-        let res = { "equipo": equipo2, "res": null }
-
-        let e1 = equipo1.id
-        let e2 = equipo2.id
-
         if(e1===e2){
-            res.res = "igual"
-        }else{
-            res.res = "incorrecto"
-        }
-        return res;
-    }
-
-    function compararPaises(pais1, pais2){
-        let res = { "pais": pais2, "res": null }
-
-        let e1 = pais1
-        let e2 = pais2
-
-        if(e1===e2){
-            res.res = "igual"
-        }else{
-            res.res = "incorrecto"
-        }
-        return res;
-    }
-
-    function compararPosiciones(posicion1, posicion2){
-        let res = { "posicion": posicion2, "res": null }
-
-        let e1 = posicion1.id
-        let e2 = posicion2.id
-
-        if(e1===e2){
-            res.res = "igual"
-        }else{
-            res.res = "incorrecto"
-        }
-        return res;
-    }
-
-    function compararPies(pie1, pie2){
-        let res = { "pie": pie2, "res": null }
-
-        if(pie1===pie2){
             res.res = "igual"
         }else{
             res.res = "incorrecto"
@@ -285,16 +245,18 @@ async function verificar(){
         };
 
         let jugadoras = gameState.jugadoras;
+        vidasContainer.textContent = "Vidas restantes: "+gameState.vidas;
 
         for (const nombreJugadora of jugadoras) {
             const jugadoraAnswer = await obtenerJugadora(nombreJugadora);
+            console.log(jugadora.posicionObj, jugadoraAnswer.posicionObj)
 
-            const edad = compararEdad(jugadora.edad, jugadoraAnswer.edad);
-            const altura = compararAltura(jugadora.altura, jugadoraAnswer.altura);
-            const equipo = compararEquipos(jugadora.equipo, jugadoraAnswer.equipo);
-            const pais = compararPaises(jugadora.pais, jugadoraAnswer.pais);
-            const pie = compararPies(jugadora.pie, jugadoraAnswer.pie);
-            const posicion = compararPosiciones(jugadora.posicionObj, jugadoraAnswer.posicionObj);
+            const edad = compararMayorMenorIgual(jugadora.edad, jugadoraAnswer.edad, "edad");
+            const altura = compararMayorMenorIgual(jugadora.altura, jugadoraAnswer.altura, "altura");
+            const equipo = compararIgualONo(jugadora.equipo, jugadoraAnswer.equipo, "equipo");
+            const pais = compararIgualONo(jugadora.pais, jugadoraAnswer.pais, "pais");
+            const pie = compararIgualONo(jugadora.pie, jugadoraAnswer.pie, "pie");
+            const posicion = compararIgualONo(jugadora.posicionObj, jugadoraAnswer.posicionObj, "posicion");
 
             jugadoraAnswer.pie = pie;
             jugadoraAnswer.edad = edad;
@@ -336,4 +298,24 @@ async function verificar(){
 
         // Guardar en localStorage
         localStorage.setItem('Attr3', JSON.stringify(gameState));
+    }
+
+    async function adivinaJugadoraPerder() {
+        // Bloquear el botón y el input
+        const jugadora = await obtenerJugadora(jugadoraId);
+    
+        btn.disabled = true;
+        input.disabled = true;
+    
+        //resultText.textContent = 'Has perdido, era: '+jugadora[0].Nombre_Completo;
+        const jugadora_id = 'loss';
+        localStorage.setItem('Attr3', jugadora_id);
+        await loadJugadoraById(jugadoraId, true);
+        // Agregar un delay de 2 segundos (2000 ms)
+        if(localStorage.length>0){
+            await updateRacha(3, 0, localStorage.getItem('Attr3'));
+        }
+        setTimeout(() => {
+            cambiarImagenConFlip();
+        }, 1000);
     }
