@@ -4,6 +4,34 @@ import { fetchAllJugadoras } from '/static/futfem/js/jugadora.js';
 import { getDominantColors, rgbToRgba } from '/static/js/utils/color.thief.js';
 import { inicializarMapaEquipos, añadirEquipoMapa, centrarMapaEnEquipos, map } from './mapa.js';
 let jugadorasOriginal;
+const btnMapa = document.getElementById("ver-mapa");
+const mapa = document.getElementById("mapa-equipos");
+const item = document.getElementById("items-container");
+
+btnMapa.addEventListener("click", () => {
+    const visible = mapa.style.display === 'block';
+
+    
+
+    if (visible) {
+        // Ocultar mapa
+        mapa.style.display = 'none';
+        item.style.display = "grid";
+        btnMapa.textContent = "Ver mapa";
+    } else {
+        // Mostrar mapa
+        mapa.style.display = 'block';
+        item.style.display = "none";
+        btnMapa.textContent = "Ocultar mapa";
+
+        setTimeout(() => { 
+            if (map) {
+                map.resize();
+                centrarMapaEnEquipos(); 
+            }
+        }, 50);
+    }
+});
 
 function inicializarWiki() {
 
@@ -126,9 +154,9 @@ function renderJugadorasPage(page = 1) {
         img.alt = jugadora.apodo;
 
         const imgClub = document.createElement('img');
-        imgClub.src = '/' + jugadora.equipo[0].escudo;
+        imgClub.src = '/' + jugadora.equipo.escudo;
         imgClub.className = 'equipo-imagen';
-        imgClub.alt = jugadora.equipo[0].nombre;
+        imgClub.alt = jugadora.equipo.nombre;
 
         const pNombre = document.createElement('p');
         pNombre.textContent = jugadora.apodo; 
@@ -142,8 +170,8 @@ function renderJugadorasPage(page = 1) {
         const pPosicion = document.createElement('p');
         pPosicion.textContent = jugadora.posicion;
         
-        const colorPrimario = jugadora.equipo[0].color || 'var(--color-primario)'; // fallback
-        const colorSecundario = jugadora.equipo[0].colorSecundario || 'transparent'; // fallback
+        const colorPrimario = jugadora.equipo.color || 'var(--color-primario)'; // fallback
+        const colorSecundario = jugadora.equipo.colorSecundario || 'transparent'; // fallback
         if(colorPrimario){
         div.style.background = `
             linear-gradient(

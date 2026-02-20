@@ -205,7 +205,6 @@ section .container {
     }
     .game-button {
         max-width: 100%; /* Botones ocupan todo el ancho en pantallas pequeñas */
-        padding: 5px;
     }
     .col-md-3 {
         max-width: 50%; /* Dos columnas por fila en pantallas pequeñas */

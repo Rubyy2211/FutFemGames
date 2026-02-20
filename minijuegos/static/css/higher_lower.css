@@ -27,6 +27,23 @@ body{
     background-size: cover;
 }
 
+#game div::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(280px);
+    transform: scale(1.1); /* evita bordes duros */
+    z-index: 0;
+}
+
+#game div > * {
+    position: relative;
+    z-index: 1; /* el contenido queda encima del blur */
+}
+
+
 #game div:nth-child(2){
     background: rgb(127, 0, 127);
 }

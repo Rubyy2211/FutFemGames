@@ -8,19 +8,39 @@
     <link rel="icon" href="/{{ equipo.escudo }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/combo.css' %}">
+    <link rel="stylesheet" href="{% static 'FutFemWiki/css/wiki.css' %}">
     <link rel="stylesheet" href="{% static 'FutFemWiki/css/ficha-equipo.css' %}">
 </head>
 <body>
     {% include 'partials/header.html' %}
-    
-    <h1>{{ equipo.nombre }}</h1>
+    <div id="equipo-container">
 
-    <img src="/{{ equipo.escudo }}" alt="{{ equipo.nombre }}">
+    <div class="row">
 
+    <div class="left">
+        <div id="tabla-trofeos" class="tabla-jugadoras">
+            <div id="cabecera-tabla" class="cabecera-tabla">
+                <h3>Palmarés</h3>
+                <a id="ver-trofeos" href="#">Ver Más</a>
+            </div>
+                <div id="palmares" class="container-jugadoras"></div>
+        </div>
+    </div>
+    <div>
+        <h1>{{ equipo.nombre }}</h1>
+
+        <img src="/{{ equipo.escudo }}" alt="{{ equipo.nombre }}">
+    </div>
+    <div class="right">
+        <div id="mapa-equipos" style="width: 100%; height: 100%; display: block;"></div>
+    </div>
+    </div>
     <div class="down">
     <section id="jugadoras-actuales">
         <div id="tabla-jugadoras-actuales" class="tabla-jugadoras">
@@ -34,13 +54,19 @@
     <section id="jugadoras-alltime">
         <div id="tabla-jugadoras" class="tabla-jugadoras">
             <div id="cabecera-tabla-alltime" class="cabecera-tabla">
-                <h3>Jugadoras All Time</h3>
+                <h3>All Time</h3>
                 <a id="ver-jugadoras-all-time" href="#">Ver Más</a>
             </div>
             <div id="jugadoras-container" class="container-jugadoras"></div>
         </div>
     </section>
     </div>
+
+</div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@5.18.0/dist/maplibre-gl.js"></script>
+<script type="module" src="{% static 'FutFemWiki/js/mapstyles/CapaControl.js' %}"></script>
+<script type="module" src="{% static 'FutFemWiki/js/mapa.js' %}"></script>
 <script type="module" src="{% static 'FutFemWiki/js/ficha-equipo.js' %}"></script>
 <script>
     function actualizarHeader() {
@@ -121,15 +147,58 @@
     // Inicialización
     activarPopup('tabla-jugadoras-actuales', 'ver-jugadoras-actuales');
     activarPopup('tabla-jugadoras', 'ver-jugadoras-all-time');
+    activarPopup('tabla-trofeos', 'ver-trofeos');
 
 
 
 
 </script>
 <script type="module">
-    import { crearFichaJugadorasActuales, crearFichaJugadorasDeSiempre } from '{% static "FutFemWiki/js/ficha-equipo.js" %}';
+    import { crearFichaJugadorasActuales, crearFichaJugadorasDeSiempre, displayPalmares } from '{% static "FutFemWiki/js/ficha-equipo.js" %}';
+    import { inicializarMapaEquipos, añadirEquipoMapa, centrarMapaEnEquipos, map } from '{% static "FutFemWiki/js/mapa.js" %}';
+    import { fetchEquipoById } from '{% static "futfem/js/equipos.js" %}';
     const color = '{{equipo.color}}';
-    console.log(color);
+        console.log(color);
+    const equipos = await fetchEquipoById('{{equipo.id_equipo}}');
+    const palmares = await displayPalmares('{{equipo.id_equipo}}');
+    displayEquipoMapa(equipos);
+    export function displayEquipoMapa(equipo) {
+        console.log(equipo)
+        inicializarMapaEquipos();
+
+        // Solo añadimos el equipo si tiene latitud y longitud
+        if (equipo.lat && equipo.long) {
+            map.once("idle", () => {
+               setTimeout(() => { 
+            if (map) {
+                map.resize();
+                centrarMapaEnEquipos(); 
+            }
+        }, 50);
+
+                requestAnimationFrame(() => {
+                    añadirEquipoMapa(
+                        equipo.id,
+                        equipo.nombre,
+                        equipo.lat,
+                        equipo.long,
+                        '/' + equipo.escudo,
+                        equipo.color
+                    );
+
+                    requestAnimationFrame(() => {
+                        centrarMapaEnEquipos();
+                    });
+                });
+            });
+        }
+        setTimeout(() => { 
+            if (map) {
+                map.resize();
+                centrarMapaEnEquipos(); 
+            }
+        }, 50);
+    }
 
     actualizarHeader();
 

@@ -8,13 +8,15 @@
     padding: 40px;
 
     align-items: center;
+    overflow-y: hidden;
 }
 .imagen-jugadora{
     filter: contrast(1);
     width: 100%;
 }
 /* Efecto vintage B/N */
-.tarjeta-jugadora.vintage .imagen-jugadora {
+.vintage .imagen-jugadora,
+.vintage #jugadora-img {
     filter:
         grayscale(100%)
         contrast(1.1)

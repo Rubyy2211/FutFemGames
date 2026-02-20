@@ -6,9 +6,26 @@ body{
     background-blend-mode: color-dodge; /* Modo de mezcla */
     min-height: 60vh;
     width: 100%;
+    height: 100vh;
 }
-img{
-    width: 10%;
+#equipo-container{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    align-items: center;
+}
+.right, .left{
+    display: flex;
+    width: 35%;
+}
+.row{
+    display: flex;
+    flex-direction: row;
+    height: 60%;
+    width: 100%;
+    justify-content: space-between;
+    padding-inline: 2.5%;
 }
 .down{
     max-width: 100vw;
@@ -16,6 +33,24 @@ img{
     grid-template-columns: repeat(2, 1fr);
     align-items: center;
     padding-block: 10px;
+    height: 30%;
+}
+#palmares{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    padding: 5%;
+}
+#palmares img{
+    width: 45%;
+}
+#palmares p{
+    font-size: small;
+}
+
+#mapa-equipos{
+    height: 100%;
+    width: 100% !important;
+    border-radius: 20px;
 }
 
 #jugadoras-actuales{
@@ -37,13 +72,13 @@ img{
 .tabla-jugadoras{
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /*justify-content: center;*/
     border-radius: 20px; /* Bordes redondeados */
     text-align: center; /* Centrar el contenido dentro del botón */
     color: white; /* Color del texto */
     margin-bottom: 10px; /* Espaciado inferior entre botones */
     transition: transform 0.2s; /* Suavizar el efecto de transformación */
-    border: 0.5px solid rgb(255, 255, 255);
+    border: 0.5px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
     align-items: center;
     height: 150px;
@@ -69,7 +104,7 @@ img{
     justify-content: space-between;
     width: 100%;
     text-align: start;
-    border-bottom: 0.5px solid rgb(255, 255, 255);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
     padding-inline: 10px;
 

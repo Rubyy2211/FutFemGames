@@ -1,6 +1,9 @@
 body{
     height: 100vh;
 }
+summary, details{
+    display: none;
+}
 .selector {
     display: flex;
     align-items: center;
@@ -11,6 +14,9 @@ body{
     top: 0;
     z-index: 10;
     background: inherit;
+}
+#ver-mapa{
+    display: none;
 }
 /* Texto */
 #selector-text {
@@ -269,6 +275,11 @@ display: flex;
     flex-direction: column;
     align-items: center;
     height: 225px;
+}
+
+#cabecera-jugadora #filtros{
+    display: flex;
+    flex-direction: row;
 }
 
 #input-y-boton{

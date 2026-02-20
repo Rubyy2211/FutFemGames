@@ -163,6 +163,33 @@ export async function fetchJugadoraById(id) {
     }
 }
 
+
+export async function cargarJugadoraDatos(id, ganaste){
+    try {
+        const url = `/api/jugadora_datos?id=${encodeURIComponent(id)}`;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Error en la solicitud: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        //console.log('Datos recibidos:', data);
+
+            if (data !== null) {
+                // Solo un resultado, no es necesario mostrar el modal
+                //console.log(data.success)
+                return data.success
+            } else {
+                // Múltiples resultados, mostrar el modal
+                return null;
+            }
+
+    } catch (error) {
+        console.error("Error al obtener los datos:", error);
+    }
+}
+
 export async function fetchRandomPlayer() {
     const response = await fetch("/api/random-player/")
     return await response.json()

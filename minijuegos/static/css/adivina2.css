@@ -2,6 +2,26 @@ body{
     height: 100vh;
     max-height: 100vh;
 }
+/* width */
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--color-secundario);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--color-primario);
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(200, 0, 200);
+}
+
 .menor, .mayor{
     background-color: #c9b458;
 }

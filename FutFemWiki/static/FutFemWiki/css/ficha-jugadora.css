@@ -1,0 +1,40 @@
+body{
+    height: 100vh;
+}
+header{
+    background-color: var(--color-secundario);
+}
+#jugadora-info{
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+    gap: 5%;
+    padding-inline: 5%;
+    height: 30%;
+    padding-bottom: 0.75%;
+    background-blend-mode: color-burn;
+}
+#jugadora-info img{
+    border-radius: 20px;
+    padding: unset;
+    width: 225px;
+    background: rgba(255, 255, 255, 0.08);
+}
+#jugadora-info #datos-jugadora{
+    width: 100%;
+}
+#jugadora-info .grid{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+#jugadora-info .fi{
+    border: 1px solid var(--color-detalles);
+    font-size: xx-large;
+    height: fit-content;
+    border-radius: 50px;
+}
+#mostrador-tarjetas{
+    height: 100%;
+    background-color: var(--color-secundario);
+}

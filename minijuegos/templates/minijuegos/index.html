@@ -41,7 +41,7 @@
         <h2>Regular Games</h2>
 
         <div class="row sibling-fade d-flex justify-content-center">
-            {% include 'partials/game_card.html' with racha_id="racha-20" destino_js="higher_lower" imagen="img/higher_lower.png" titulo="Higher or Lower" %}
+            {% include 'partials/game_card.html' with racha_id="racha-7" destino_js="higher_lower" imagen="img/higher_lower.png" titulo="Higher or Lower" %}
         </div>
 
     </div>
@@ -65,6 +65,7 @@
     const racha4 = await obtenerRacha(4);  
     const racha5 = await obtenerRacha(5);
     const racha6 = await obtenerRacha(6);
+    const racha7 = await obtenerRacha(7);
     
     displayRacha(racha1[0].racha_actual, racha1[0].juego.id);
     displayRacha(racha2[0].racha_actual, racha2[0].juego.id);
@@ -72,6 +73,7 @@
     displayRacha(racha4[0].racha_actual, racha4[0].juego.id);
     displayRacha(racha5[0].racha_actual, racha5[0].juego.id);
     displayRacha(racha6[0].racha_actual, racha6[0].juego.id);
+    displayRacha(racha7[0].racha_actual, racha7[0].juego.id);
 </script>
 </body>
 </html>

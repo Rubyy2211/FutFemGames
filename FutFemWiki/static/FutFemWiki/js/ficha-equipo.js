@@ -1,5 +1,53 @@
 import { jugadorasxTemporadaYEquipo } from "/static/futfem/js/equipos.js";
-//import { displayEquipos } from "./wiki.js"; 
+import { fetchEquipoPalmaresByTemporadas } from "/static/futfem/js/equipos.js";
+
+const divPalmares = document.getElementById('palmares'); 
+export async function displayPalmares(equipo) {
+    const data = await fetchEquipoPalmaresByTemporadas(equipo, '1950-act');
+    console.log("Datos originales:", data.success);
+
+    const palmaresAgrupado = agruparTrofeos(data.success);
+    console.log("Agrupado:", palmaresAgrupado);
+
+    palmaresAgrupado.forEach(trofeo => {
+        const div = document.createElement("div");
+        div.classList.add("trofeo");
+
+        div.innerHTML = `
+            <img src="/${trofeo.icono}" alt="${trofeo.nombre}">
+            <h3>${trofeo.nombre}</h3>
+            <p>Ganado ${trofeo.count} veces</p>
+            <!--<p>Temporadas: ${trofeo.temporadas.join(", ")}</p>-->
+        `;
+
+        divPalmares.appendChild(div);
+    });
+}
+
+
+// Agrupar trofeos por ID y juntar temporadas
+function agruparTrofeos(trofeos) {
+    const agrupado = {};
+
+    trofeos.forEach(t => {
+        if (!agrupado[t.id]) {
+            agrupado[t.id] = {
+                id: t.id,
+                nombre: t.nombre,
+                icono: t.icono,
+                tipo: t.tipo,
+                count: 0,
+                temporadas: []
+            };
+        }
+
+        agrupado[t.id].count += 1;
+        agrupado[t.id].temporadas.push(t.temporada);
+    });
+
+    return Object.values(agrupado);
+}
+
 
 export async function crearFichaJugadorasActuales(equipo, color) {
     const jugadoras = await jugadorasxTemporadaYEquipo(equipo, 2026);

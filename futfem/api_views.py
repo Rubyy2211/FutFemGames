@@ -554,18 +554,16 @@ def equipoxid(request):
         return JsonResponse({"error": "Faltan parámetros o no se encontraron resultados."}, status=400)
 
     # Consulta
-    equipos = Equipo.objects.filter(id_equipo=id)
+    e = Equipo.objects.get(id_equipo=id)
 
-    salida = []
-    for e in equipos:
-
-        salida.append({
+    salida = {
             "club": e.id_equipo,
             "nombre": e.nombre,
             "escudo": e.escudo,
-            "color": e.color
-        })
-
+            "color": e.color,
+            "lat": e.latitud,
+            "long": e.longitud
+        }
     return JsonResponse({"success": salida})
 
 def equiposxid(request):

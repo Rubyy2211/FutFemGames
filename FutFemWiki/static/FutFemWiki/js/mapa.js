@@ -1,53 +1,7 @@
 import {CapaControl} from '../mapstyles/capaControl.js';
-const btnMapa = document.getElementById("ver-mapa");
-const mapa = document.getElementById("mapa-equipos");
-const item = document.getElementById("items-container");
-
-btnMapa.addEventListener("click", () => {
-    const visible = mapa.style.display === 'block';
-
-    
-
-    if (visible) {
-        // Ocultar mapa
-        mapa.style.display = 'none';
-        item.style.display = "grid";
-        btnMapa.textContent = "Ver mapa";
-    } else {
-        // Mostrar mapa
-        mapa.style.display = 'block';
-        item.style.display = "none";
-        btnMapa.textContent = "Ocultar mapa";
-
-        setTimeout(() => { 
-            if (map) {
-                map.resize();
-                centrarMapaEnEquipos(); 
-            }
-        }, 50);
-    }
-});
-
-
-const iconoEscudo = (url) => L.icon({
-    iconUrl: url,
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40]
-});
-
-const iconoPunto = L.divIcon({
-    className: "punto-marker",
-    html: "",
-    iconSize: [10, 10]
-});
-
-
 
 export let map = null;
-//let markersGroup = L.featureGroup();
 let markersGroup = [];
-
 let bloqueado = false;
 
 export function inicializarMapaEquipos() {

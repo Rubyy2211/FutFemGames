@@ -1,5 +1,5 @@
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
-import { handleAutocompletePlayer } from "/static/futfem/js/jugadora.js";
+import { handleAutocompletePlayer, cargarJugadoraDatos } from "/static/futfem/js/jugadora.js";
 import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 
 const texto = 'Guess Player" es un juego de trivia en el que los jugadores deben adivinar el nombre de una jugadora de fútbol basándose en los equipos en los que ha jugado a lo largo de su carrera. El juego presenta una serie de pistas sobre los clubes y selecciones nacionales en los que la jugadora ha jugado, y el objetivo es identificar correctamente a la jugadora lo más rápido posible. A medida que avanzas, las pistas se hacen más desafiantes y los jugadores deben demostrar su conocimiento sobre el fútbol femenino y sus estrellas. ¡Pon a prueba tus conocimientos y compite para ver quién adivina más jugadoras correctamente!';
@@ -51,7 +51,7 @@ async function iniciar(dificultad) {
     }
 
     // Verificar si el usuario ha ganado
-    jugadora = await cargarJugadora(jugadoraId, false);
+    jugadora = await cargarJugadoraDatos(jugadoraId, false);
     await colocarAciertos();
     const isAnswerTrue = (jugadoraId === userRes);
     if(isAnswerTrue) {
@@ -83,33 +83,6 @@ async function play() {
         crearPopupInicialJuego('Guess Player', texto, imagen, '', iniciar);
     } else {
         await iniciar('');
-    }
-}
-
-
-async function cargarJugadora(id, ganaste){
-    try {
-        const url = `../api/jugadora_datos?id=${encodeURIComponent(id)}`;
-
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error en la solicitud: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        //console.log('Datos recibidos:', data);
-
-            if (data !== null) {
-                // Solo un resultado, no es necesario mostrar el modal
-                //console.log(data.success)
-                return data.success
-            } else {
-                // Múltiples resultados, mostrar el modal
-                return null;
-            }
-
-    } catch (error) {
-        console.error("Error al obtener los datos:", error);
     }
 }
 
@@ -170,7 +143,7 @@ async function verificar(){
     }
 
     async function obtenerJugadora(id){
-        const jugadora = await cargarJugadora(id, false)
+        const jugadora = await cargarJugadoraDatos(id, false)
         return jugadora;
     }
 

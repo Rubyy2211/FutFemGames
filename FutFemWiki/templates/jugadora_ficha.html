@@ -12,17 +12,33 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'FutFemWiki/css/ficha-jugadora.css' %}">
     <link rel="stylesheet" href="{% static 'FutFemWiki/css/tarjeta-jugadora.css' %}">
 </head>
 <body>
     
     {% include 'partials/header.html' %}
-    <h3>{{ jugadora.Nombre }}</h3>
+    <div id="jugadora-info">
+        <img src="/{{ jugadora.imagen}}" class="glass" id="jugadora-img">
+        <div id="datos-jugadora">
+            <h3>{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
+            <div class="grid">   
+                    <p>Nacimiento: {{ jugadora.Nacimiento }}</p>
+                    <span id="pais"></span>
+      
+                    <p>Altura: {{ jugadora.altura }} cm</p>
+                    <p>Pie: {{ jugadora.pie_habil }}</p>
+
+                    <p id="posicion">lorem</p>
+                    <p>Value: {{ jugadora.market_value }} €</p>
+        </div>
+        </div>
+    </div>
     <div id="mostrador-tarjetas">
         <div class="tarjeta-wrapper">
             <div class="tarjeta-inner">
                 <div id="tarjeta-jugadora" class="glass tarjeta-jugadora tarjeta-front">
-                    <img id="imagen-jugadora" src="/{{ jugadora.imagen }} ">
+                    <img id="imagen-jugadora" src="/{{ jugadora.imagen }}">
                     <p id="nombre" class="nombre">{{ jugadora.Apodo }}</p>
                     <div id="detalles" class="detalles">
                         <img src="/{{ jugadora.Nacionalidad.bandera }}" alt="{{ jugadora.Nacionalidad.nombre }}">
@@ -39,14 +55,22 @@
             </div>
         </div>
     </div>
+    </div>
 <script type="module">
-    import {calcularEdad, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById} from '{% static "futfem/js/jugadora.js" %}'; 
-    import {fetchEquipoById} from '{% static "futfem/js/equipos.js" %}';     
+    import {calcularEdad, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById, cargarJugadoraDatos} from '{% static "futfem/js/jugadora.js" %}'; 
+    import {fetchEquipoById} from '{% static "futfem/js/equipos.js" %}';    
+    const jugadora = await cargarJugadoraDatos('{{ jugadora.id_jugadora }}'); 
+    console.log(jugadora)
     const edad = document.getElementById('edad');
     const mostrador = document.getElementById('mostrador-tarjetas');
+    const pais = document.getElementById('pais');
+    const posicion = document.getElementById('posicion');
+    const info = document.getElementById('jugadora-info');
     const palmaresIndiv = document.getElementById('palmares-individual');
     edad.textContent = '{{ jugadora.Nacimiento }}' + '(' + calcularEdad('{{ jugadora.Nacimiento }}') + ')'
-
+    pais.classList.add('fi')
+    pais.classList.add(`fi-${jugadora.pais_iso}`)
+    posicion.textContent = 'Posicion: '+jugadora.posicionObj.abreviatura;
     const trayectorias = await fetchJugadoraTrayectoriaById('{{ jugadora.id_jugadora }}')
     const palmares = await fetchJugadoraPalmaresById('{{ jugadora.id_jugadora }}')
     if (!palmares.individual) {palmares.individual = [];}
@@ -63,6 +87,7 @@
      for(const trayectoria of trayectorias){
         let index = trayectorias.indexOf(trayectoria);
         const equipo = await fetchEquipoById(trayectoria.equipo);
+        info.style.background = equipo.color || 'var(--color-secundario)';
         
         const tarjetaWrapper = document.createElement('div');
         tarjetaWrapper.classList.add('tarjeta-wrapper');
@@ -78,8 +103,9 @@
 
 
         // Si es el equipo 83 → vintage
-        if (equipo[0].club === 83) {
+        if (equipo.club === 83) {
             tarjetaInner.classList.add('vintage');
+            info.classList.add('vintage')
         }
         front.classList.add('glass');
         front.classList.add('tarjeta-jugadora')
@@ -95,7 +121,7 @@
             <div class="detalles">
                 <div class="equipo-pais">
                 <p>{{ jugadora.Posicion.abreviatura }}</p>
-                <img src="/${equipo[0].escudo}" alt="${equipo.nombre}">
+                <img src="/${equipo.escudo}" alt="${equipo.nombre}">
                 <span alt="{{ jugadora.Nacionalidad.nombre }}"></span>
                 </div>
                 <p>${trayectoria.años}</p>
@@ -139,14 +165,14 @@
             detalles.style.background = `
                 linear-gradient(
                     to right,
-                    ${equipo[0].color},
+                    ${equipo.color},
                     transparent
                 )
             `;
             nombre.style.background = `
                 linear-gradient(
                     to right,
-                    ${equipo[0].color},
+                    ${equipo.color},
                     transparent
                 )
             `;

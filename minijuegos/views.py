@@ -54,7 +54,7 @@ def futfemMates(request):
 
 @never_cache
 def futfemGuess(request):
-        return render(request, 'minijuegos/adivina.html')
+        return render(request, 'minijuegos/adivina2.html')
 
 @never_cache
 def futfemGuess2(request):
