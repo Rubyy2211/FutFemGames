@@ -110,7 +110,7 @@ table {
 }
 
 th, td {
-    border: 1px solid #ddd;
+    border: 1px solid #ddd !important;
     padding: 0;
     text-align: center;
     width: 100px;
@@ -118,25 +118,31 @@ th, td {
     position: relative;
     vertical-align: middle;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: background 0.3s ease !important;
     margin: 10px;
-    border-radius: 5px;
+    border-radius: 20px;
     z-index: 3;
 }
 
 td {
     position: relative;
-    background-color: rgba(128,0,128,0.5);
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-primario) 30%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
 }
 td * {
     pointer-events: none;
 }
 
 td:hover{
-    background:linear-gradient(
+    /*background:linear-gradient(
     to bottom,
     color-mix(in srgb, var(--gradient-primary) 50%, transparent),
-    color-mix(in srgb, var(--gradient-secondary) 100%, transparent));
+    color-mix(in srgb, var(--gradient-secondary) 100%, transparent));*/
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-primario) 10%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 80%, transparent)) !important;
+    border: 1px solid var(--color-primario) !important;
 }
 
 /* Estilo temporal al hacer clic */
@@ -223,7 +229,19 @@ td.selected {
     100% { transform: translateX(0); }
 }
 
-.tremble {
+td.tremble {
     animation: shake 0.5s ease;
-    background-color: red; /* Color de fondo rojo durante el temblor */
+    /*background-color: red; /* Color de fondo rojo durante el temblor */
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-danger) 50%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
+    border: 1px solid var(--color-danger) !important;
+}
+
+td.blocked {
+    /*background-color: red; /* Color de fondo rojo durante el temblor */
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-success) 50%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
+    border: 1px solid var(--color-success) !important;
 }

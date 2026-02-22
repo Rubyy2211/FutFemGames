@@ -36,6 +36,8 @@ body{
     filter: blur(280px);
     transform: scale(1.1); /* evita bordes duros */
     z-index: 0;
+    height: fit-content;
+    z-index: -1;
 }
 
 #game div > * {

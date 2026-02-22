@@ -102,10 +102,10 @@ summary, details{
 }
 
 #items-container{
-    background-image: url("../../img/fondo cesped.jpg.png");
+    /*background-image: url("../../img/fondo cesped.jpg.png");*/
     background-size: cover;
     background-repeat: no-repeat;
-    background-color: rgb(37, 0, 37); /* Color negro con transparencia */
+    background-color: rgb(37, 0, 37, 0.5); /* Color negro con transparencia */
     background-blend-mode: color-dodge; /* Modo de mezcla */
     height: 100%;
     width: 100%;
@@ -127,6 +127,7 @@ summary, details{
     justify-items: center; /* centra horizontalmente los items */
     padding-block: 25px;
     padding-inline: 10%;
+    height: 60%;
 }
 
 .jugadora-item{
@@ -182,7 +183,8 @@ summary, details{
     border-bottom: 2px solid var(--color-primario);
     transition: all 0.3s ease;
     width: 100%;
-    height: 300px;
+    /*height: 300px;*/
+    height: 27%;
     position: relative;
 }
 

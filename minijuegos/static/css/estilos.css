@@ -306,6 +306,27 @@ input::placeholder{
 .popup-ex .selector-dificultad div button{
     width: 30%;
 }
+
+/* La clase que añadiremos */
+.countdown-tick {
+    animation: tick-pulse 0.3s ease-out;
+}
+
+@keyframes tick-pulse {
+    0% {
+        transform: scale(1);
+        color: white;
+    }
+    50% {
+        transform: scale(1.3); /* Crece un poco */
+        color: var(--color-danger);       /* Se pone rojo */
+    }
+    100% {
+        transform: scale(1);
+        color: white;
+    }
+}
+
 @media (max-width: 768px){
     .popup-ex .explicar img{
         max-width: 100px;

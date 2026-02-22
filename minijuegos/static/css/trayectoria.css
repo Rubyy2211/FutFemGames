@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 20px;
+    /*margin: 20px;*/
     text-align: center;
     width: 100%;
     height: 100%;
@@ -17,12 +17,12 @@
     text-align: center; /* Centrar el contenido dentro del botón */
     /*background-color: rgba(128,0,128,0.45); /* Color de fondo primario */
     color: white; /* Color del texto */
-    margin-bottom: 20px; /* Espaciado inferior entre botones */
+    /*margin-bottom: 20px; /* Espaciado inferior entre botones */
     transition: transform 0.2s; /* Suavizar el efecto de transformación */
-    border: 0.5px solid rgb(128, 0, 128);
-    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.25);
+    /*border: 0.5px solid rgb(128, 0, 128);
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.25);*/
 
-    backdrop-filter: blur(10px);
+    /*backdrop-filter: blur(10px);*/
 }
 #sugerencias{
     max-height: 125px;
@@ -48,7 +48,7 @@ h1{
                 0 0 20px rgba(128, 0, 128, 0.3);
 }
 #foto-jug{
-    margin-bottom: 2.5%;
+    margin-bottom: 1%;
 }
 button{
     width: 30%;
@@ -89,6 +89,7 @@ button{
     /*box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); /* Sombra alrededor de la imagen */
     width: 100px;
     height: 100px;
+    max-height: 100px;
 }
 label{
     margin: 0;
@@ -109,6 +110,16 @@ p {
 .front{
     text-align: end;
     height: inherit;
+    gap: 10px;
+}
+.front img{
+    padding: 5%;
+}
+.back{
+    gap: 10px;
+}
+.back img{
+    padding: 0%;
 }
 #respuesta{
     display: flex;

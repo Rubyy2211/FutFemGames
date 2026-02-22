@@ -5,6 +5,9 @@ let answer = "";
 let currentRow = 0;
 let jugadora;
 const maxRows = 6;
+const celdasTd = document.querySelectorAll('input');
+
+
 async function iniciar() {
     jugadora = await fetchData(2);
     localStorage.setItem('res2', jugadora.idJugadora);
@@ -89,7 +92,7 @@ async function loadJugadoraApodo(id, ganaste) {
 
 function createBoard() {
     const board = document.getElementById("board");
-    board.style.gridTemplateColumns = `repeat(${answer.length}, 60px)`;
+    board.style.gridTemplateColumns = `repeat(${answer.length}, 70px)`;
     for (let i = 0; i < maxRows; i++) {
         for (let j = 0; j < answer.length; j++) {
             const input = document.createElement("input");
@@ -291,6 +294,10 @@ function saveWordleRow(guess, resultStates) {
 }
 
 function colocarRespuestas(palabra, results, row) {
+    let data = localStorage.getItem("Attr2");
+
+    // Si no existe, iniciar vacío
+    let arr = data ? JSON.parse(data) : [];
     disableRowInputs(row);
     // Rellenar cada letra
     for (let i = 0; i < answer.length; i++) {
@@ -307,8 +314,11 @@ function colocarRespuestas(palabra, results, row) {
     }
     currentRow = row + 1;
     updateActiveRow();
+
+    const valorLocal = localStorage.getItem('res2');
+    const respuestaCorrecta = arr[arr.length-1].answer;
     
-    if(localStorage.getItem('hasWon2')){
+    if (currentRow >= arr.length && (valorLocal === respuestaCorrecta || valorLocal === 'loss' + respuestaCorrecta)) {
         lockAllRows();
     }
 }

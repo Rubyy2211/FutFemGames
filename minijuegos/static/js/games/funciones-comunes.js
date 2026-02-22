@@ -72,8 +72,8 @@ export async function ponerClubes(ids, posiciones) {
             th.style.background = `
                 linear-gradient(
                     to bottom,
-                    color-mix(in srgb, ${colorPrimario} 30%, transparent),
-                    color-mix(in srgb, ${colorSecundario} 30%, transparent)
+                    color-mix(in srgb, ${colorPrimario} 50%, transparent),
+                    color-mix(in srgb, ${colorSecundario} 50%, transparent)
                 )
                 `;
 

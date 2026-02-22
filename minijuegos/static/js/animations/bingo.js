@@ -1,18 +1,18 @@
 async function iniciarHoverFondos() {
 
-    const bg = document.getElementById('bg-dynamic');
-    let currentBg = null;
+    //const bg = document.getElementById('bg-dynamic');
+    //let currentBg = null;
 
     document.querySelectorAll('td').forEach(celda => {
 
         celda.addEventListener('mouseenter', () => {
             const cellBg = getComputedStyle(celda).backgroundImage;
 
-            if (!cellBg || cellBg === 'none' || cellBg === currentBg) return;
+            //if (!cellBg || cellBg === 'none' || cellBg === currentBg) return;
 
-            currentBg = cellBg;
+            //currentBg = cellBg;
 
-            gsap.to(bg, {
+            /*gsap.to(bg, {
                 opacity: 0,
                 duration: 0.25,
                 onComplete: () => {
@@ -24,7 +24,7 @@ async function iniciarHoverFondos() {
                         ease: "power2.out"
                     });
                 }
-            });
+            });*/
 
             gsap.to(celda, {
                 scale: 1.05,
@@ -34,17 +34,17 @@ async function iniciarHoverFondos() {
         });
 
         celda.addEventListener('mouseleave', () => {
-            gsap.to(bg, {
+            /*gsap.to(bg, {
                 opacity: 0,
                 duration: 0.25
-            });
+            });*/
 
             gsap.to(celda, {
                 scale: 1,
                 duration: 0.25
             });
 
-            currentBg = null;
+            //currentBg = null;
         });
     });
 }

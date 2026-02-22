@@ -4,6 +4,7 @@ const buttons = document.querySelectorAll('.game-button');
 const rows = document.querySelectorAll('.row'); 
 let scrollPos = 0; const rowHeight = rows[0].offsetHeight; 
 const maxScroll = (rows.length - 1) * rowHeight;
+import { hoverSound } from "../sounds.js";
 
 buttons.forEach(card => {
   const bgImg = card.dataset.bg;

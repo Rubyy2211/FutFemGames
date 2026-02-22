@@ -2,6 +2,7 @@ import { fetchJugadoraTrayectoriaById, handleAutocompletePlayer } from "/static/
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
 import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
+import { victory } from "../sounds.js";
 
 // Variables de Juego
 let jugadoraId;
@@ -120,7 +121,6 @@ export async function loadJugadoraById(id, ganaste) {
 function displayTrayectoria(data, acertaste) {
     trayectoriaDiv.setAttribute('Attr1', data[0].jugadora)
     trayectoriaDiv.innerHTML = ''; // Limpiar contenido previo
-    trayectoriaDiv.classList.add('glass');
 
     const maxPerRow = 5;
     let currentRow;
@@ -130,6 +130,10 @@ function displayTrayectoria(data, acertaste) {
             currentRow = document.createElement('div');
             currentRow.classList.add('trayectoria-row');
             trayectoriaDiv.appendChild(currentRow);
+        }
+
+        if(item.equipo === 83){
+            return
         }
 
         const flipContainer = document.createElement('div');
@@ -146,6 +150,15 @@ function displayTrayectoria(data, acertaste) {
             const escudoImg = document.createElement('img');
             escudoImg.src = item.escudo;
             escudoImg.alt = item.nombre;
+            escudoImg.classList.add('glass')
+            escudoImg.style.background = `
+                linear-gradient(
+                    to bottom,
+                    color-mix(in srgb, ${item.color} 30%, transparent),
+                    color-mix(in srgb, transparent 30%, transparent)
+                )
+            `;
+            escudoImg.style.borderColor = item.color;
             front.appendChild(escudoImg);
 
             const anyos = document.createElement('p');
@@ -172,6 +185,7 @@ function displayTrayectoria(data, acertaste) {
                 const jugadoraImg = document.createElement('img');
                 jugadoraImg.src = item.imagen;
                 jugadoraImg.alt = 'Imagen de la Jugadora';
+                jugadoraImg.className = 'glass';
                 back.appendChild(jugadoraImg);
 
                 const anyos = document.createElement('p');
@@ -184,6 +198,7 @@ function displayTrayectoria(data, acertaste) {
                 const jugadoraImg = document.createElement('img');
                 jugadoraImg.src = data[0].ImagenJugadora;
                 jugadoraImg.alt = 'Imagen de la Jugadora';
+                jugadoraImg.className = 'glass';
                 back.appendChild(jugadoraImg);
 
                 const anyos = document.createElement('p');
@@ -211,6 +226,7 @@ async function checkAnswer() {
         if(!localStorage.getItem('Attr1')){
             console.log('Actualizando racha con última respuesta:', idJugadora);
             await updateRacha(1, 1, idJugadora);
+            victory.play()
         }else{
             //await updateRacha(1, 1);
     }

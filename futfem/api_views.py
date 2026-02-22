@@ -3,7 +3,8 @@ import json, random
 from django.utils import timezone
 from django.http import JsonResponse
 from django.db import connection, IntegrityError
-from django.db.models import Q
+from django.db.models import Q, CharField, Value
+from django.db.models.functions import Concat
 from datetime import date, datetime
 from .models import Jugadora, Trayectoria, Equipo, Pais, Liga, Trofeo
 from random import shuffle
@@ -11,7 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from bs4 import BeautifulSoup
-import requests
+import requests, re
 from django.contrib.auth.hashers import make_password, check_password
 
 # Create your views here.
@@ -244,35 +245,40 @@ def jugadora_datos(request):
     return JsonResponse({"success": data})
 
 def jugadoraxnombre(request):
-    nombre = request.GET.get('nombre', '').strip()
-    if not nombre:
-        return JsonResponse({'error': 'Nombre de jugadora no proporcionado'}, status=400)
+    query_input = request.GET.get('nombre', '').strip()
+    if not query_input:
+        return JsonResponse({'error': 'Falta nombre'}, status=400)
 
-    # Búsqueda parcial (case-insensitive)
-    jugadoras = (
-        Jugadora.objects
-        .filter(
-            Q(Nombre__icontains=nombre) |
-            Q(Apodo__icontains=nombre) |
-            Q(Apellidos__icontains=nombre)
-        )
-        .select_related('Nacionalidad', 'Posicion')  # optimiza las relaciones
+    # 1. Normalizamos espacios
+    query_input = re.sub(' +', ' ', query_input)
+    # 2. Dividimos por palabras: "Emma H" -> ["Emma", "H"]
+    palabras = query_input.split(' ')
+
+    # 3. Creamos el campo anotado
+    queryset = Jugadora.objects.annotate(
+        nombre_completo=Concat('Nombre', Value(' '), 'Apellidos', output_field=CharField())
     )
 
-    if not jugadoras.exists():
-        return JsonResponse({'error': 'No se encontraron jugadoras con ese nombre.'}, status=404)
+    # 4. Filtramos: CADA palabra debe estar en el nombre_completo
+    # Esto permite buscar "H Emma" o "Emma Holmgren" o "Emma H"
+    for palabra in palabras:
+        queryset = queryset.filter(
+            Q(nombre_completo__icontains=palabra) | Q(Apodo__icontains=palabra)
+        )
 
-    data = []
-    for j in jugadoras:
-        data.append({
-            'id_jugadora': j.id_jugadora,
-            'Nombre_Completo': f"{j.Nombre} {j.Apellidos}",
-            'imagen': j.imagen or '/static/img/predeterm.jpg',
-            'Apodo': j.Apodo,
-            'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d"),
-            'Nacionalidad': j.Nacionalidad.nombre if j.Nacionalidad else None,
-            'Posicion': j.Posicion.nombre if j.Posicion else None,
-        })
+    # 5. Limitamos resultados para que el autocompletado sea rápido
+    jugadoras = queryset.select_related('Nacionalidad', 'Posicion')[:10]
+
+    if not jugadoras.exists():
+        return JsonResponse([], safe=False) # Mandar lista vacía es mejor que un 404 para el JS
+
+    data = [{
+        'id_jugadora': j.id_jugadora,
+        'Nombre_Completo': f"{j.Nombre} {j.Apellidos}",
+        'imagen': j.imagen or '/static/img/predeterm.jpg',
+        'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else "",
+        'Apodo': j.Apodo,
+    } for j in jugadoras]
 
     return JsonResponse(data, safe=False)
 
@@ -311,6 +317,7 @@ def jugadora_trayectoria(request):
             'trayectoria_id': t.id,
             'jugadora': jug.id_jugadora,
             'equipo': equipo.id_equipo,
+            'color': equipo.color,
             'años': t.años,
             'imagen': t.imagen,  # o t.imagen codificada si quieres
             'equipo_actual': t.equipo_actual,
@@ -341,11 +348,11 @@ def jugadora_pais(request):
     })
 
 def jugadora_aleatoria(request):
+    # 1. Obtener parámetros
     nacionalidades = request.GET.getlist("nacionalidades[]")
     equipos = request.GET.getlist("equipos[]")
     ligas = request.GET.getlist("ligas[]")
 
-    # Convertir a enteros (ignorar si no son válidos)
     try:
         nacionalidades = [int(x) for x in nacionalidades]
         equipos = [int(x) for x in equipos]
@@ -353,59 +360,62 @@ def jugadora_aleatoria(request):
     except ValueError:
         return JsonResponse({"error": "Parámetros inválidos"}, status=400)
 
-    def obtener_jugadoras(filtro, valores):
-        if not valores:
-            return {}
+    jugadoras_finales = {} # Usamos dict para evitar duplicados por ID automáticamente
 
-        qs = Jugadora.objects.select_related().all()
+    # Función interna para asegurar que cada criterio tenga al menos una jugadora
+    def cubrir_criterios(queryset_base, lista_ids, campo_filtro):
+        for valor_id in lista_ids:
+            # Buscamos 2 jugadoras aleatorias por cada criterio específico
+            # para dar variedad pero asegurar que esa casilla del bingo sea rellenable
+            filtro = {f"{campo_filtro}": valor_id}
+            qs = queryset_base.filter(**filtro).order_by('?')[:2]
+            for j in qs:
+                if j.id_jugadora not in jugadoras_finales:
+                    jugadoras_finales[j.id_jugadora] = {
+                        "id": j.id_jugadora,
+                        "nombre": f"{j.Nombre} {j.Apellidos}",
+                        "imagen": j.imagen if j.imagen else None,
+                        "pais": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+                        "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
+                    }
 
-        if filtro == "pais":
-            qs = qs.filter(Nacionalidad__in=valores)
+    # Base de la consulta optimizada
+    base_qs = Jugadora.objects.select_related('Nacionalidad')
 
-        elif filtro == "equipo":
-            qs = qs.filter(trayectoria__equipo__in=valores)
+    # 2. Asegurar cobertura de cada casilla (Bingo seguro)
+    if nacionalidades:
+        cubrir_criterios(base_qs, nacionalidades, "Nacionalidad")
+    
+    if equipos:
+        cubrir_criterios(base_qs, equipos, "trayectoria__equipo")
+        
+    if ligas:
+        cubrir_criterios(base_qs, ligas, "trayectoria__equipo__liga")
 
-        elif filtro == "liga":
-            qs = qs.filter(trayectoria__equipo__liga__in=valores)
+    # 3. Rellenar hasta llegar a 30 si faltan (Opcional)
+    # Si tras asegurar la cobertura hay pocas, traemos algunas más que cumplan CUALQUIER criterio
+    if len(jugadoras_finales) < 20:
+        extras = base_qs.filter(
+            Q(Nacionalidad__in=nacionalidades) |
+            Q(trayectoria__equipo__in=equipos) |
+            Q(trayectoria__equipo__liga__in=ligas)
+        ).distinct().order_by('?')[:15]
+        
+        for j in extras:
+            if j.id_jugadora not in jugadoras_finales:
+                jugadoras_finales[j.id_jugadora] = {
+                    "id": j.id_jugadora,
+                    "nombre": f"{j.Nombre} {j.Apellidos}",
+                    "imagen": j.imagen,
+                    "pais": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+                    "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
+                }
 
-        # Distinct + random
-        qs = qs.distinct().order_by("?")[:10]
+    # 4. Convertir a lista y desordenar
+    resultado = list(jugadoras_finales.values())
+    random.shuffle(resultado)
 
-        salida = {}
-        for j in qs:
-            # Imagen base64
-            imagen = None
-            if j.imagen:
-                try:
-                    imagen = j.imagen
-                except Exception:
-                    imagen = None
-
-            salida[j.id_jugadora] = {
-                "id": j.id_jugadora,
-                "nombre": f"{j.Nombre} {j.Apellidos}",
-                "imagen": imagen,
-                "pais": j.Nacionalidad.id_pais,
-                "Nacimiento": j.Nacimiento,
-            }
-
-        return salida
-
-    # Obtener sets
-    jugadoras_pais = obtener_jugadoras("pais", nacionalidades)
-    jugadoras_equipo = obtener_jugadoras("equipo", equipos)
-    jugadoras_liga = obtener_jugadoras("liga", ligas)
-
-    # Combinar asegurando unicidad por ID
-    jugadoras = {**jugadoras_pais, **jugadoras_equipo, **jugadoras_liga}
-    jugadoras = list(jugadoras.values())
-
-    # Limitar a 30 aleatorias
-    if len(jugadoras) > 30:
-        shuffle(jugadoras)
-        jugadoras = jugadoras[:30]
-
-    return JsonResponse(jugadoras, safe=False)
+    return JsonResponse(resultado[:30], safe=False)
 
 def jugadoras_por_equipo_y_temporada(request):
     equipo_id = request.GET.get("equipo")

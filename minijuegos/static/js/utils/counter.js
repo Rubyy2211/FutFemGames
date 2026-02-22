@@ -1,5 +1,5 @@
 let intervalos = {}; // Objeto para almacenar los intervalos
-
+import { countdown } from '../sounds.js'; // Asegúrate de que el nombre coincida
 export function inicializarCounter(facil, medio, dificil, juego , dificultad){
         // Definir los segundos según la dificultad
     let segundos;
@@ -32,6 +32,15 @@ export function startCounter(segundos, juego, onFinish) {
     intervalos[juego] = setInterval(() => {
         reloj.textContent = segundos;
 
+        // --- LÓGICA DEL SONIDO ---
+        if (segundos > 0 && segundos<=30) {
+            countdown.currentTime = 0; // Reinicia el audio para que suene en cada segundo
+            countdown.play().catch(e => console.log("El usuario aún no ha interactuado con la web"));
+            reloj.classList.remove('countdown-tick'); // Quitamos la clase del segundo anterior
+            void reloj.offsetWidth;                    // fuerza al navegador a "renderizar"
+            reloj.classList.add('countdown-tick');    // La volvemos a poner
+        }
+
         if (segundos <= 0) {
             clearInterval(intervalos[juego]);
             delete intervalos[juego];
@@ -40,7 +49,6 @@ export function startCounter(segundos, juego, onFinish) {
         } else {
             localStorage.setItem(juego, segundos);
             segundos--;
-           //console.log(segundos);
         }
     }, 1000);
 }
@@ -50,6 +58,7 @@ export function stopCounter(juego) {
         clearInterval(intervalos[juego]); // Detiene el intervalo
         delete intervalos[juego]; // Elimina la referencia
         console.log(`Contador de ${juego} detenido`);
+        countdown.pause()
     } else {
         console.log(`No hay un contador en ejecución para ${juego}`);
     }

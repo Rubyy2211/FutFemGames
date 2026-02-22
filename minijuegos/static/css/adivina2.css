@@ -1,6 +1,7 @@
 body{
     height: 100vh;
     max-height: 100vh;
+    overflow-y: hidden;
 }
 /* width */
 ::-webkit-scrollbar {
@@ -23,7 +24,10 @@ body{
 }
 
 .menor, .mayor{
-    background-color: #c9b458;
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-warning) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 40%, transparent)) !important;
+    border: 1px solid var(--color-warning);
 }
 
 .mayor::after {
@@ -37,11 +41,17 @@ body{
 }
 
 .igual, .correct{
-    background-color: #6aaa64;
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-success) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 40%, transparent)) !important;
+    border: 1px solid var(--color-success);
 }
 
 .incorrecto{
-    background-color: #262a25;
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-gray-dark) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 40%, transparent)) !important;
+    border: 1px solid var(--color-gray-dark);
 }
 
 .fi{
@@ -51,7 +61,7 @@ body{
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    /*justify-content: center;*/
     height: 100%;
     max-width: 420px;
 }
@@ -63,6 +73,7 @@ body{
     max-height: 664px;
     overflow-y: auto;
     gap: 40px;
+    margin-bottom: 15px;
 }
 
 
@@ -94,12 +105,12 @@ body{
 
 #game #game-results .jugadora-item .jugadora-item-header img {
     border-radius: 50%;
-    width: 125px;
-    height: 125px;
+    width: 100px;
+    height: 100px;
     background: linear-gradient(
         to bottom,
         color-mix(in srgb, var(--color-primario) 30%, transparent),
-        color-mix(in srgb, var(--color-secundario) 30%, transparent)
+        color-mix(in srgb, var(--color-secundario) 50%, transparent)
     );
 
     color: white; /* Color del texto */

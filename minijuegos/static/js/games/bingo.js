@@ -2,6 +2,7 @@ import { fetchJugadoraNacionalidadById, fetchJugadoraTrayectoriaById, fetchJugad
 import { updateRacha, obtenerUltimaRespuesta } from '/static/usuarios/js/rachas.js';
 import { getDominantColors, rgbToRgba } from '../utils/color.thief.js';
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
+import { victory, wrong, correct } from "../sounds.js";
 import { ponerBanderas, ponerLigas, ponerClubes, ponerTrofeos, ponerEdades, crearPopupInicialJuego } from "./funciones-comunes.js";
 let idres;
 let paises, equipos, ligas, trofeos;
@@ -138,6 +139,7 @@ function handleCellClick(event, jugador) {
             bloquearCeldaEstilo(cell, jugador.foto); // Usar la imagen correcta
             gestionarAciertos(cellId, jugador.foto);
             hasMatch = true;
+            correct.play()
             celdasLlenas = comprobarFotosEnCeldas();
         } else {
             console.log("No hay coincidencia de país.");
@@ -152,6 +154,7 @@ function handleCellClick(event, jugador) {
                 bloquearCeldaEstilo(cell, jugador.foto); // Usar la imagen correcta
                 gestionarAciertos(cellId, jugador.foto);
                 hasMatch = true;
+                correct.play()
                 celdasLlenas = comprobarFotosEnCeldas();
             } else {
                 console.log("No hay coincidencia de liga.");
@@ -171,6 +174,7 @@ function handleCellClick(event, jugador) {
                 bloquearCeldaEstilo(cell, jugador.foto); // Usar la imagen correcta
                 gestionarAciertos(cellId, jugador.foto);
                 hasMatch = true;
+                correct.play()
                 celdasLlenas = comprobarFotosEnCeldas();
             } else {
                 console.log("No hay coincidencia de club.");
@@ -185,18 +189,21 @@ function handleCellClick(event, jugador) {
             let trofeosIndividuales = [];
             let trofeosEquipo = [];
 
-            jugador.trofeos.individual.forEach(item => {
-                if (Array.isArray(item.success)) {
-                    trofeosIndividuales.push(...item.success);
-                }
-            });
-
-            jugador.trofeos.equipo.forEach(item => {
-                if (Array.isArray(item.success)) {
-                    trofeosEquipo.push(...item.success);
-                }
-            });
-
+            if(jugador.trofeos.individual){
+                jugador.trofeos.individual.forEach(item => {
+                    if (Array.isArray(item.success)) {
+                        trofeosIndividuales.push(...item.success);
+                    }
+                });
+            }
+            
+            if(jugador.trofeos.equipo){
+                jugador.trofeos.equipo.forEach(item => {
+                    if (Array.isArray(item.success)) {
+                        trofeosEquipo.push(...item.success);
+                    }
+                });
+            }
 
             if(img.id === 'individual'){
                 trofeoMatch = trofeosIndividuales.some(trofeo => `trofeo${trofeo.id}` === imgClass);
@@ -208,6 +215,7 @@ function handleCellClick(event, jugador) {
                 bloquearCeldaEstilo(cell, jugador.foto);
                 gestionarAciertos(cellId, jugador.foto);
                 hasMatch = true;
+                correct.play();
                 celdasLlenas = comprobarFotosEnCeldas();
             } else {
                 console.log("No hay coincidencia de trofeo.");
@@ -230,6 +238,7 @@ function handleCellClick(event, jugador) {
                 bloquearCeldaEstilo(cell, jugador.foto); // Usar la imagen correcta
                 gestionarAciertos(cellId, jugador.foto);
                 hasMatch = true;
+                correct.play();
                 celdasLlenas = comprobarFotosEnCeldas();
             } else {
                 console.log(`No hay coincidencia de edad menor de ${edadLimite}.`);
@@ -246,6 +255,7 @@ function handleCellClick(event, jugador) {
                 bloquearCeldaEstilo(cell, jugador.foto); // Usar la imagen correcta
                 gestionarAciertos(cellId, jugador.foto)
                 hasMatch = true;
+                correct.play();
                 celdasLlenas = comprobarFotosEnCeldas();
             } else {
                 console.log(`No hay coincidencia de edad mayor de ${edadLimite}.`);
@@ -262,6 +272,7 @@ function handleCellClick(event, jugador) {
                 bloquearCeldaEstilo(cell, jugador.foto); // Usar la imagen correcta
                 gestionarAciertos(cellId, jugador.foto);
                 hasMatch = true;
+                correct.play();
                 celdasLlenas = comprobarFotosEnCeldas();
             } else {
                 console.log(`No hay coincidencia de edad igual a ${edadLimite}.`);
@@ -272,6 +283,7 @@ function handleCellClick(event, jugador) {
     }
     if(celdasLlenas){
         stopCounter('bingo');
+        victory.play();
         updateRacha(6, 1, localStorage.getItem('Attr6'));
         Ganaste('bingo');
     }
@@ -354,11 +366,15 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
 
             newCell.addEventListener('click', function (event) {
                 let click = handleCellClick(event, data);
+                console.log("¿Es acierto?:", click, "Tipo:", typeof click); // Mira esto en la consola
                 if (click) {
                     newCell.removeEventListener('click', handleCellClick);
+                    newCell.classList.add('correcto');
                     skipPlayer(paises, clubes, ligas, trofeos); // Avanza a la siguiente jugadora
                 } else {
                     newCell.classList.add('tremble');
+                    wrong.currentTime = 0;
+                    wrong.play();
                     setTimeout(() => newCell.classList.remove('tremble'), 500);
                 }
             });

@@ -1,9 +1,3 @@
-body{
-    height: 100vh;
-}
-header{
-    background-color: var(--color-secundario);
-}
 #jugadora-info{
     display: flex;
     flex-direction: row;
@@ -18,7 +12,8 @@ header{
 #jugadora-info img{
     border-radius: 20px;
     padding: unset;
-    width: 225px;
+    width: 200px;
+    max-width: 200px;
     background: rgba(255, 255, 255, 0.08);
 }
 #jugadora-info #datos-jugadora{
@@ -36,5 +31,33 @@ header{
 }
 #mostrador-tarjetas{
     height: 100%;
-    background-color: var(--color-secundario);
+}
+
+/* 1. Clase base: aquí definimos la suavidad */
+.tarjeta-wrapper {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); /* Curva suave */
+    will-change: transform; /* Ayuda al navegador a optimizar la animación */
+    opacity: 0.4;
+}
+
+/* 2. Clase activa: aplicamos el escalado */
+.swiper-slide-active .tarjeta-wrapper {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* 3. Asegurar que las tarjetas no se corten */
+.swiper {
+    /* Añadimos un poco de padding para que al escalar 
+       la tarjeta no se salga del borde del contenedor */
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+span.swiper-pagination-bullet{
+    background: var(--color-secundario);
+    border: 1px solid var(--color-detalles);
+}
+span.swiper-pagination-bullet-active{
+    background: var(--color-primario);
+    border: 1px solid var(--color-primario);
 }
