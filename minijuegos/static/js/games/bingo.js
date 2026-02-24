@@ -3,14 +3,14 @@ import { updateRacha, obtenerUltimaRespuesta } from '/static/usuarios/js/rachas.
 import { getDominantColors, rgbToRgba } from '../utils/color.thief.js';
 import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
 import { victory, wrong, correct } from "../sounds.js";
-import { ponerBanderas, ponerLigas, ponerClubes, ponerTrofeos, ponerEdades, crearPopupInicialJuego } from "./funciones-comunes.js";
+import { ponerBanderas, ponerLigas, ponerClubes, ponerTrofeos, ponerEdades, crearPopupInicialJuego, Ganaste } from "./funciones-comunes.js";
 let idres;
 let paises, equipos, ligas, trofeos;
 let lastPlayer;
 const texto = '¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria.\n' +
     'Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero.\n' +
     'Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!\n';
-const imagen = '../img/Captura de pantalla 2024-09-01 192457.png';
+const imagen = '/static/img/Bingo.png';
 
 
 async function iniciar(dificultad) {

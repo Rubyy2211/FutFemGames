@@ -241,7 +241,7 @@ input::placeholder{
     top: 50%; /* Centrado verticalmente */
     left: 50%; /* Centrado horizontalmente */
     transform: translate(-50%, -50%); /* Ajusta el desplazamiento para un verdadero centrado */
-    width: 75%; /* El popup ocupará el 75% del ancho de su contenedor principal */
+    /*width: 75%; /* El popup ocupará el 75% del ancho de su contenedor principal */
     /*max-width: 600px; /* Establece un límite de ancho máximo para evitar que se haga demasiado grande */
     background: var(--color-gray-dark); /* Color de fondo con una variable CSS */
     z-index: 1000; /* Asegura que el popup esté por encima de otros elementos */

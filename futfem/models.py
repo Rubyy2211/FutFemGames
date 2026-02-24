@@ -88,7 +88,7 @@ class Jugadora(models.Model):
             managed = False  # Si la tabla ya existe y no quieres que Django la reescriba
 
     def __str__(self):
-        return self.Jugadora
+        return self.Nombre + self.Apellidos
     
 class Trofeo(models.Model):
     id = models.AutoField(primary_key=True)

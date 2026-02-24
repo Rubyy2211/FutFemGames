@@ -70,9 +70,9 @@ function Grid() {
             input.textContent = datos.error; // Mostrar mensaje de error en el input
         } else {
             // Suponiendo que "idJugadora" es una propiedad de la respuesta JSON
-            input1.value = datos.pais1 // Usar .value para actualizar un input
-            input2.value = datos.pais2 // Usar .value para actualizar un input
-            input3.value = datos.pais3 // Usar .value para actualizar un input
+            input1.value = datos.club4 // Usar .value para actualizar un input
+            input2.value = datos.club5 // Usar .value para actualizar un input
+            input3.value = datos.club6 // Usar .value para actualizar un input
             input4.value = datos.club1 // Usar .value para actualizar un input
             input5.value = datos.club2 // Usar .value para actualizar un input
             input6.value = datos.club3 // Usar .value para actualizar un input

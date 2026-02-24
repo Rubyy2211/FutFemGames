@@ -44,7 +44,7 @@ async function iniciar(dificultad) {
     // 2. Obtener datos de API (paises y clubes) 
     // -----------------------------------------------------
     let valor = await fetchData(4);
-    let paises = [valor.pais1, valor.pais2, valor.pais3];
+    let paises = [valor.club4, valor.club5, valor.club6];
     let clubes = [valor.club1, valor.club2, valor.club3];
 
     // ID de la respuesta correcta (concatenación)

@@ -1,32 +1,43 @@
 from django.shortcuts import render, redirect
 from .models import Usuario, Racha, Juego
 from django.db import connection, IntegrityError
+from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.models import update_last_login # Importa esto
 from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 def login_view(request):
+
+    if request.user.is_authenticated:
+        return redirect('/') # Si ya está dentro, que no vea el formulario
+    
     if request.method == 'POST':
         usuario_input = request.POST['usuario']
         password_input = request.POST['password']
 
         try:
-            usuario = Usuario.objects.get(usuario=usuario_input)
+            usuario = Usuario.objects.get(username=usuario_input)
         except Usuario.DoesNotExist:
             return render(request, 'login.html', {
                 'error': 'Usuario o contraseña incorrectos'
             })
 
-        if check_password(password_input, usuario.Contrasena):
-            # 👉 guardamos sesión MANUAL
+        if check_password(password_input, usuario.password):
+
+            if not usuario.is_active:
+                return render(request, 'login.html', {'error': 'Esta cuenta ha sido desactivada.'})
+            
+            login(request, usuario) # Esto actualiza last_login y crea la sesión
             request.session['usuario_id'] = usuario.id
-            request.session['usuario_nombre'] = usuario.usuario
+            request.session['usuario_nombre'] = usuario.username
             request.session['rol_id'] = usuario.rol
             return redirect('/')
+        
         else:
             return render(request, 'login.html', {
                 'error': 'Usuario o contraseña incorrectos'
@@ -37,15 +48,22 @@ def login_view(request):
 def logout_view(request):
      # Eliminar todos los datos de la sesión
     request.session.flush()  # borra la sesión y la cookie
-
+    logout(request)
     # Redirigir al login
     return redirect('login')
 
 def sesion_view(request):
-    return JsonResponse({
-        'id': request.session.get('usuario_id'),
-        'rol': request.session.get('rol_id')
-    })
+    if request.user.is_authenticated:
+        return JsonResponse({
+            'autenticado': True,
+            'id': request.session.get('usuario_id'),
+            'rol': request.session.get('rol_id')
+        })
+    else:
+        return JsonResponse({
+            'autenticado': False,
+            'mensaje': 'No hay sesión activa'
+        }, status=401)
 
 def registro_view(request):
     if request.method == 'POST':
@@ -60,9 +78,13 @@ def registro_view(request):
 
         try:
             Usuario.objects.create(
-                usuario=usuario,
-                Contrasena=make_password(password),
-                rol=1
+                username=usuario, 
+                password=make_password(password), # Django lo mapeará a 'Contrasena'
+                rol=1,
+                is_active=True,
+                is_staff=False,
+                is_superuser=False,
+                date_joined=timezone.now()
             )
         except IntegrityError:
             return render(request, 'registro.html', {

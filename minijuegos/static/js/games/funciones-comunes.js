@@ -180,6 +180,8 @@ export function Ganaste(modo) {
     const input = document.querySelectorAll('input');
     const button = document.querySelector('button');
     const result = document.getElementById('resultado');
+    const reloj = document.getElementById('reloj');
+    const vidas = document.getElementById('vidas');
     if(button){
         button.disabled=true;
         button.style.pointerEvents = 'none';
@@ -191,10 +193,13 @@ export function Ganaste(modo) {
     }
     if(modo==='bingo'){
         const button = document.querySelector('.skip-button'); // usa querySelector
+        button.disabled = true;
+        reloj.style.display = 'none';
         result.textContent = '¡Has Ganado!';
     }else if(modo==='trayectoria'){
         const div = document.getElementById('trayectoria');
         const jugadora_id = div.getAttribute('Attr1');
+        reloj.textContent = '¡Has Ganado!';
         localStorage.setItem('Attr1', jugadora_id);
         cambiarImagenConFlip();
     }else if(modo==='compañeras'){
@@ -205,6 +210,7 @@ export function Ganaste(modo) {
     }else if(modo === 'Guess Player'){
         const button = document.querySelector('button');
         result.textContent = '¡Has Ganado!';
+        vidas.style.display = 'none';
     }else if(modo === 'wordle'){
         const textoDiv = document.getElementById('message');
         textoDiv.textContent = '¡Has Ganado!';
