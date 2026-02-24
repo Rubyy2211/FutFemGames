@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Jugadora, Trayectoria, Equipo, Liga
+from .models import Pais ,Jugadora, Trayectoria, Equipo, Liga, JugadoraPais
 # Register your models here.
 
 # 1. Definimos el Inline para la Trayectoria
@@ -18,18 +18,54 @@ class TrayectoriaInline(admin.TabularInline):
         return ""
     ver_escudo.short_description = "Escudo"
 
+# 1. Inline para las Nacionalidades (Tabla Intermedia)
+class NacionalidadInline(admin.TabularInline):
+    model = JugadoraPais
+    extra = 1
+    fields = ('pais', 'es_primaria', 'ver_bandera')
+    readonly_fields = ('ver_bandera',)
+
+    def ver_bandera(self, obj):
+        if obj.pais:
+            return format_html('<span class="fi fi-{}"></span>', obj.pais.iso.lower())
+        return ""
+
+@admin.register(Pais)
+class PaisAdmin(admin.ModelAdmin):
+    # Columnas en la lista: ID, Nombre, ISO y una vista previa de la bandera
+    list_display = ('id_pais', 'nombre', 'iso', 'ver_bandera')
+    search_fields = ('nombre', 'iso')
+    ordering = ('nombre',)
+
+    def ver_bandera(self, obj):
+        if obj.iso:
+            # Usamos la misma librería flag-icons que cargamos en los otros modelos
+            return format_html(
+                '<span class="fi fi-{}" style="font-size: 1.5em; border-radius: 2px;"></span>',
+                obj.iso.lower()
+            )
+        return "🏳️"
+    ver_bandera.short_description = 'Bandera'
+
+    class Media:
+        # Cargamos el CSS de banderas para verlo también aquí
+        css = {
+            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)
+        }
+
 # 2. Registramos la Jugadora con su configuración
 @admin.register(Jugadora)
 class JugadoraAdmin(admin.ModelAdmin):
-    # Columnas en la lista principal
-    list_display = ('ver_foto', 'Nombre', 'Apellidos', 'Nacionalidad', 'Posicion', 'market_value')
-    list_filter = ('Nacionalidad', 'Posicion', 'retiro')
+    # En list_display sustituimos 'Nacionalidad' por nuestro método 'ver_nacionalidades'
+    list_display = ('ver_foto', 'Nombre', 'Apellidos', 'ver_nacionalidades', 'Posicion', 'market_value')
+    # Eliminamos 'Nacionalidad' de list_filter ya que ahora es una relación M2M
+    list_filter = ('Posicion', 'retiro')
     search_fields = ('Nombre', 'Apellidos', 'Apodo')
     
-    # Organización del formulario de edición
     fieldsets = (
         ('Información Personal', {
-            'fields': (('Nombre', 'Apellidos'), 'Apodo', 'Nacimiento', 'Nacionalidad')
+            # Quitamos 'Nacionalidad' de aquí, ahora se gestiona en el Inline abajo
+            'fields': (('Nombre', 'Apellidos'), 'Apodo', 'Nacimiento')
         }),
         ('Datos Deportivos', {
             'fields': ('Posicion', 'altura', 'pie_habil', 'retiro')
@@ -39,17 +75,43 @@ class JugadoraAdmin(admin.ModelAdmin):
         }),
     )
 
-    # Añadimos la Trayectoria al formulario de la Jugadora
-    inlines = [TrayectoriaInline]
+    # Añadimos ambos inlines: Nacionalidades y Trayectoria
+    inlines = [NacionalidadInline, TrayectoriaInline]
+
+    # --- MÉTODOS VISUALES ---
 
     def ver_foto(self, obj):
         if obj.imagen:
-            return format_html('<img src="/{}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />', obj.imagen)
+            # Si 'imagen' ya es la URL completa, quita el "/" inicial
+            path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen}"
+            return format_html('<img src="{}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />', path)
         return "No foto"
     ver_foto.short_description = 'Foto'
 
-    # Corrección del __str__ en tu modelo
-    # Nota: En tu modelo pusiste return self.Jugadora, pero el campo es self.Nombre
+    def ver_nacionalidades(self, obj):
+        # Buscamos todas las nacionalidades asociadas a esta jugadora
+        nacionalidades = JugadoraPais.objects.filter(jugadora=obj).select_related('pais')
+        if not nacionalidades:
+            return "Sin datos"
+            
+        html = '<div style="display: flex; gap: 5px;">'
+        for n in nacionalidades:
+            # Resaltamos la primaria con un borde o un estilo diferente
+            estilo = "border: 2px solid #79aec8;" if n.es_primaria else "opacity: 0.6;"
+            html += format_html(
+                '<span class="fi fi-{}" title="{}" style="{} border-radius: 2px;"></span>',
+                n.pais.iso.lower(),
+                f"{n.pais.nombre} ({'Principal' if n.es_primaria else 'Secundaria'})",
+                estilo
+            )
+        html += '</div>'
+        return format_html(html)
+    ver_nacionalidades.short_description = 'Nacionalidades'
+
+    class Media:
+        css = {
+            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)
+        }
 
 @admin.register(Equipo)
 class EquipoAdmin(admin.ModelAdmin):

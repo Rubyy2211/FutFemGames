@@ -89,7 +89,23 @@ class Jugadora(models.Model):
 
     def __str__(self):
         return self.Nombre + self.Apellidos
-    
+
+
+class JugadoraPais(models.Model):
+    id = models.AutoField(primary_key=True)
+    jugadora = models.ForeignKey(Jugadora, on_delete=models.CASCADE, db_column='jugadora')
+    pais = models.ForeignKey(Pais, on_delete=models.CASCADE, db_column='pais')
+    es_primaria = models.BooleanField(default=True, db_column='es_primaria') # True = Principal, False = Secundaria
+
+    class Meta:
+        db_table = 'jugadora-pais'
+        managed = False
+
+    def __str__(self):
+        tipo = "Primaria" if self.es_primaria else "Secundaria"
+        return f"{self.pais.nombre} ({tipo})"
+
+
 class Trofeo(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.TextField()

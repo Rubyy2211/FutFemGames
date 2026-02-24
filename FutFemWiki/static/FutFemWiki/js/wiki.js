@@ -147,11 +147,16 @@ function renderJugadorasPage(page = 1) {
         div.classList.add('jugadora-item');
         div.classList.add('glass');
 
+        const div1 = document.createElement('div');
+        const div1_2 = document.createElement('div');
+        div1.className = 'jugadora-div1';
+
         const img = document.createElement('img');
         img.src = '/static/img/predeterm.jpg';
         if(jugadora.imagen) {img.src = '/' + jugadora.imagen;}
         img.className = 'jugadora-imagen';
         img.alt = jugadora.apodo;
+        div1.appendChild(img)
 
         const imgClub = document.createElement('img');
         imgClub.src = '/' + jugadora.equipo.escudo;
@@ -160,9 +165,30 @@ function renderJugadorasPage(page = 1) {
 
         const pNombre = document.createElement('p');
         pNombre.textContent = jugadora.apodo; 
+        div1_2.appendChild(pNombre);
 
-        const pNacionalidad = document.createElement('p');
-        pNacionalidad.textContent = jugadora.nacionalidad;
+        // Contenedor para las banderas
+        const divBanderas = document.createElement('div');
+        divBanderas.className = 'jugadora-banderas';
+
+        // Recorremos la lista de ISOs para crear los iconos
+        jugadora.nacionalidades_isos.forEach((iso, index) => {
+            const icon = document.createElement('span');
+            icon.className = `fi fi-${iso}`; 
+            
+            // Si el index es 0, es la primaria. Si es mayor, es secundaria.
+            if (index > 0) {
+                icon.style.opacity = "0.5";       // La "apagamos" un poco
+                icon.style.filter = "grayscale(20%)"; // Opcional: le quitamos un poco de color
+                icon.style.transform = "scale(0.9)";   // Opcional: la hacemos un pelín más pequeña
+            } else {
+                icon.style.boxShadow = "0 0 3px rgba(0,0,0,0.3)"; // Destacamos la principal
+            }
+
+            icon.title = `País ID: ${jugadora.nacionalidades_ids[index]}`;
+            divBanderas.appendChild(icon);
+        });
+        div1_2.appendChild(divBanderas);
 
         const pNacimiento = document.createElement('p');
         pNacimiento.textContent = jugadora.nacimiento;
@@ -170,6 +196,7 @@ function renderJugadorasPage(page = 1) {
         const pPosicion = document.createElement('p');
         pPosicion.textContent = jugadora.posicion;
         
+        div1.appendChild(div1_2)
         const colorPrimario = jugadora.equipo.color || 'var(--color-primario)'; // fallback
         const colorSecundario = jugadora.equipo.colorSecundario || 'transparent'; // fallback
         if(colorPrimario){
@@ -186,10 +213,8 @@ function renderJugadorasPage(page = 1) {
             window.location.href = `/wiki/jugadora/${jugadora.id_jugadora}/`;
         });
 
-        div.appendChild(img);
-        div.appendChild(pNombre);
+        div.appendChild(div1);
         div.appendChild(imgClub);
-        div.appendChild(pNacionalidad);
         div.appendChild(pNacimiento);
         div.appendChild(pPosicion);
         container.appendChild(div);
@@ -412,10 +437,17 @@ export function displayEquiposMapa(equipos) {
 
 
 function filtroJugadoras(equipo, nacionalidad, posicion){
+    console.log(nacionalidad)
     let nuevasJugadoras = jugadorasOriginal.filter(jugadora => {
 
         if (equipo && jugadora.equipo[0].club !== equipo) return false;
-        if (nacionalidad && jugadora.nacionalidad !== nacionalidad) return false;
+        if(!nacionalidad) return false
+        else{
+            for(let i=0; i<jugadora.nacionalidades_ids.length; i++){
+                if (nacionalidad && jugadora.nacionalidades_ids[i] === nacionalidad) return true;
+                else if(i===jugadora.nacionalidades_ids.length-1 && jugadora.nacionalidades_ids[i] !== nacionalidad) return false;
+            }
+        }
         if (posicion && jugadora.posicion !== posicion) return false;
 
         return true;

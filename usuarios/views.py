@@ -54,16 +54,20 @@ def logout_view(request):
 
 def sesion_view(request):
     if request.user.is_authenticated:
+        # Si usas AbstractUser, los datos están en el objeto 'user'
         return JsonResponse({
             'autenticado': True,
-            'id': request.session.get('usuario_id'),
-            'rol': request.session.get('rol_id')
+            'id': request.user.id,
+            'rol': getattr(request.user, 'rol', None), # Usa getattr por seguridad
+            'username': request.user.username
         })
-    else:
-        return JsonResponse({
-            'autenticado': False,
-            'mensaje': 'No hay sesión activa'
-        }, status=401)
+    
+    # IMPORTANTE: No devuelvas 401 si el frontend se vuelve loco al recibir errores
+    # Es mejor devolver 200 con autenticado: False para que el JS sepa qué hacer
+    return JsonResponse({
+        'autenticado': False,
+        'mensaje': 'No hay sesión activa'
+    }, status=200)
 
 def registro_view(request):
     if request.method == 'POST':

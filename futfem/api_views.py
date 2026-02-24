@@ -6,7 +6,7 @@ from django.db import connection, IntegrityError
 from django.db.models import Q, CharField, Value
 from django.db.models.functions import Concat
 from datetime import date, datetime
-from .models import Jugadora, Trayectoria, Equipo, Pais, Liga, Trofeo
+from .models import Jugadora, Trayectoria, Equipo, Pais, Liga, Trofeo, JugadoraPais
 from random import shuffle
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
@@ -39,29 +39,41 @@ def jugadoras_All(request):
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT 
-                j.id_jugadora, j.Nombre, j.Apellidos, j.Apodo, j.Nacimiento, j.Nacionalidad, j.Posicion, j.imagen, j.retiro,
-                t.equipo AS equipo_actual_id
+                j.id_jugadora, j.Nombre, j.Apellidos, j.Apodo, j.Nacimiento, 
+                j.Posicion, j.imagen, j.retiro, t.equipo AS equipo_actual_id,
+                -- Columna 9: IDs (7,52)
+                GROUP_CONCAT(jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises,
+                -- Columna 10: ISOs (NL,SR)
+                GROUP_CONCAT(p.iso ORDER BY jp.es_primaria DESC) AS isos_paises
             FROM jugadoras j
-            JOIN trayectoria t 
-                ON t.jugadora = j.id_jugadora
-            WHERE t.equipo_actual = TRUE
+            INNER JOIN trayectoria t ON t.jugadora = j.id_jugadora AND t.equipo_actual = TRUE
+            LEFT JOIN `jugadora-pais` jp ON jp.jugadora = j.id_jugadora
+            LEFT JOIN `paises` p ON jp.pais = p.id_pais
+            GROUP BY j.id_jugadora, t.equipo
             ORDER BY j.id_jugadora;
         """)
         filas = cursor.fetchall()
 
     jugadoras = []
-    for id_jugadora, nombre, apellido, apodo, nacimiento, nacionalidad, posicion, imagen, retiro, equipo in filas:
+    for fila in filas:
+        # Procesar IDs: de "7,52" a [7, 52]
+        lista_ids = [int(x) for x in fila[9].split(',')] if fila[9] else []
+        
+        # Procesar ISOs: de "NL,SR" a ["nl", "sr"]
+        lista_isos = [x.lower() for x in fila[10].split(',')] if fila[10] else []
+        
         jugadoras.append({
-            "id_jugadora": id_jugadora,
-            "nombre": nombre,
-            "apellido": apellido,
-            "apodo": apodo,
-            "nacimiento": nacimiento,
-            "nacionalidad": nacionalidad,
-            "posicion": posicion,
-            "imagen": imagen,
-            "retiro": retiro,
-            "equipo": equipo,
+            "id_jugadora": fila[0],
+            "nombre": fila[1],
+            "apellido": fila[2],
+            "apodo": fila[3],
+            "nacimiento": fila[4].strftime("%Y-%m-%d") if fila[4] else None,
+            "posicion": fila[5],
+            "imagen": fila[6],
+            "retiro": fila[7],
+            "equipo": fila[8],
+            "nacionalidades_ids": lista_ids,    # Para lógica de filtros o bingo
+            "nacionalidades_isos": lista_isos   # Para pintar las banderas
         })
     
     return JsonResponse({"success": jugadoras})
@@ -98,6 +110,9 @@ def jugadoraxid(request):
 
     try:
         j = Jugadora.objects.get(id_jugadora=id_jugadora)
+        nacionalidades_qs = JugadoraPais.objects.filter(jugadora=id_jugadora).select_related('pais')
+        jp_principal = nacionalidades_qs.filter(es_primaria=True).first()
+        todas_nacionalidades = list(nacionalidades_qs.values_list('pais_id', flat=True))
     except Jugadora.DoesNotExist:
         return JsonResponse({"error": "No se encontraron jugadoras con ese ID."}, status=404)
 
@@ -116,7 +131,8 @@ def jugadoraxid(request):
         "Nombre": j.Nombre,
         "Apellidos": j.Apellidos,
         "Nacimiento": j.Nacimiento,
-        "Nacionalidad": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+        "Nacionalidad": jp_principal.pais.id_pais if jp_principal else None,
+        "TodasNacionalidades": todas_nacionalidades,
         "Posicion": j.Posicion.idPosicion if j.Posicion else None,
         "Retiro": j.retiro,
         "Valor": j.market_value
@@ -195,6 +211,10 @@ def jugadora_datos(request):
 
     try:
         j = Jugadora.objects.select_related('Posicion', 'Nacionalidad').get(id_jugadora=id_jugadora)
+        nacionalidades_qs = JugadoraPais.objects.filter(jugadora=id_jugadora).select_related('pais')
+        jp_principal = nacionalidades_qs.filter(es_primaria=True).first()
+        todas_nacionalidades = list(nacionalidades_qs.values_list('pais_id', flat=True))
+        todos_isos = [n.pais.iso.lower() for n in nacionalidades_qs if n.pais and n.pais.iso]
     except Jugadora.DoesNotExist:
         return JsonResponse({"error": "No se encontraron jugadoras con ese ID."}, status=404)
 
@@ -224,10 +244,11 @@ def jugadora_datos(request):
         "id": j.id_jugadora,
         "nombre": f"{j.Nombre} {j.Apellidos}",
         "apodo": j.Apodo,
-        "nacionalidad": j.Nacionalidad.nombre if j.Nacionalidad else None,
-        "pais_id": j.Nacionalidad.id_pais if j.Nacionalidad else None,
-        "pais_iso": j.Nacionalidad.iso if j.Nacionalidad else None,
-        "pais": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+        "Nacionalidad": jp_principal.pais.id_pais if jp_principal else None,
+        "TodasNacionalidades": todas_nacionalidades,
+        "pais_id": jp_principal.pais.id_pais if jp_principal else None,
+        "pais_iso": todos_isos,
+        "pais": jp_principal.pais.id_pais if jp_principal else None,
         "altura": j.altura,
         "pie": j.pie_habil,
         "imagen": j.imagen,
@@ -337,14 +358,23 @@ def jugadora_pais(request):
 
     try:
         jugadora = Jugadora.objects.get(id_jugadora=nombre)
+
+        # 2. Buscamos su nacionalidad PRINCIPAL en la tabla intermedia
+        # Usamos .filter().first() por seguridad si hubiera más de una
+        relacion_pais = JugadoraPais.objects.filter(
+            jugadora=jugadora, 
+            es_primaria=True
+        ).select_related('pais').first()
+
     except Jugadora.DoesNotExist:
         return JsonResponse({"error": "No se encontró ninguna jugadora con ese nombre"}, status=404)
     
-    pais_id = jugadora.Nacionalidad.id_pais if jugadora.Nacionalidad else None
+    pais_id = relacion_pais.pais.id_pais if relacion_pais else None
 
     return JsonResponse({
         "Pais": pais_id,
-        "NCompleto": f"{jugadora.Nombre} {jugadora.Apellidos}"
+        "NCompleto": f"{jugadora.Nombre} {jugadora.Apellidos}",
+        "TodasNacionalidades": list(JugadoraPais.objects.filter(jugadora=jugadora).values_list('pais_id', flat=True))
     })
 
 def jugadora_aleatoria(request):
@@ -360,31 +390,40 @@ def jugadora_aleatoria(request):
     except ValueError:
         return JsonResponse({"error": "Parámetros inválidos"}, status=400)
 
-    jugadoras_finales = {} # Usamos dict para evitar duplicados por ID automáticamente
+    jugadoras_finales = {}
 
-    # Función interna para asegurar que cada criterio tenga al menos una jugadora
+    # Función interna adaptada a la nueva tabla jugadora_pais
     def cubrir_criterios(queryset_base, lista_ids, campo_filtro):
         for valor_id in lista_ids:
-            # Buscamos 2 jugadoras aleatorias por cada criterio específico
-            # para dar variedad pero asegurar que esa casilla del bingo sea rellenable
             filtro = {f"{campo_filtro}": valor_id}
-            qs = queryset_base.filter(**filtro).order_by('?')[:2]
+            # Importante: Para nacionalidades, filtramos solo la primaria
+            if campo_filtro == "jugadorapais__pais":
+                filtro["jugadorapais__es_primaria"] = True
+            
+            qs = queryset_base.filter(**filtro).distinct().order_by('?')[:2]
+            
             for j in qs:
                 if j.id_jugadora not in jugadoras_finales:
+                    # Obtenemos el ID del país primario para el JSON
+                    # Hacemos esto porque ya no existe j.Nacionalidad
+                    pais_rel = j.jugadorapais_set.filter(es_primaria=True).first()
+                    id_pais = pais_rel.pais_id if pais_rel else None
+
                     jugadoras_finales[j.id_jugadora] = {
                         "id": j.id_jugadora,
                         "nombre": f"{j.Nombre} {j.Apellidos}",
                         "imagen": j.imagen if j.imagen else None,
-                        "pais": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+                        "pais": id_pais,
                         "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
                     }
 
-    # Base de la consulta optimizada
-    base_qs = Jugadora.objects.select_related('Nacionalidad')
+    # Base de la consulta: Quitamos select_related('Nacionalidad') porque ya no existe
+    base_qs = Jugadora.objects.all()
 
-    # 2. Asegurar cobertura de cada casilla (Bingo seguro)
+    # 2. Asegurar cobertura (Bingo seguro)
     if nacionalidades:
-        cubrir_criterios(base_qs, nacionalidades, "Nacionalidad")
+        # El campo de filtro ahora es a través de la relación de la tabla intermedia
+        cubrir_criterios(base_qs, nacionalidades, "jugadorapais__pais")
     
     if equipos:
         cubrir_criterios(base_qs, equipos, "trayectoria__equipo")
@@ -392,26 +431,25 @@ def jugadora_aleatoria(request):
     if ligas:
         cubrir_criterios(base_qs, ligas, "trayectoria__equipo__liga")
 
-    # 3. Rellenar hasta llegar a 30 si faltan (Opcional)
-    # Si tras asegurar la cobertura hay pocas, traemos algunas más que cumplan CUALQUIER criterio
+    # 3. Rellenar hasta llegar a 20/30
     if len(jugadoras_finales) < 20:
         extras = base_qs.filter(
-            Q(Nacionalidad__in=nacionalidades) |
+            Q(jugadorapais__pais__in=nacionalidades, jugadorapais__es_primaria=True) |
             Q(trayectoria__equipo__in=equipos) |
             Q(trayectoria__equipo__liga__in=ligas)
         ).distinct().order_by('?')[:15]
         
         for j in extras:
             if j.id_jugadora not in jugadoras_finales:
+                pais_rel = j.jugadorapais_set.filter(es_primaria=True).first()
                 jugadoras_finales[j.id_jugadora] = {
                     "id": j.id_jugadora,
                     "nombre": f"{j.Nombre} {j.Apellidos}",
                     "imagen": j.imagen,
-                    "pais": j.Nacionalidad.id_pais if j.Nacionalidad else None,
+                    "pais": pais_rel.pais_id if pais_rel else None,
                     "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
                 }
 
-    # 4. Convertir a lista y desordenar
     resultado = list(jugadoras_finales.values())
     random.shuffle(resultado)
 

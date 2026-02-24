@@ -48,7 +48,7 @@
             <h3>{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
             <div class="grid">   
                     <p>Nacimiento: {{ jugadora.Nacimiento }}</p>
-                    <span id="pais"></span>
+                    <div id="pais"></div>
       
                     <p>Altura: {{ jugadora.altura }} cm</p>
                     <p>Pie: {{ jugadora.pie_habil }}</p>
@@ -97,8 +97,40 @@
     const info = document.getElementById('jugadora-info');
     const palmaresIndiv = document.getElementById('palmares-individual');
     edad.textContent = '{{ jugadora.Nacimiento }}' + '(' + calcularEdad('{{ jugadora.Nacimiento }}') + ')'
-    pais.classList.add('fi')
-    pais.classList.add(`fi-${jugadora.pais_iso}`)
+    const contenedorPais = document.getElementById('pais');
+
+    // 1. Limpiamos el contenido previo (por si cambias de jugadora)
+    contenedorPais.innerHTML = ''; 
+
+    // 2. Comprobamos que existan nacionalidades
+    if (jugadora.pais_iso && jugadora.pais_iso.length > 0) {
+        
+        jugadora.pais_iso.forEach((iso, index) => {
+            const bandera = document.createElement('span');
+            
+            // Añadimos las clases de la librería
+            bandera.classList.add('fi', `fi-${iso.toLowerCase()}`);
+            
+            // Estilos para diferenciar principal de secundarias
+            bandera.style.marginRight = '6px';
+            bandera.style.display = 'inline-block';
+            
+            if (index > 0) {
+                // Nacionalidades secundarias: apagadas
+                bandera.style.opacity = '0.4';
+                bandera.style.transform = 'scale(0.85)';
+                bandera.style.filter = 'saturate(0.6)';
+            } else {
+                // Nacionalidad principal: destacada
+                bandera.style.opacity = '1';
+                bandera.style.transform = 'scale(1.1)';
+                bandera.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+            }
+
+            // Añadimos la bandera al contenedor principal
+            contenedorPais.appendChild(bandera);
+        });
+    }
     posicion.textContent = 'Posicion: '+jugadora.posicionObj.abreviatura;
     const trayectorias = await fetchJugadoraTrayectoriaById('{{ jugadora.id_jugadora }}')
     const palmares = await fetchJugadoraPalmaresById('{{ jugadora.id_jugadora }}')
