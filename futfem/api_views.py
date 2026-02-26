@@ -210,7 +210,7 @@ def jugadora_datos(request):
         return JsonResponse({"error": "ID de jugadora no proporcionado o inválido"}, status=400)
 
     try:
-        j = Jugadora.objects.select_related('Posicion', 'Nacionalidad').get(id_jugadora=id_jugadora)
+        j = Jugadora.objects.select_related('Posicion').get(id_jugadora=id_jugadora)
         nacionalidades_qs = JugadoraPais.objects.filter(jugadora=id_jugadora).select_related('pais')
         jp_principal = nacionalidades_qs.filter(es_primaria=True).first()
         todas_nacionalidades = list(nacionalidades_qs.values_list('pais_id', flat=True))
@@ -288,7 +288,7 @@ def jugadoraxnombre(request):
         )
 
     # 5. Limitamos resultados para que el autocompletado sea rápido
-    jugadoras = queryset.select_related('Nacionalidad', 'Posicion')[:10]
+    jugadoras = queryset.select_related('Posicion')[:10]
 
     if not jugadoras.exists():
         return JsonResponse([], safe=False) # Mandar lista vacía es mejor que un 404 para el JS

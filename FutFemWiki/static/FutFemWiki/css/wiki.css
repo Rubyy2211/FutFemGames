@@ -135,7 +135,7 @@ summary, details{
     grid-template-columns: repeat(4, 1fr); /* 6 columnas iguales */
     grid-template-rows: 1fr;              /* 1 fila */
 
-    width: 40%;
+    width: 50%;
     height: 60px;
     overflow: hidden; /* recorta lo que sobresalga */
     align-items: center;

@@ -4,7 +4,7 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache
 
-from futfem.models import Equipo, Jugadora
+from futfem.models import Equipo, Jugadora, JugadoraPais
 
 # Create your views here.
 @never_cache
@@ -21,6 +21,10 @@ def equipo_detalle(request, equipo_id):
 @never_cache
 def jugadora_detalle(request, id_jugadora):
     jugadora = get_object_or_404(Jugadora, id_jugadora=id_jugadora)
+    nacionalidades_qs = JugadoraPais.objects.filter(jugadora=id_jugadora).select_related('pais')
+    jp_principal = nacionalidades_qs.filter(es_primaria=True).first()
+    todas_nacionalidades = list(nacionalidades_qs.values_list('pais_id', flat=True))
+    todos_isos = [n.pais.iso.lower() for n in nacionalidades_qs if n.pais and n.pais.iso]
     
     # Diccionario serializable
     jugadora_data = json.dumps( {
@@ -29,7 +33,7 @@ def jugadora_detalle(request, id_jugadora):
         "apellidos": jugadora.Apellidos,
         "apodo": jugadora.Apodo,
         "nacimiento": jugadora.Nacimiento.isoformat(),
-        "nacionalidad": jugadora.Nacionalidad.nombre if jugadora.Nacionalidad else None,
+        "nacionalidad": jp_principal.pais.id_pais if jp_principal else None,
         "posicion": jugadora.Posicion.abreviatura if jugadora.Posicion else None,
         "imagen": jugadora.imagen if jugadora.imagen else None,
     })

@@ -19,6 +19,10 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+admin.site.site_header = "FutFem Games Admin"       # Título de la barra superior
+admin.site.site_title = "Panel de Control"          # Título de la pestaña del navegador
+admin.site.index_title = "Gestión del Juego"        # Subtítulo en la página de inicio
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('minijuegos.urls')),

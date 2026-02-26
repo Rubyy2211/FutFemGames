@@ -3,7 +3,6 @@ from django.contrib import admin
 from django.utils.html import format_html
 from .models import Pais ,Jugadora, Trayectoria, Equipo, Liga, JugadoraPais
 # Register your models here.
-
 # 1. Definimos el Inline para la Trayectoria
 class TrayectoriaInline(admin.TabularInline):
     model = Trayectoria
@@ -110,7 +109,8 @@ class JugadoraAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)
+            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css',)
+
         }
 
 @admin.register(Equipo)

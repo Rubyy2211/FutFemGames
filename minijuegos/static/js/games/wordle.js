@@ -13,8 +13,8 @@ async function iniciar() {
     localStorage.setItem('res2', jugadora.idJugadora);
     const ultima = await obtenerUltimaRespuesta(2);
     let ultimaArray = JSON.parse(ultima);
-    console.log(ultimaArray)
-    const usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer;
+    let usuarioAnswer;
+    if(ultimaArray) usuarioAnswer= ultimaArray[ultimaArray.length - 1].answer;
     console.log(usuarioAnswer, jugadora.idJugadora)
     if(usuarioAnswer === jugadora.idJugadora){
         console.log('Se ha guardado la respuesta'); 

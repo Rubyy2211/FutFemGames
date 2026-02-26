@@ -436,25 +436,28 @@ export function displayEquiposMapa(equipos) {
 }
 
 
-function filtroJugadoras(equipo, nacionalidad, posicion){
-    console.log(nacionalidad)
+function filtroJugadoras(equipo, nacionalidad, posicion) {
+    
     let nuevasJugadoras = jugadorasOriginal.filter(jugadora => {
+        // 1. Filtro de Equipo
+        // Comparamos el ID del equipo (o club) según cómo venga en tu JSON
+        if (equipo && jugadora.equipo.club !== parseInt(equipo)) return false;
 
-        if (equipo && jugadora.equipo[0].club !== equipo) return false;
-        if(!nacionalidad) return false
-        else{
-            for(let i=0; i<jugadora.nacionalidades_ids.length; i++){
-                if (nacionalidad && jugadora.nacionalidades_ids[i] === nacionalidad) return true;
-                else if(i===jugadora.nacionalidades_ids.length-1 && jugadora.nacionalidades_ids[i] !== nacionalidad) return false;
+        // 2. Filtro de Nacionalidad
+        // Si hay una nacionalidad seleccionada, comprobamos si está en su lista de IDs
+        if (nacionalidad) {
+            const nacioId = parseInt(nacionalidad);
+            if (!jugadora.nacionalidades_ids.includes(nacioId)) {
+                return false;
             }
         }
+
+        // 3. Filtro de Posición
         if (posicion && jugadora.posicion !== posicion) return false;
 
+        // Si sobrevive a todos los 'return false', la jugadora es válida
         return true;
     });
 
-
-
     displayJugadoras(nuevasJugadoras);
-     
 }

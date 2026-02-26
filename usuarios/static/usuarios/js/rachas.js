@@ -1,4 +1,5 @@
 let usuario = await getSesion();
+console.log(usuario)
 usuario = usuario.id;
 export async function getSesion() {
     try {
@@ -110,13 +111,13 @@ async function updateRachaUser(juego, condicion, ultima_respuesta) {
         let rachaActual;
 
         let game;
+        const data = await obtenerRacha(juego); // tu función obtenerRacha devuelve array
+        game = data;
 
         // Obtener racha actual según condición
         if (condicion === 0) {
             rachaActual = 0;
         } else {
-            const data = await obtenerRacha(juego); // tu función obtenerRacha devuelve array
-            game = data;
             rachaActual = (data?.[0]?.racha_actual || 0) + (condicion === 1 ? 1 : 0);
         }
 

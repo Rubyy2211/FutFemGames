@@ -73,7 +73,6 @@ class Jugadora(models.Model):
     Apellidos = models.TextField()     
     Apodo = models.TextField()     
     Nacimiento = models.DateField(max_length=255)     
-    Nacionalidad = models.ForeignKey(Pais, on_delete=models.CASCADE, db_column='Nacionalidad')     
     Posicion = models.ForeignKey(Posicion, on_delete=models.CASCADE, db_column='Posicion')     
     imagen = models.TextField(null=True) 
     altura = models.FloatField(null=True)

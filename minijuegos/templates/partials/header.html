@@ -34,7 +34,7 @@
       </nav>
       <div>
           {% if usuario_sesion %}
-              <span class="user-name">Hola, {{ usuario_sesion.usuario }}</span>
+              <span class="user-name">Hola, {{ usuario_sesion.username }}</span>
               {% if usuario_sesion.jugadora_favorita %}
                   <img src="/{{ usuario_sesion.jugadora_favorita.imagen }}" class="avatar">
               {% endif %}
@@ -49,7 +49,7 @@
     <div class="botones">
         {% if usuario_sesion %}
           <a href="{% url 'perfil' %}" class="user-profile-link">
-              <span class="user-name">{{ usuario_sesion.usuario }}</span>
+              <span class="user-name">{{ usuario_sesion.username }}</span>
               {% if usuario_sesion.jugadora_favorita %}
                   <img src="/{{ usuario_sesion.jugadora_favorita.imagen }}" class="avatar">
               {% endif %}

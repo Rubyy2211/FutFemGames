@@ -228,7 +228,7 @@ async function checkAnswer() {
             await updateRacha(1, 1, idJugadora);
             victory.play()
         }else{
-            //await updateRacha(1, 1);
+            //await updateRacha(1, 1, idJugadora);
     }
         resultText.textContent = nombreCompleto;
         localStorage.setItem('Attr1', idJugadora);

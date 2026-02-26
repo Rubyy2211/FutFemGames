@@ -176,61 +176,66 @@ def obtener_rachas(request):
         for r in rachas_qs
     ]
 
+    # SI SE PIDE UN JUEGO ESPECÍFICO Y NO HAY RACHA, ENVIAMOS VALORES EN 0
+    if not data and juego_id:
+        return JsonResponse([{
+            'usuario_id': int(usuario_id),
+            'racha_actual': 0,
+            'mejor_racha': 0,
+            'ultima_respuesta': None,
+            'juego': {'id': int(juego_id), 'nombre': '', 'slug': ''}
+        }], safe=False)
+
     return JsonResponse(data, safe=False)
 
 @csrf_exempt
 @require_POST
 def juego_racha(request):
-    """
-    Actualiza o crea la racha de un usuario para un juego.
-    Recibe POST con:
-        - racha: int
-        - juego: id del juego
-        - user: id del usuario
-    """
     try:
-        print("POST DATA:", request.POST)
-
+        # 1. Obtener datos (usamos 0 como fallback para números)
         racha_actual = int(request.POST.get('racha', 0))
         juego_id = int(request.POST.get('juego'))
         usuario_id = int(request.POST.get('user'))
-        mejor_racha = request.POST.get('mejor_racha')
         ultima_respuesta = request.POST.get('last_answer')
+        
+        # Si no envían mejor_racha, usamos la racha_actual por defecto
+        mejor_racha_input = request.POST.get('mejor_racha')
+        mejor_racha_input = int(mejor_racha_input) if mejor_racha_input else racha_actual
 
-        # Obtener instancias
-        usuario = Usuario.objects.get(id=usuario_id)
-        juego = Juego.objects.get(id=juego_id)
-
-        # Buscar si ya existe
-        racha_obj = Racha.objects.filter(usuario=usuario, juego=juego).first()
+        # 2. Buscar si ya existe la racha
+        racha_obj = Racha.objects.filter(usuario_id=usuario_id, juego_id=juego_id).first()
 
         if racha_obj:
-            # Actualizar racha existente
+            # ACTUALIZAR
             racha_obj.racha_actual = racha_actual
-            if mejor_racha:
-                if ultima_respuesta and mejor_racha:
-                    racha_obj.ultima_respuesta = ultima_respuesta
-                    racha_obj.mejor_racha = mejor_racha
-                    racha_obj.save(update_fields=['racha_actual', 'ultima_respuesta', 'mejor_racha'])
-                else:
-                    racha_obj.save(update_fields=['racha_actual'])
+            
+            # Solo actualizamos la mejor racha si la recibida es mayor a la que ya tenemos
+            if mejor_racha_input > racha_obj.mejor_racha:
+                racha_obj.mejor_racha = mejor_racha_input
+            
+            if ultima_respuesta:
+                racha_obj.ultima_respuesta = ultima_respuesta
+            
+            # IMPORTANTE: Quitamos update_fields para evitar que Django ignore campos
+            racha_obj.save()
         else:
-            Racha.objects.create(usuario=usuario, juego=juego, racha_actual=racha_actual, ultima_respuesta=ultima_respuesta if ultima_respuesta else None)
+            # CREAR
+            Racha.objects.create(
+                usuario_id=usuario_id,
+                juego_id=juego_id,
+                racha_actual=racha_actual,
+                mejor_racha=mejor_racha_input,
+                ultima_respuesta=ultima_respuesta
+            )
 
         return JsonResponse({
             'success': True,
-            'usuario': usuario.id,
-            'mejor_racha': mejor_racha,
-            'juego': juego.id,
             'racha_actual': racha_actual,
-            'ultima_respuesta': ultima_respuesta
+            'mejor_racha': mejor_racha_input
         })
 
-    except Usuario.DoesNotExist:
-        return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
-    except Juego.DoesNotExist:
-        return JsonResponse({'error': 'Juego no encontrado'}, status=404)
     except Exception as e:
+        print(f"Error grave en racha: {str(e)}")
         return JsonResponse({'error': str(e)}, status=500)
 
 def obtener_ultima_respuesta(request):
