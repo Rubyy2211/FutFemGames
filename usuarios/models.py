@@ -1,9 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth.models import AbstractBaseUser, AbstractUser
 from futfem.models import Equipo, Jugadora, Juego
 
 # Create your models here.
-class Usuario(AbstractBaseUser):
+class Usuario(AbstractUser):
     # Usamos db_column para mapear tus nombres de columna actuales 
     id = models.AutoField(primary_key=True)
     # a los campos que Django ya entiende internamente.
