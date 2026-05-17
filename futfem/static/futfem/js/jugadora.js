@@ -288,8 +288,7 @@ export async function fetchJugadoraPalmaresById(id, trayectoria) {
     // ELIMINADO: const trayectoria = await fetchJugadoraTrayectoriaById(id); <-- Esto sobraba
     
     const palmaresIndividualPromise = fetchJugadoraTrofeosIndividualesById(id);
-    const { fetchEquipoPalmaresByTemporadas } = await import("./equipos.js"); // Importar la función necesaria para el palmarés de equipo
-
+    const { fetchEquipoPalmaresByTemporadas } = await import("./equipos.js"); // Importar la función necesaria para el palmarés de equipo   
     const promesasPalmaresEquipo = trayectoria.map(etapa => {
         const anioInicio = etapa.fecha_inicio.substring(0, 4);
         const anioFin = etapa.fecha_fin ? etapa.fecha_fin.substring(0, 4) : 'act';

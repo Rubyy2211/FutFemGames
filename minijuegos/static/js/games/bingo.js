@@ -276,11 +276,12 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
     const { fetchJugadoraNacionalidadById, fetchJugadoraTrayectoriaById, fetchJugadoraPalmaresById } = await import("/static/futfem/js/jugadora.js");
 
     // En lugar de 3 awaits secuenciales, haz esto:
-    const [pais, equipos, palmares] = await Promise.all([
+    const [pais, equipos] = await Promise.all([
         fetchJugadoraNacionalidadById(jugadora.id),
         fetchJugadoraTrayectoriaById(jugadora.id),
-        fetchJugadoraPalmaresById(jugadora.id)
     ]);
+
+    const palmares = await fetchJugadoraPalmaresById(jugadora.id, equipos);
 
     if (equipos && equipos.length > 0) {
         const nombresEquipos = equipos.map(e => e.equipo);
