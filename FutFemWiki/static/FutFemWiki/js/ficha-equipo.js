@@ -1,5 +1,5 @@
 import { formatearValorMercado } from "/static/futfem/js/jugadora.js";
-import { jugadorasxTemporadaYEquipo, fetchEquipoPalmaresByTemporadas } from "/static/futfem/js/equipos.js";
+import { jugadorasxTemporadaYEquipo, fetchMultiplesEquiposPalmares } from "/static/futfem/js/equipos.js";
 import { calcularEdad } from '/static/js/games/funciones-comunes.js';
 import { ponerJugadoraEnField } from "/static/js/football_field.js";
 
@@ -21,7 +21,7 @@ ligaElement.style.setProperty('--liga-shadow-color', rgbToRgba(colors[2], 1));*/
 
 
 export async function displayPalmares(equipo) {
-    const data = await fetchEquipoPalmaresByTemporadas(equipo, '1950-act');
+    const data = await fetchMultiplesEquiposPalmares(equipo, '1950-act');
     const palmaresAgrupado = agruparTrofeos(data.success);
 
     palmaresAgrupado.forEach(trofeo => {
