@@ -373,27 +373,19 @@ def jugadora_trayectoria(request):
     except ValueError:
         return JsonResponse({'error': 'ID de jugadora inválido'}, status=400)
 
-    # Traer las trayectorias filtrando la liga != 17
+    # Optimizamos trayendo equipo, jugadora y la LIGA del equipo de una sola vez
     trayectorias = Trayectoria.objects.filter(
-    jugadora_id=id_jugadora
-    #.exclude(
-    #equipo__liga__id_liga=16)
-    ).select_related('equipo', 'jugadora').order_by('fecha_inicio')
+        jugadora_id=id_jugadora
+    ).select_related('equipo__liga', 'jugadora').order_by('fecha_inicio')
 
     data = []
     for t in trayectorias:
-        equipo = t.equipo
+        equipo = t.equipo  # Ya contiene todos los datos que antes buscabas con e = Equipo.objects.get
         jug = t.jugadora
 
-        e = Equipo.objects.get(id_equipo=equipo.id_equipo)
-
-        escudo = None
-        if equipo.escudo:
-            escudo = equipo.escudo
-
-        imagen_jugadora = None
-        if jug.imagen:
-            imagen_jugadora = jug.imagen
+        # Evitamos evaluar campos si pueden ser nulos o dar problemas
+        escudo = equipo.escudo if equipo.escudo else None
+        imagen_jugadora = jug.imagen if jug.imagen else None
 
         data.append({
             'trayectoria_id': t.id,
@@ -402,18 +394,15 @@ def jugadora_trayectoria(request):
             'color': equipo.color,
             'fecha_inicio': t.fecha_inicio,
             'fecha_fin': t.fecha_fin,
-            'imagen': t.imagen,  # o t.imagen codificada si quieres
+            'imagen': t.imagen,
             'equipo_actual': t.equipo_actual,
             'escudo': escudo,
             'liga': equipo.liga.id_liga if equipo.liga else None,
             'nombre': equipo.nombre,
             'ImagenJugadora': imagen_jugadora,
-            "club": e.id_equipo,
-            "nombre": e.nombre,
-            "escudo": e.escudo,
-            "color": e.color,
-            "lat": e.latitud,
-            "long": e.longitud,
+            'club': equipo.id_equipo,
+            'lat': equipo.latitud,      # Asegúrate de que estos nombres coincidan con los de tu modelo Equipo
+            'long': equipo.longitud,    # Asegúrate de que estos nombres coincidan con los de tu modelo Equipo
         })
 
     return JsonResponse(data, safe=False)
