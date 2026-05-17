@@ -154,6 +154,10 @@ DATABASES = {
         'PASSWORD': os.getenv('MYSQLPASSWORD', ''),       # Railway usa MYSQLPASSWORD
         'HOST': os.getenv('MYSQLHOST', '127.0.0.1'),       # Railway usa MYSQLHOST
         'PORT': os.getenv('MYSQLPORT', '3306'),           # Railway usa MYSQLPORT
+        # 1. Mantiene la conexión abierta 10 minutos (600 segundos) para saltarse el lag de Railway
+        'CONN_MAX_AGE': 600, 
+        # 2. Django comprueba si la conexión sigue viva antes de lanzar una query (Evita caídas por inactividad)
+        'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
