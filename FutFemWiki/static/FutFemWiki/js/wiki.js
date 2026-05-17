@@ -79,9 +79,9 @@ export async function inicializarWiki(arg) {
         await ligasxpais(1).then(ligas => {
             displayLigas(ligas.success);
         });
-        await equiposxliga(1).then(equipos => {
+        /*await equiposxliga(1).then(equipos => {
             displayEquipos(equipos.success);
-        });
+        });*/
         console.log(ligasContainer.firstChild)
         ligasContainer.firstChild.classList.add('selected');
     }
