@@ -449,21 +449,26 @@ def jugadora_aleatoria(request):
 
     jugadoras_finales = {}
 
-    # Función interna adaptada a la nueva tabla jugadora_pais
-    def cubrir_criterios(queryset_base, lista_ids, campo_filtro):
+    # Optimizamos la consulta base usando prefetch_related para traer el país primario sin hacer consultas extra en el bucle
+    base_qs = Jugadora.objects.prefetch_related('jugadorapais_set')
+
+    # Función interna optimizada (SIN order_by('?'))
+    def cubrir_criterios_optimizada(lista_ids, campo_filtro):
         for valor_id in lista_ids:
             filtro = {f"{campo_filtro}": valor_id}
-            # Importante: Para nacionalidades, filtramos solo la primaria
             if campo_filtro == "jugadorapais__pais":
                 filtro["jugadorapais__es_primaria"] = True
             
-            qs = queryset_base.filter(**filtro).distinct().order_by('?')[:2]
+            # Traemos SOLO los objetos que coinciden (quitamos el orden aleatorio de la base de datos)
+            candidatas = list(base_qs.filter(**filtro).distinct())
             
-            for j in qs:
+            # Elegimos hasta 2 al azar usando Python directamente
+            seleccionadas = random.sample(candidatas, min(len(candidatas), 2)) if candidatas else []
+            
+            for j in seleccionadas:
                 if j.id_jugadora not in jugadoras_finales:
-                    # Obtenemos el ID del país primario para el JSON
-                    # Hacemos esto porque ya no existe j.Nacionalidad
-                    pais_rel = j.jugadorapais_set.filter(es_primaria=True).first()
+                    # Buscamos el país en la lista ya pre-cargada en memoria (no va a la base de datos)
+                    pais_rel = next((p for p in j.jugadorapais_set.all() if p.es_primaria), None)
                     id_pais = pais_rel.pais_id if pais_rel else None
 
                     jugadoras_finales[j.id_jugadora] = {
@@ -474,39 +479,40 @@ def jugadora_aleatoria(request):
                         "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
                     }
 
-    # Base de la consulta: Quitamos select_related('Nacionalidad') porque ya no existe
-    base_qs = Jugadora.objects.all()
-
-    # 2. Asegurar cobertura (Bingo seguro)
+    # 2. Asegurar cobertura (Bingo seguro) - Ahora va volando
     if nacionalidades:
-        # El campo de filtro ahora es a través de la relación de la tabla intermedia
-        cubrir_criterios(base_qs, nacionalidades, "jugadorapais__pais")
-    
+        cubrir_criterios_optimizada(nacionalidades, "jugadorapais__pais")
     if equipos:
-        cubrir_criterios(base_qs, equipos, "trayectoria__equipo")
-        
+        cubrir_criterios_optimizada(equipos, "trayectoria__equipo")
     if ligas:
-        cubrir_criterios(base_qs, ligas, "trayectoria__equipo__liga")
+        cubrir_criterios_optimizada(ligas, "trayectoria__equipo__liga")
 
-    # 3. Rellenar hasta llegar a 20/30
+    # 3. Rellenar hasta llegar a 20/30 (Sin order_by('?'))
     if len(jugadoras_finales) < 20:
-        extras = base_qs.filter(
+        # Buscamos todas las posibles candidatas extras de un solo golpe
+        candidatas_extras = list(base_qs.filter(
             Q(jugadorapais__pais__in=nacionalidades, jugadorapais__es_primaria=True) |
             Q(trayectoria__equipo__in=equipos) |
             Q(trayectoria__equipo__liga__in=ligas)
-        ).distinct().order_by('?')[:15]
-        
-        for j in extras:
-            if j.id_jugadora not in jugadoras_finales:
-                pais_rel = j.jugadorapais_set.filter(es_primaria=True).first()
-                jugadoras_finales[j.id_jugadora] = {
-                    "id": j.id_jugadora,
-                    "nombre": formatear_nombre_corto(j.Nombre, j.Apellidos),
-                    "imagen": j.imagen,
-                    "pais": pais_rel.pais_id if pais_rel else None,
-                    "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
-                }
+        ).distinct())
 
+        # Filtramos las que ya tenemos metidas para no duplicar esfuerzo
+        candidatas_reales = [j for j in candidatas_extras if j.id_jugadora not in jugadoras_finales]
+
+        # Tomamos hasta 15 al azar usando Python
+        extras_seleccionadas = random.sample(candidatas_reales, min(len(candidatas_reales), 15)) if candidatas_reales else []
+
+        for j in extras_seleccionadas:
+            pais_rel = next((p for p in j.jugadorapais_set.all() if p.es_primaria), None)
+            jugadoras_finales[j.id_jugadora] = {
+                "id": j.id_jugadora,
+                "nombre": formatear_nombre_corto(j.Nombre, j.Apellidos),
+                "imagen": j.imagen if j.imagen else None,
+                "pais": pais_rel.pais_id if pais_rel else None,
+                "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
+            }
+
+    # Mezclamos el resultado final
     resultado = list(jugadoras_finales.values())
     random.shuffle(resultado)
 
