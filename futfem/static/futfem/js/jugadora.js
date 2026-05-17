@@ -285,23 +285,30 @@ function fetchJugadoraTrofeosIndividualesById(id) {
 export async function fetchJugadoraPalmaresById(id, trayectoria) {
     console.log('Fetching palmares for jugadora ID:', id);
     
-    // ELIMINADO: const trayectoria = await fetchJugadoraTrayectoriaById(id); <-- Esto sobraba
-    
     const palmaresIndividualPromise = fetchJugadoraTrofeosIndividualesById(id);
-    const { fetchEquipoPalmaresByTemporadas } = await import("./equipos.js"); // Importar la función necesaria para el palmarés de equipo   
-    const promesasPalmaresEquipo = trayectoria.map(etapa => {
+    const { fetchMultiplesEquiposPalmares } = await import("./equipos.js");
+
+    // 1. Preparamos los arrays paralelos recopilando la info de la trayectoria
+    const listaEquipos = [];
+    const listaTemporadas = [];
+
+    trayectoria.forEach(etapa => {
         const anioInicio = etapa.fecha_inicio.substring(0, 4);
         const anioFin = etapa.fecha_fin ? etapa.fecha_fin.substring(0, 4) : 'act';
-        return fetchEquipoPalmaresByTemporadas(etapa.equipo, `${anioInicio}-${anioFin}`);
+        
+        listaEquipos.push(etapa.equipo);
+        listaTemporadas.push(`${anioInicio}-${anioFin}`);
     });
 
-    const [palmaresIndividual, palmaresEquipo] = await Promise.all([
+    // 2. Un único Promise.all con solo DOS promesas (la individual y la masiva de equipos)
+    const [palmaresIndividual, respuestaMasiva] = await Promise.all([
         palmaresIndividualPromise,
-        Promise.all(promesasPalmaresEquipo)
+        fetchMultiplesEquiposPalmares(listaEquipos, listaTemporadas)
     ]);
 
+    // respuestaMasiva.success ya vendrá con la estructura exacta que espera tu juego
     return { 
-        equipo: palmaresEquipo,
+        equipo: respuestaMasiva.success, 
         individual: palmaresIndividual
     };
 }

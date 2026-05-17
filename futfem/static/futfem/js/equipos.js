@@ -100,7 +100,7 @@ export async function handleAutocompleteEquipo(event, id) {
     }
 }
 
-export async function fetchEquipoPalmaresByTemporadas(id_equipo, temporadas) {
+/*export async function fetchEquipoPalmaresByTemporadas(id_equipo, temporadas) {
     console.log(`Fetching palmares for equipo ID: ${id_equipo} and temporadas: ${temporadas}`);
     try {
         const url = `/api/equipo_palmares?equipo=${encodeURIComponent(id_equipo)}&temporadas=${encodeURIComponent(temporadas)}`;
@@ -111,6 +111,24 @@ export async function fetchEquipoPalmaresByTemporadas(id_equipo, temporadas) {
         return await response.json();
     } catch (error) {
         console.error('Error fetching equipo palmares:', error);
+        throw error;
+    }
+}*/
+
+export async function fetchMultiplesEquiposPalmares(listaEquipos, listaTemporadas) {
+    // Convierte los arrays en strings separados por comas: "59,1,6" y "2004-2005,2011-act"
+    const equiposParam = listaEquipos.join(',');
+    const temporadasParam = listaTemporadas.join(',');
+
+    console.log(`Fetching masivo para equipos: [${equiposParam}] y temporadas: [${temporadasParam}]`);
+    try {
+        const url = `/api/equipo_palmares?equipos=${encodeURIComponent(equiposParam)}&temporadas=${encodeURIComponent(temporadasParam)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Error en fetch masivo: ${response.statusText}`);
+        
+        return await response.json(); // Devolverá un array con los palmarés ordenados
+    } catch (error) {
+        console.error('Error en fetch masivo:', error);
         throw error;
     }
 }

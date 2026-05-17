@@ -1162,58 +1162,79 @@ def trofeos_individuales(request):
     return JsonResponse({"success": resultado})
 
 def equipo_palmares(request):
-    equipo = request.GET.get("equipo")
-    print("Equipo recibido:", equipo)
-    temporadas = request.GET.get("temporadas", "1950-act")
+    # Ahora leemos "equipos" (ej: "59,1,6")
+    equipos_raw = request.GET.get("equipos") or request.GET.get("equipo")
+    temporadas_raw = request.GET.get("temporadas", "1950-act")
 
-    if not temporadas or temporadas == "undefined":
-        temporadas = "1950-act"
-
-    if not equipo:
-        return JsonResponse({"error": "ID de equipo no proporcionado"}, status=400)
+    if not equipos_raw:
+        return JsonResponse({"error": "IDs de equipos no proporcionados"}, status=400)
 
     try:
-        equipo = int(equipo)
-        filtro_inicio, filtro_fin = parse_temporada(temporadas)
+        # Convertimos "59,1,6" en una lista de enteros: [59, 1, 6]
+        lista_equipos = [int(x.strip()) for x in equipos_raw.split(",") if x.strip()]
+        # Convertimos "2004-2005,2011-act" en una lista de strings
+        lista_temporadas = [x.strip() for x in temporadas_raw.split(",") if x.strip()]
     except ValueError:
-        return JsonResponse({"error": "Datos inválidos"}, status=400)
+        return JsonResponse({"error": "Datos inválidos en la petición"}, status=400)
 
-    query = """
-        SELECT t.id, t.nombre, t.tipo, t.icono, ti.temporada
+    # Si nos mandan solo una temporada para muchos equipos, rellenamos para que coincidan en tamaño
+    if len(lista_temporadas) == 1 and len(lista_equipos) > 1:
+        lista_temporadas = lista_temporadas * len(lista_equipos)
+
+    # 1. Consulta SQL usando "IN" para traer los trofeos de TODOS los equipos implicados
+    placeholders = ",".join(["%s"] * len(lista_equipos))
+    query = f"""
+        SELECT t.id, t.nombre, t.tipo, t.icono, ti.temporada, ti.equipo
         FROM trofeos t
-        INNER JOIN `equipo-trofeo` ti
-            ON t.id = ti.trofeo
-        WHERE ti.equipo = %s;
+        INNER JOIN `equipo-trofeo` ti ON t.id = ti.trofeo
+        WHERE ti.equipo IN ({placeholders});
     """
 
     with connection.cursor() as cursor:
-        cursor.execute(query, [equipo])
+        cursor.execute(query, lista_equipos)
         filas = cursor.fetchall()
 
     if not filas:
-        return JsonResponse({"success": []})
+        return JsonResponse({"success": [] if len(lista_equipos) > 1 else []})
 
-    resultado = []
+    # 2. Procesamos el solapamiento manteniendo el orden correspondiente a cada etapa
+    resultado_final = []
 
-    for fila in filas:
-        temporada_trofeo = fila[4]
-
+    # Iteramos sobre el orden original que nos pidió el frontend (etapa por etapa)
+    for idx, id_buscado in enumerate(lista_equipos):
+        # Conseguimos el rango de tiempo de esta etapa específica de la trayectoria
         try:
-            trofeo_inicio, trofeo_fin = parse_temporada(temporada_trofeo)
-        except ValueError:
-            continue  # temporada mal formada → ignorar
+            temp_filtro = lista_temporadas[idx] if idx < len(lista_temporadas) else "1950-act"
+            filtro_inicio, filtro_fin = parse_temporada(temp_filtro)
+        except (ValueError, IndexError):
+            filtro_inicio, filtro_fin = 1950, 2099
 
-        # REGla ÚNICA de solapamiento
-        if trofeo_inicio < filtro_fin and trofeo_fin > filtro_inicio:
-            resultado.append({
-                "id": fila[0],
-                "nombre": fila[1],
-                "tipo": fila[2],
-                "icono": fila[3],
-                "temporada": temporada_trofeo
-            })
+        resultado_etapa = []
 
-    return JsonResponse({"success": resultado})
+        # Buscamos en los resultados de la BD los trofeos que pertenecen a este equipo en esta fecha
+        for fila in filas:
+            id_trofeo, nombre, tipo, icono, temporada_trofeo, equipo_id_fila = fila
+            
+            if equipo_id_fila == id_buscado:
+                try:
+                    trofeo_inicio, trofeo_fin = parse_temporada(temporada_trofeo)
+                except ValueError:
+                    continue
+
+                # Tu Regla ÚNICA de solapamiento
+                if trofeo_inicio < filtro_fin and trofeo_fin > filtro_inicio:
+                    resultado_etapa.append({
+                        "id": id_trofeo,
+                        "nombre": nombre,
+                        "tipo": tipo,
+                        "icono": icono,
+                        "temporada": temporada_trofeo
+                    })
+        
+        # Guardamos el palmarés de este equipo (si la app original esperaba un array de arrays)
+        resultado_final.append(resultado_etapa)
+
+    return JsonResponse({"success": resultado_final})
 
 def trofeosxid (request):
     ids = request.GET.getlist('id[]')  # Recupera id[]=1&id[]=2&id[]=3
