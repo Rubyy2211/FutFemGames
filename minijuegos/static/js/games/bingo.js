@@ -201,15 +201,16 @@ function handleCellClick(cell, jugador) {
 let jugadorasCache = [];
 let indexJugadora = 0;
 
-function skipPlayer(paises, clubes, ligas, trofeos) {
+export async function skipPlayer(paises, clubes, ligas, trofeos) {
     requestAnimationFrame(() => { iniciarHoverFondos(); });
-    // Si ya hay jugadoras en caché y no se agotaron, mostrar la siguiente
+    
+    // Si ya hay jugadoras en la caché local, pasamos a la siguiente sin tocar el servidor (Instantáneo)
     if (jugadorasCache.length > 0 && indexJugadora < jugadorasCache.length) {
         mostrarJugadora(jugadorasCache[indexJugadora++], paises, clubes, ligas, trofeos);
         return;
     }
 
-    // Si no hay más jugadoras, volver a pedir al servidor
+    // Si la caché se vació, limpiamos índices
     indexJugadora = 0;
     jugadorasCache = [];
 
@@ -219,24 +220,25 @@ function skipPlayer(paises, clubes, ligas, trofeos) {
     if (ligas.length > 0) ligas.forEach(liga => url.searchParams.append('ligas[]', liga));
     if (trofeos.length > 0) trofeos.forEach(trofeo => url.searchParams.append('trofeos[]', trofeo));
 
-    fetch(url)
-        .then(response => {
-            if (!response.ok) throw new Error('Error en la respuesta del servidor');
-            return response.json();
-        })
-        .then(data => {
-            if (!Array.isArray(data) || data.length === 0) {
-                console.warn('No se encontraron jugadoras.');
-                return;
-            }
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Error en la respuesta del servidor');
+        
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) {
+            console.warn('No se encontraron jugadoras.');
+            return;
+        }
 
-            jugadorasCache = data;
-            indexJugadora = 0;
-            mostrarJugadora(jugadorasCache[indexJugadora++], paises, clubes, ligas, trofeos);
-        })
-        .catch(error => {
-            console.error('Hubo un problema con la solicitud fetch:', error);
-        });
+        jugadorasCache = data;
+        indexJugadora = 0;
+        
+        // Pintamos única y exclusivamente la primera jugadora del lote devuelto
+        await mostrarJugadora(jugadorasCache[indexJugadora++], paises, clubes, ligas, trofeos);
+
+    } catch (error) {
+        console.error('Hubo un problema con la solicitud fetch:', error);
+    }
 }
 
 // 2. Configura el evento de clic UNA SOLA VEZ al cargar el Bingo
@@ -297,7 +299,9 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
         document.getElementById("player-name").textContent = jugadora.nombre;
         const img = document.getElementById("player-image");
         localStorage.setItem('last-player-bingo', JSON.stringify(jugadora));
-        img.src = (!jugadora.imagen) ? "/static/img/predeterm.jpg": jugadora.imagen;
+        const tieneImagenValida = jugadora.imagen && jugadora.imagen !== 'null' && jugadora.imagen !== '';
+
+        img.src = tieneImagenValida ? jugadora.imagen : "/static/img/predeterm.jpg";
         img.className = jugadora.id;
     } else {
         console.error('No se encontraron equipos para la jugadora:', jugadora.nombre);
