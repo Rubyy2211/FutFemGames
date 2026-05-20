@@ -1,5 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const links = document.querySelectorAll('a[href^="#"]');
+window.addEventListener('DOMContentLoaded', () => {
+    const links = document.querySelectorAll('#selector a[href^="#"]');
     const sections = document.querySelectorAll('.content-section');
 
     function mostrarSeccionDesdeHash() {
@@ -10,14 +10,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // 1. Intentar buscar por Hash
         if (hash) {
             targetSection = document.querySelector(hash);
-            targetLink = document.querySelector(`a[href="${hash}"]`);
+            targetLink = document.querySelector(`#selector a[href="${hash}"]`);
         }
 
         // 2. FALLBACK: Si no hay hash, o el hash no existe/no es de nuestras secciones
-        if (!targetSection || !targetSection.classList.contains('content-section')) {
-            targetSection = sections[0]; // Selecciona la primera sección
-            targetLink = links[0];       // Selecciona el primer link
+        if (!hash || !targetSection || !targetSection.classList.contains('content-section')) {
+            targetSection = sections[0];
+            targetLink = links[0];
         }
+
+        console.log(sections, targetSection, links, targetLink);
+
 
         // 3. Aplicar cambios (siempre que existan secciones en la página)
         if (targetSection) {
@@ -42,5 +45,5 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('hashchange', mostrarSeccionDesdeHash);
 
     // Ejecución inicial
-    mostrarSeccionDesdeHash();
+    requestAnimationFrame(mostrarSeccionDesdeHash);
 });

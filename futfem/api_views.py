@@ -327,37 +327,37 @@ def jugadora_datos(request):
 def jugadoraxnombre(request):
     query_input = request.GET.get('nombre', '').strip()
     if not query_input:
-        return JsonResponse({'error': 'Falta nombre'}, status=400)
+        return JsonResponse([], safe=False)
 
     # 1. Normalizamos espacios
     query_input = re.sub(' +', ' ', query_input)
-    # 2. Dividimos por palabras: "Emma H" -> ["Emma", "H"]
+    # 2. Dividimos por palabras
     palabras = query_input.split(' ')
 
-    # 3. Creamos el campo anotado
+    # 3. Creamos el campo anotado para buscar
     queryset = Jugadora.objects.annotate(
         nombre_completo=Concat('Nombre', Value(' '), 'Apellidos', output_field=CharField())
     )
 
-    # 4. Filtramos: CADA palabra debe estar en el nombre_completo
-    # Esto permite buscar "H Emma" o "Emma Holmgren" o "Emma H"
+    # 4. Filtramos iterando por las palabras de la búsqueda
     for palabra in palabras:
         queryset = queryset.filter(
             Q(nombre_completo__icontains=palabra) | Q(Apodo__icontains=palabra)
         )
 
-    # 5. Limitamos resultados para que el autocompletado sea rápido
-    jugadoras = queryset.only('id_jugadora')[:10]
+    # 5.OPTIMIZACIÓN CRUCIAL: Pedimos a la BD todos los campos que sí vamos a pintar
+    jugadoras = queryset.only('id_jugadora', 'Nombre', 'Apellidos', 'imagen', 'Nacimiento', 'Apodo')[:10]
 
     if not jugadoras.exists():
-        return JsonResponse([], safe=False) # Mandar lista vacía es mejor que un 404 para el JS
+        return JsonResponse([], safe=False)
 
+    # 6. Construimos la respuesta (Ahora va volando porque los datos ya están en memoria)
     data = [{
         'id_jugadora': j.id_jugadora,
         'Nombre_Completo': formatear_nombre_corto(j.Nombre, j.Apellidos),
-        'imagen': j.imagen or '/static/img/predeterm.jpg',
+        'imagen': j.imagen if j.imagen else 'static/img/predeterm.jpg',
         'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else "",
-        'Apodo': j.Apodo,
+        'Apodo': j.Apodo or "",
     } for j in jugadoras]
 
     return JsonResponse(data, safe=False)

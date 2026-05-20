@@ -8,7 +8,7 @@ let debounceTimer;
  * @param {event}
  * @returns {}
  */
-export async function handleAutocompletePlayer(event){
+export async function handleAutocompletePlayer(event) {
     const input = event.target;
     const texto = input.value.trim();
     const suggestionsList = document.getElementById("sugerencias");
@@ -22,6 +22,7 @@ export async function handleAutocompletePlayer(event){
         return;
     }
 
+    // Ponemos el retardo de 300ms
     debounceTimer = setTimeout(async () => {
         const url = `/api/jugadoraxnombre?nombre=${encodeURIComponent(texto)}`;
 
@@ -30,13 +31,20 @@ export async function handleAutocompletePlayer(event){
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const results = await response.json();
 
-            // Evitar duplicados
+            // 🌟 CRUCIAL: Limpiar la lista anterior antes de renderizar los nuevos resultados
+            suggestionsList.innerHTML = '';
+
+            if (results.length === 0) {
+                return; // Si no hay resultados, salimos habiendo dejado la lista limpia
+            }
+
+            // Evitar duplicados visuales en el DOM
             const idsMostrados = new Set();
 
             results.forEach(jugadora => {
                 const { id_jugadora, Nombre_Completo, imagen, Nacimiento, Apodo } = jugadora;
 
-                if (!idsMostrados.has(id_jugadora)) { // Verificar que no se haya mostrado este ID
+                if (!idsMostrados.has(id_jugadora)) {
                     idsMostrados.add(id_jugadora);
 
                     const listItem = document.createElement('li');
@@ -46,17 +54,13 @@ export async function handleAutocompletePlayer(event){
                         <img src="/${imagen}" alt="${Nombre_Completo}" class="jugadora-img">
                         <div class="jugadora-info">
                             <strong>${Nombre_Completo}</strong>
-                            <!--<p>Nacimiento: ${Nacimiento}</p>-->
                         </div>
                     `;
 
                     listItem.addEventListener('click', () => {
-                        // Insertar el nombre en el input al hacer clic
                         input.value = Nombre_Completo;
                         input.setAttribute('data-id', id_jugadora);
-                        suggestionsList.innerHTML = '';  // Limpiar las sugerencias
-                        /*document.getElementById("jugadora_id").value = id_jugadora;
-                        loadPlayerById(id_jugadora);  // Cargar los detalles de la jugadora*/
+                        suggestionsList.innerHTML = '';  // Limpiar al seleccionar
                     });
 
                     suggestionsList.appendChild(listItem);
@@ -65,7 +69,7 @@ export async function handleAutocompletePlayer(event){
         } catch (error) {
             console.error('Error al buscar la jugadora:', error);
         }
-    });
+    }, 300); // 🌟 Asegúrate de que el setTimeout tenga asignados sus milisegundos de delay aquí
 }
 /**
  * Obtener nacionalidad de una jugadora por ID

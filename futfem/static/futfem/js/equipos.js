@@ -116,9 +116,13 @@ export async function handleAutocompleteEquipo(event, id) {
 }*/
 
 export async function fetchMultiplesEquiposPalmares(listaEquipos, listaTemporadas) {
-    // Convierte los arrays en strings separados por comas: "59,1,6" y "2004-2005,2011-act"
-    const equiposParam = listaEquipos.join(',');
-    const temporadasParam = listaTemporadas.join(',');
+    // SEGURO ANTI-ERRORES: Si viene un solo dato (ej: 7 o "2024-act"), lo envolvemos en un Array automáticamente
+    const arrEquipos = Array.isArray(listaEquipos) ? listaEquipos : [listaEquipos];
+    const arrTemporadas = Array.isArray(listaTemporadas) ? listaTemporadas : [listaTemporadas];
+
+    // Ahora sí podemos usar .join() con total seguridad, sea un equipo o sean veinte
+    const equiposParam = arrEquipos.join(',');
+    const temporadasParam = arrTemporadas.join(',');
 
     console.log(`Fetching masivo para equipos: [${equiposParam}] y temporadas: [${temporadasParam}]`);
     try {

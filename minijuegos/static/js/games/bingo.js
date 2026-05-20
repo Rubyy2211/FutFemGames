@@ -1,7 +1,7 @@
 import { victory, wrong, correct } from "../sounds.js";
 import { Ganaste, calcularEdad } from "./funciones-comunes.js";
 
-let idres, currentPlayerData, paises, equipos, ligas, trofeos, lastPlayer, jugadora;;
+let idres, currentPlayerData, paises, equipos, ligas, trofeos, lastPlayer, jugadora, jugadoraAnterior;
 
 
 async function iniciar(dificultad) {
@@ -204,9 +204,14 @@ let indexJugadora = 0;
 export async function skipPlayer(paises, clubes, ligas, trofeos) {
     requestAnimationFrame(() => { iniciarHoverFondos(); });
     
-    // Si ya hay jugadoras en la caché local, pasamos a la siguiente sin tocar el servidor (Instantáneo)
+    // 1. Si ya hay jugadoras en la caché local, pasamos a la siguiente sin tocar el servidor
     if (jugadorasCache.length > 0 && indexJugadora < jugadorasCache.length) {
-        mostrarJugadora(jugadorasCache[indexJugadora++], paises, clubes, ligas, trofeos);
+        const siguienteJugadora = jugadorasCache[indexJugadora++];
+        
+        // ACTUALIZACIÓN CRUCIAL: Guardamos la que se va a mostrar ahora mismo
+        jugadoraAnterior = siguienteJugadora.id; 
+        
+        mostrarJugadora(siguienteJugadora, paises, clubes, ligas, trofeos);
         return;
     }
 
@@ -232,10 +237,25 @@ export async function skipPlayer(paises, clubes, ligas, trofeos) {
 
         jugadorasCache = data;
         indexJugadora = 0;
-        
-        // Pintamos única y exclusivamente la primera jugadora del lote devuelto
-        await mostrarJugadora(jugadorasCache[indexJugadora++], paises, clubes, ligas, trofeos);
 
+        // 2. CONTROL ANTIDUPLICADOS SEGURO:
+        // Solo saltamos a la siguiente si el lote tiene más de una jugadora para evitar un crash
+        if (jugadorasCache.length > 1 && jugadoraAnterior === jugadorasCache[indexJugadora].id) {
+            console.log("La jugadora aleatoria es la misma que la anterior, pasando a la siguiente del lote...");
+            indexJugadora++; // Saltamos del índice 0 al 1
+        }
+        
+        // Extraemos la jugadora definitiva usando el índice actual y luego lo incrementamos
+        const jugadoraFinal = jugadorasCache[indexJugadora++];
+        
+        if (jugadoraFinal) {
+            // Guardamos el ID definitivo en el historial antes de pintar
+            jugadoraAnterior = jugadoraFinal.id; 
+            await mostrarJugadora(jugadoraFinal, paises, clubes, ligas, trofeos);
+        } else {
+            console.warn('No se pudo extraer una jugadora válida del lote.');
+        }
+    
     } catch (error) {
         console.error('Hubo un problema con la solicitud fetch:', error);
     }

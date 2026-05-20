@@ -22,7 +22,7 @@ ligaElement.style.setProperty('--liga-shadow-color', rgbToRgba(colors[2], 1));*/
 
 export async function displayPalmares(equipo) {
     const data = await fetchMultiplesEquiposPalmares(equipo, '1950-act');
-    const palmaresAgrupado = agruparTrofeos(data.success);
+    const palmaresAgrupado = agruparTrofeos(data.success[0]);
 
     palmaresAgrupado.forEach(trofeo => {
         const div = document.createElement("div");
