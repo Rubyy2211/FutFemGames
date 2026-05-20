@@ -1,0 +1,77 @@
+/*body{
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-color: rgba(128, 0, 128, 0.5); /* Color negro con transparencia */
+    /*background-blend-mode: color-dodge; 
+}*/
+
+.container-wordle {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    height: 100%;
+}
+
+.container-wordle h1{
+    margin-top: 0;
+}
+#board {
+    display: grid;
+    /*grid-template-columns: repeat(5, 60px);
+    grid-gap: 0 10px;
+    /*margin-bottom: 20px;*/
+    justify-items: center;
+}
+#message {
+    /*margin-top: 20px;*/
+    font-size: 1.2rem;
+    height: 30px;
+}
+input{
+    color: #1a1a1a;
+}
+.tile {
+    width: 70px !important;
+    height: 70px !important;
+    margin: 5px;
+    text-align: center;
+    font-size: 24px;
+    text-transform: uppercase;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: rgba(255,255,255,0.8); /* Color de fondo primario */
+    color: var(--color-detalles); /* Color del texto */
+    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(10px);
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-primario) 30%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+}
+
+.tile.correct {
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-success) 70%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
+    border: 1px solid var(--color-success);
+    color: #fff;
+}
+
+.tile.present {
+    color: #fff;
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-warning) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+    border: 1px solid var(--color-warning);
+}
+
+.tile.absent {
+    background-color: #787c7e;
+    color: #fff;
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-gray-dark) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+    border: 1px solid var(--color-gray-dark);
+}

@@ -1,0 +1,54 @@
+.glow{
+    /*padding:clamp(1.5rem,3vw,5rem);*/
+    /*border:0 solid white;*/
+    border-radius:1rem;
+    position:relative;
+}
+
+:root{
+    --azul:#0033ff;
+    --violeta: #f700ff;
+    --blanco: white;
+    --deg:0deg;
+
+}
+@property --deg{
+    syntax:'<angle>';
+    inherits:false;
+    initial-value:0deg;
+}
+/*.glow::after{
+
+    content:'';
+    border-radius:inherit;
+    inset:-0.25rem;
+    background-color:Red;
+    position:absolute;
+    z-index:-1;
+    background:conic-gradient( from var(--deg),var(--azul),var(--violeta),var(--azul));
+    animation:girar 3s linear infinite;
+}*/
+
+.glow:hover::before{
+    filter:blur(40px);
+    --deg:0deg;
+    content:'';
+    border-radius:inherit;
+    inset:-0.5rem;
+    /*background-color:Red;*/
+    position:absolute;
+    z-index:-1;
+    background:conic-gradient( from var(--deg),var(--color-detalles),var(--color-detalles),var(--color-detalles));
+    animation:girar 3s linear infinite;
+}
+
+
+@keyframes girar {
+    from{
+        --deg:0deg;
+    }
+
+    to{
+        --deg:360deg;
+    }
+}

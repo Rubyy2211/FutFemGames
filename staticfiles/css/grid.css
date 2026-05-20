@@ -1,0 +1,114 @@
+
+table {
+    border-collapse: separate; /* ¡Obligatorio para ver redondeo! */
+    margin-bottom: 20px;
+    border-radius: 20px;
+}
+tbody{
+    border-radius: 20px;
+}
+#sugerencias{
+    max-height: 125px;
+    overflow-y: scroll;
+}
+#sugerencias::-webkit-scrollbar{
+    color: var(--color-primario);
+}
+div.cont{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.resaltado {
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-warning) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+    transition: background-color 0.3s ease;
+}
+
+.oculto{
+    border: none;
+    background: none;
+}
+th{
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-primario) 30%, transparent), 
+    color-mix(in srgb, var(--color-primario) 30%, transparent));
+    border: 1px solid color-mix(in srgb, var(--color-primario) 50%, transparent);
+}
+th, td {
+    border: 1px solid color-mix(in srgb, var(--color-primario) 50%, transparent);
+    padding: 0;
+    text-align: center;
+    width: 100px;
+    height: 100px;
+    position: relative;
+    border-radius: 20px;
+}
+td{
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-primario) 0%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+    border: 1px solid var(--color-secundario);
+}
+td:has(img){
+    border: 1px solid var(--color-success);
+}
+td img{
+    background: linear-gradient(to bottom, 
+    color-mix(in srgb, var(--color-success) 60%, transparent), 
+    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
+    border-radius: 20px;
+}
+th[id*="Equipo"] {
+  background-size: 200% 200%; /* permite movimiento suave */
+  background-repeat: no-repeat;
+}
+
+
+/*img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}*/
+#c11 img {
+    display: block;
+}
+#c12 img {
+    display: block;
+}
+#c13 img {
+    display: block;
+}
+#c21 img {
+    display: block;
+}
+#c22 img {
+    display: block;
+}
+#c23 img {
+    display: block;
+}
+#c31 img {
+    display: block;
+}
+#c32 img {
+    display: block;
+}
+#c33 img {
+    display: block;
+}
+#sugerencias{
+    max-height: 125px;
+    overflow-y: scroll;
+}
+#sugerencias::-webkit-scrollbar{
+    color: var(--color-primario);
+}
+@media (max-width: 450px) {
+    td, th{
+        width: 80px;
+        height: 80px;
+    }
+}
