@@ -5,6 +5,8 @@
     width: 100%;
     padding-block: 2.5%;
     max-width: 1320px;
+    justify-content: center;
+    align-items: center;
 }
 .col-md-4{
     max-width: max-content;
@@ -189,7 +191,7 @@ section{
     display: block; /* o flex, grid, etc. */
 }
 section{
-    height: 100%;
+    height: 70%;
 }
 section .container {
     position: relative;
@@ -622,13 +624,13 @@ section .container .web-button .web-button-text{
         padding-block: 2.5%;
     }
 
-    #selector{
-        position: absolute;
+    /*#selector{
+        /*position: absolute;
         top: var(--header-height);
         left: 50%;
         transform: translateX(-50%);
     
-    }
+    }*/
 
     #selector svg{
         display: none;
@@ -728,6 +730,13 @@ section .container .web-button .web-button-text{
         flex-direction: column;
         align-items: center;
     }
+
+    section .container .web-button img, section .container .web-button svg{
+        height: 80%;
+        width: auto;
+        left: 50%;
+        transform: translateX(-50%);
+    }
     #daily-games{
         max-height: 182px !important;
         /*min-height: fit-content !important;*/
@@ -777,6 +786,7 @@ section .container .web-button .web-button-text{
         display: flex;
         max-width: 500px;
         padding-bottom: 0;
+        justify-content: start;
     }
     section{
         min-height: 75dvh;
@@ -786,6 +796,11 @@ section .container .web-button .web-button-text{
     section h1{
         font-size: 1.5rem;
     }
+
+    section .container .web-button svg{
+        height: 50%;
+    }
+
     .menu-seleccion{
         flex-direction: column;
     }
@@ -802,15 +817,22 @@ section .container .web-button .web-button-text{
     }
     #daily-games, #regular-games{
         max-height: unset !important;
-        height: max-content !important;
+        /*height: max-content !important;*/
+        height: 100%;
         overflow: unset !important;
         flex-direction: column !important;
+        justify-content: center;
     }
     .row{
         gap: 3px;
+        justify-content: space-evenly;
+        overflow-x: hidden;
     }
     .game-button button {
         display: none; /* Ocultar los botones en pantallas pequeñas */;
+    }
+    .game-button:hover {
+        transform: scale(1.0) !important; /* Desactivar el zoom en hover para pantallas pequeñas */ 
     }
     section .container .web-button{
         height: 100%;
@@ -843,5 +865,8 @@ section .container .web-button .web-button-text{
         font-size: 10px; /* Reducir el tamaño de la fuente en pantallas pequeñas */
         width: max-content;
         justify-self: center;
+    }
+    .btn-volver{
+        left: 0;
     }
 }

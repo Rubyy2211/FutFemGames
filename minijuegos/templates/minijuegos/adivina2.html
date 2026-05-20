@@ -38,6 +38,7 @@
 </head>
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
     {% include 'partials/header.html' %}
+    <h1>{% trans "Futfem Guess" %}</h1>
     <div id="game">
         <div id="resultado"></div>
         <p id="vidas"></p>
@@ -81,6 +82,11 @@
                 </div>
             </div>
             </template>
+        </div>
+        <div id="game-footer">
+            <div class="incorrecto"><p>Diferente</p></div>
+            <div class="cercano"><p>Cerca</p></div>
+            <div class="igual"><p>Igual</p></div>
         </div>
     </div>
     <script src="{% url 'javascript-catalog' %}" defer></script>

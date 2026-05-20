@@ -830,7 +830,8 @@ body.no-scroll {
         overflow-y: hidden;
         max-height: 100%;
         padding-left: unset;
-        min-height: 33dvh !important;
+        min-height: 30dvh !important;
+        max-height: 33dvh !important;
     }
 
     #jugadoras-container{
@@ -866,7 +867,7 @@ body.no-scroll {
     section#jugadoras-destacadas{
         min-width: 95%;
         width: 95%;
-        height: 50%;
+        height: 100% !important;
     }
 
     

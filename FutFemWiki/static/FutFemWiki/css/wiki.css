@@ -823,10 +823,18 @@ display: flex;
         display: none;
     }
 
+    #ligas-container{
+        gap: 7px;
+    }
+
     #ligas-container .liga-item {
         flex: 0 0 auto; /* cada item mantiene su ancho, no se encoge */
-        width: 200px;   /* o el ancho que quieras mostrar en móvil */
+        width: 70px;   /* o el ancho que quieras mostrar en móvil */
         height: 50px;
+    }
+
+    #ligas-container .liga-item .liga-info{
+        display: none;
     }
 
     #cabecera-wiki-equipos.jugadoras {
@@ -896,12 +904,17 @@ display: flex;
     #wiki-equipos.equipos #cabecera-wiki-equipos #ligas-container{
         flex-direction: row;
         height: fit-content;
-        padding: 15px;
+        padding: 10px;
         max-width: 100%;
     }
 
     #wiki-equipos.equipos #cabecera-wiki-equipos #ligas-container .liga-item{
         font-size: 13px;
+        justify-content: center;
+    }
+
+    #wiki-equipos.equipos #cabecera-wiki-equipos #ligas-container .liga-item img{
+        max-height: 40px;
     }
 
     #wiki-equipos.equipos #cabecera-wiki-equipos #ligas-container .liga-item h3{
@@ -922,7 +935,6 @@ display: flex;
     }
 
     #cabecera-wiki-equipos.equipos #cabecera-equipo{
-        gap: 0;
         /*background: linear-gradient(to bottom, color-mix(in srgb, transparent 30%, transparent), color-mix(in srgb, var(--color-secundario) 100%, transparent));*/
         height: 100% !important;
         padding-top: 0;
@@ -951,11 +963,11 @@ display: flex;
 
     #items-container.equipos{
         gap: 8px;
-        padding-top: 0px;
+        padding-top: 5px;
         height: 100%;
         max-width: 100% !important;
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(5, max-content) !important;
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(8, max-content) !important;
     }
 
     .jugadoras-grid-container{
