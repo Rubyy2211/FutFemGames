@@ -96,3 +96,31 @@ export async function fetchPaisesById(ids){
         return null;
     }
 } 
+
+export async function obtenerPaisesConLigas() {
+    // 1. Intentamos recuperar los países almacenados en el LocalStorage
+    const cache = localStorage.getItem('paises_con_ligas');
+    
+    if (cache) {
+        // Si ya existen, los parseamos y los devolvemos al instante (0ms)
+        console.log("Cargando países con ligas desde la caché local...");
+        return JSON.parse(cache);
+    }
+
+    // 2. Si no hay caché, vamos al servidor (Solo ocurre una vez)
+    try {
+        console.log("Caché vacía. Solicitando países al servidor...");
+        const response = await fetch('/api/paisesconligas'); // La URL de tu nueva función Python
+        if (!response.ok) throw new Error('Error al traer países');
+        
+        const data = await response.json();
+        
+        // 3. Guardamos el resultado en LocalStorage para la próxima vez
+        localStorage.setItem('paises_con_ligas', JSON.stringify(data));
+        
+        return data;
+    } catch (error) {
+        console.error('Hubo un problema con la solicitud de países:', error);
+        return [];
+    }
+}

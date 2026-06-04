@@ -1,4 +1,4 @@
-import { handleAutocompletePais } from '/static/futfem/js/pais.js';
+import { handleAutocompletePais, obtenerPaisesConLigas } from '/static/futfem/js/pais.js';
 import { handleAutocompletePosicion } from '/static/futfem/js/posiciones.js';
 import { equiposxliga, handleAutocompleteEquipo, fetchEquipoById } from '/static/futfem/js/equipos.js';
 import { fetchAllJugadoras, formatearValorMercado } from '/static/futfem/js/jugadora.js';
@@ -41,78 +41,151 @@ const item = document.getElementById("items-container");
 
 
 export async function inicializarWiki(arg) {
+    // ==========================================
+    // 1. CARGA DE DATOS Y CAPTURA DE ELEMENTOS DOM
+    // ==========================================
+    const paisesConLigas = await obtenerPaisesConLigas();
+    console.log("Paises con ligas cargados:", paisesConLigas);
 
+    // Inputs y contenedores generales
     const inputPaises = document.getElementsByClassName('input-pais');
-
     const sectionWiki = document.getElementById('wiki-equipos');
-
     const cabecera = document.getElementById('cabecera-wiki-equipos');
-
     const inputPosiciones = document.getElementById('input-posicion');
-
-    const cabeceraLigas = document.getElementById('cabecera-equipo');
-
-    const cabeceraJugadoras = document.getElementById('cabecera-jugadora');
-
     const ligasContainer = document.getElementById('ligas-container');
-
     const inputEquipo = document.getElementById('input-equipo');
-
+    
+    // Botones y pestañas de navegación
+    const cabeceraLigas = document.getElementById('cabecera-equipo');
+    const cabeceraJugadoras = document.getElementById('cabecera-jugadora');
     const botonConfirmar = document.getElementById('confirmarPais');
-
-    //const botonJugadoras = document.getElementById('jugadoras-btn');
-
     const botonFiltro = document.getElementById('jugadoras-filtros');
 
-    if(arg === 'jugadoras'){
+    // UI Dropdown Personalizado: Países
+    const dropdownMenuPais = document.getElementById('dropdown-pais-list');
+    const dropdownBtnPais = document.getElementById('dropdown-pais-btn');
+    const selectedFlagPais = document.getElementById('selected-flag');
+    const selectedTextPais = document.getElementById('selected-text');
+
+    // UI Dropdown Personalizado: Ligas
+    const dropdownMenuLigas = document.getElementById('dropdown-liga-list');
+    const dropdownBtnLiga = document.getElementById('dropdown-liga-btn');
+
+    // ==========================================
+    // 2. COMPORTAMIENTO DE APERTURA/CIERRE (DROPDOWNS)
+    // ==========================================
+    
+    // Despliegue dropdown Países
+    dropdownBtnPais.onclick = (e) => {
+        e.stopPropagation();
+        dropdownMenuLigas.classList.remove('open'); // Evita solapamiento
+        dropdownMenuPais.classList.toggle('open');
+    };
+
+    // Despliegue dropdown Ligas
+    dropdownBtnLiga.onclick = (e) => {
+        e.stopPropagation();
+        dropdownMenuPais.classList.remove('open'); // Evita solapamiento
+        dropdownMenuLigas.classList.toggle('open');
+    };
+
+    // Un solo listener global limpio para cerrar ambos menús si hacen clic fuera
+    document.onclick = () => {
+        dropdownMenuPais.classList.remove('open');
+        dropdownMenuLigas.classList.remove('open');
+    };
+
+    // ==========================================
+    // 3. RENDERIZADO DEL DROPDOWN DE PAÍSES
+    // ==========================================
+    dropdownMenuPais.innerHTML = ''; // Limpieza anti-duplicados
+
+    paisesConLigas.forEach(pais => {
+        const li = document.createElement('li');
+        li.className = 'dropdown-item';
+        li.dataset.id = pais.id_pais;
+        
+        const codigoIso = pais.iso ? pais.iso.toLowerCase() : 'xx';
+
+        li.innerHTML = `
+            <span class="fi fi-${codigoIso}"></span>
+            <span class="pais-name">${pais.nombre}</span>
+        `;
+
+        // Evento interactivo de selección
+        li.addEventListener('click', () => {
+            dropdownBtnPais.dataset.id = pais.id_pais;
+            selectedTextPais.textContent = pais.nombre;
+            selectedFlagPais.className = `fi fi-${codigoIso}`;
+            
+            dropdownMenuPais.classList.remove('open');
+            
+            if (typeof ligasxpais === 'function') {
+                ligasxpais(pais.id_pais);
+            }
+        });
+
+        dropdownMenuPais.appendChild(li);
+    });
+
+    // ==========================================
+    // 4. CONTROL DE PESTAÑAS (PRECARGA INICIAL)
+    // ==========================================
+    if (arg === 'jugadoras') {
         cabeceraJugadoras.classList.add('active');
         cabeceraLigas.classList.remove('active');
         manejarJugadoras().then(cantidad => {
             console.log(`Total jugadoras cargadas: ${cantidad}`);
             displayJugadoras(jugadorasOriginal);
         });
-    }else if(arg === 'equipos'){
+    } else if (arg === 'equipos') {
         sectionWiki.classList.add('equipos');
         cabecera.classList.add('equipos');
         cabeceraJugadoras.classList.remove('active');
         cabeceraLigas.classList.add('active');
+        
+        // 1. Buscamos España (ID: 1) dentro de los datos que devolvió la caché/API
+        const paisPorDefecto = paisesConLigas.find(p => Number(p.id_pais) === 1);
+        
+        if (paisPorDefecto) {
+            // 2. Forzamos a la maqueta visual a pintar España y su bandera de inicio
+            dropdownBtnPais.dataset.id = paisPorDefecto.id_pais;
+            selectedTextPais.textContent = paisPorDefecto.nombre;
+            selectedFlagPais.className = `fi fi-${(paisPorDefecto.iso || 'xx').toLowerCase()}`;
+        }
+
+        // 3. Traemos las ligas de España (esto llamará a displayLigas que rellenará el 2º dropdown)
         await ligasxpais(1).then(ligas => {
             displayLigas(ligas.success);
         });
-        /*await equiposxliga(1).then(equipos => {
-            displayEquipos(equipos.success);
-        });*/
-        console.log(ligasContainer.firstChild)
-        ligasContainer.firstChild.classList.add('selected');
+
+        if (ligasContainer && ligasContainer.firstChild) {
+            ligasContainer.firstChild.classList.add('selected');
+        }
     }
 
+    // ==========================================
+    // 5. LISTENERS DE FILTROS Y AUTOCOMPLETADOS
+    // ==========================================
     botonFiltro.addEventListener('click', () => {
-        const paisInput = inputPaises[1];
+        const paisInput = inputPaises[0];
         if (!paisInput) return;
-        console.log(inputPaises)
         filtroJugadoras(Number(inputEquipo.dataset.id), Number(paisInput.dataset.id), Number(inputPosiciones.dataset.id));
     });
 
-    /*botonJugadoras.addEventListener('click', async (event) => {
-        manejarJugadoras();
-    });*/
-
-    inputEquipo.addEventListener('input', async (event) => {
+    inputEquipo.addEventListener('input', (event) => {
         handleAutocompleteEquipo(event, 'sugerencias-equipo');
     });
 
-    inputPosiciones.addEventListener('input', async (event) => {
+    inputPosiciones.addEventListener('input', (event) => {
         handleAutocompletePosicion(event);
     });
 
-        inputPaises[0].addEventListener('input', async (event) => {
-            handleAutocompletePais(event, 'sugerencias-pais1', ligasxpais);
+    if (inputPaises[0]) {
+        inputPaises[0].addEventListener('input', (event) => {
+            handleAutocompletePais(event, 'sugerencias-pais2' );
         });
-        inputPaises[1].addEventListener('input', async (event) => {
-            handleAutocompletePais(event, 'sugerencias-pais2');
-        });
-    
-
+    }
 
     botonConfirmar.addEventListener('click', async () => {
         const paisId = Number(inputPaises[0].dataset.id);
@@ -122,17 +195,6 @@ export async function inicializarWiki(arg) {
             alert('Por favor, selecciona un país válido de las sugerencias.');
         }
     });
-
-    // default equipo display
-    /*ligasxpais(1).then(ligas => {
-        ligasContainer.firstElementChild.classList.add('selected');
-        cabeceraLigas.style.display = 'flex';
-    });
-    equiposxliga(1).then(equipos => {
-        displayEquipos(equipos.success);
-    });*/
-
-    
 }
 
 
@@ -186,9 +248,9 @@ function displayJugadoras(jugadoras){
 function renderJugadorasPage(page = 1) {
     const container = document.getElementById('items-container');
     const cabecera = document.getElementById('cabecera-wiki-equipos');
-    const containerLigas = document.getElementById('ligas-container');
+    //const containerLigas = document.getElementById('ligas-container');
     container.innerHTML = '';
-    containerLigas.innerHTML = '';
+    //containerLigas.innerHTML = '';
     container.className = '';
     container.className = 'jugadoras';
     cabecera.classList.add('jugadoras');
@@ -198,7 +260,7 @@ function renderJugadorasPage(page = 1) {
     const jugadoras = jugadorasGlobal.slice(start, end);
     
     container.innerHTML = ''; // Limpiamos
-    containerLigas.innerHTML = '';
+    //containerLigas.innerHTML = '';
     container.className = 'jugadoras-grid-container'; // Clase para el contenedor padre
 
     // --- CREACIÓN DEL ENCABEZADO ---
@@ -382,71 +444,84 @@ async function ligasxpais(id_pais) {
     }
 }
 
-function displayLigas(data) {
-    const container = document.getElementById('ligas-container');
+export function displayLigas(data) {
+    const dropdownMenuLigas = document.getElementById('dropdown-liga-list');
+    const dropdownBtnLiga = document.getElementById('dropdown-liga-btn');
+    const selectedLigaLogo = document.getElementById('selected-liga-logo');
+    const selectedLigaText = document.getElementById('selected-liga-text');
+    
     const containerEquipos = document.getElementById('items-container');
+    
+    // Limpieza de seguridad: vaciamos el contenedor de equipos y el dropdown de ligas viejo
     containerEquipos.innerHTML = '';
-    container.innerHTML = '';
+    dropdownMenuLigas.innerHTML = '';
 
     if (data.error) {
-        container.innerHTML = `<p>Error: ${data.error}</p>`;
+        dropdownMenuLigas.innerHTML = `<li class="dropdown-item error">Error: ${data.error}</li>`;
         return;
     }
 
-
-
     data.forEach((liga, index) => {
-        const ligaElement = document.createElement('div');
-        const foto = "/"+liga.logo;
+        const li = document.createElement('li');
+        li.className = 'dropdown-item';
+        li.dataset.id = liga.liga;
+
+        const foto = "/" + liga.logo;
         const fotoMini = foto.replace('/ligas/', '/ligas/mini/');
-        ligaElement.classList.add('liga-item');
-        ligaElement.classList.add('glass');
-        ligaElement.id = liga.liga;
-        ligaElement.innerHTML = `
-            <img src="${fotoMini}" alt="${liga.nombre} Logo" class="liga-logo">
-            <div class="liga-info">
-            <h3>${liga.nombre}</h3>
-            <!--<p>2025/2026</p>-->
-            </div>
+
+        // Estructura de la opción con la imagen mini de la liga
+        li.innerHTML = `
+            <img src="${fotoMini}" alt="${liga.nombre} Logo" class="liga-logo-dropdown" style="width: 24px; height: 24px; object-fit: contain;">
+            <span class="liga-name">${liga.nombre}</span>
         `;
 
-        const img = ligaElement.querySelector('.liga-logo');
+        // Extracción y aplicación de la paleta de colores reactiva al logo
+        const img = li.querySelector('.liga-logo-dropdown');
         img.onload = async () => {
             try {
                 const colors = await getDominantColors(img, 3);
-
-                ligaElement.style.background = `
+                li.style.background = `
                     linear-gradient(
-                        to bottom,
-                        color-mix(in srgb, ${rgbToRgba(colors[0], 1)} 50%, transparent),
-                        color-mix(in srgb, ${rgbToRgba(colors[1], 1)} 100%, transparent)
+                        to right,
+                        color-mix(in srgb, ${rgbToRgba(colors[0], 1)} 40%, transparent),
+                        color-mix(in srgb, ${rgbToRgba(colors[1], 1)} 80%, transparent)
                     )
                 `;
-                ligaElement.style.borderColor = rgbToRgba(colors[2], 0.7);
-                // Guardamos color[2] en variable CSS del elemento
-                ligaElement.style.setProperty('--liga-shadow-color', rgbToRgba(colors[2], 1));
-        } catch (err) {
-            console.error("Error obteniendo colores:", err);
-        }
+                li.style.borderColor = rgbToRgba(colors[2], 0.5);
+                li.style.setProperty('--liga-shadow-color', rgbToRgba(colors[2], 1));
+            } catch (err) {
+                console.error("Error obteniendo colores del logo de la liga:", err);
+            }
         };
 
-        ligaElement.addEventListener('click', async () => {
-            seleccionarLiga(ligaElement);
+        // Evento de selección de la liga
+        li.addEventListener('click', async () => {
+            // Actualizar interfaz del botón principal de ligas
+            dropdownBtnLiga.dataset.id = liga.liga;
+            selectedLigaText.textContent = liga.nombre;
+            selectedLigaLogo.src = fotoMini;
+            selectedLigaLogo.style.display = 'inline-block';
+
+            // Cerrar menú
+            dropdownMenuLigas.classList.remove('open');
+
+            // Cargar y mostrar los equipos pertenecientes a esta liga
             const equipos = await equiposxliga(liga.liga);
-            /*displayEquiposMapa(equipos.success)*/
             displayEquipos(equipos.success);
         });
-        container.appendChild(ligaElement);
 
-        if(index===0){
-            ligaElement.click();
+        dropdownMenuLigas.appendChild(li);
+
+        // Auto-selección de la primera liga del lote (Efecto por defecto)
+        if (index === 0) {
+            // Pequeño timeout para asegurar que el DOM ha procesado el elemento
+            setTimeout(() => li.click(), 50);
         }
 
-
-        // Retraso progresivo para efecto fade
+        // Efecto Fade progresivo
         setTimeout(() => {
-            ligaElement.classList.add('visible');
-        }, index * 150); // cada liga 150ms después de la anterior
+            li.classList.add('visible');
+        }, index * 100);
     });
 }
 

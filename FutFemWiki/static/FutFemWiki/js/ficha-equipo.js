@@ -29,11 +29,12 @@ export async function displayPalmares(equipo) {
         div.classList.add("trofeo");
         
         div.innerHTML = `
-            <img src="/${trofeo.icono}" alt="${trofeo.nombre}" loading="lazy" style="width: 50px; height: 50px; object-fit: contain;">
-            <h3>${trofeo.nombre}</h3>
+            <img src="/${trofeo.icono}" alt="${trofeo.nombre}" loading="lazy" style="width: 100px; height: 100px; object-fit: contain;">
             <p>${gettext("Ganado")} ${trofeo.count} ${gettext("veces")}</p>
             <!--<p>Temporadas: ${trofeo.temporadas.join(", ")}</p>-->
         `;
+
+        div.dataset.trofeoName = trofeo.nombre; // Guardamos el nombre del trofeo para futuras referencias
 
         divPalmares.appendChild(div);
     });

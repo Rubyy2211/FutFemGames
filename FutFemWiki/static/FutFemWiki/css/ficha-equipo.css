@@ -10,6 +10,7 @@ body{
     flex-direction: row;
     max-width: 1200px;
     padding-top: 10px;
+    gap: 10px;
 }
 .tab-content{
     display: none ;
@@ -108,7 +109,8 @@ body{
     flex-direction: column !important;
     justify-content: flex-start;
     flex-shrink: 0; /* Que no se encoja más de esto */
-    height: 95%;
+    /*height: 95%;*/
+    gap: 10px;
 }
 .row {
     display: flex;
@@ -117,7 +119,8 @@ body{
     gap: 15px;
     align-items: stretch;
     flex-shrink: 0; /* Evita que la fila colapse en altura */
-    height: 65%;
+    /*height: 65%;*/
+    height: 100%;
 }
 
 /* El bloque de Club + Palmarés */
@@ -127,7 +130,7 @@ body{
     flex-shrink: 0;
     display: flex;
     flex-direction: column !important;
-    /*gap: 10px;*/
+    gap: 10px;
     padding-inline: unset;
 }
 .down{
@@ -194,11 +197,15 @@ body{
 }
 
 #palmares{
-    display: flex;
-    flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     padding: 2.5%;
     align-items: center;
     height: 100%;
+}
+/* Si hay 4 elementos, el cuarto se centra */
+#palmares > :nth-child(4) {
+    grid-column: 2; /* Columna central */
 }
 #palmares .trofeo{
     flex: 1;
@@ -231,6 +238,7 @@ body{
 
 section#jugadoras-actuales{
     height: 75%;
+    max-height: 75%;
 }
 
 section#jugadoras-destacadas{
@@ -428,7 +436,7 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
     border-radius: 20px; /* Bordes redondeados */
     text-align: center; /* Centrar el contenido dentro del botón */
     color: white; /* Color del texto */
-    margin-bottom: 10px; /* Espaciado inferior entre botones */
+    /*margin-bottom: 10px; /* Espaciado inferior entre botones */
     transition: transform 0.2s; /* Suavizar el efecto de transformación */
     border: 0.5px solid rgba(255, 255, 255, 0.5);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
@@ -485,6 +493,7 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
 #tabla-jugadoras-actuales {
     min-height: 300px; /* Dale una altura mínima aproximada para que el pie de página no suba y baje */
     contain: layout;   /* Ayuda al navegador a aislar los cambios de diseño dentro de este div */
+    width: 100% !important; /* Asegura que ocupe todo el ancho disponible */
 }
 
 #tabla-jugadoras-actuales #jugadoras-actuales-container{
@@ -714,7 +723,7 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
 }
 
 #tabla-trofeos{
-    height: 50%;
+    height: 100%;
 }
 
 #tabla-trofeos h3{

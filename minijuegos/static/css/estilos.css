@@ -208,7 +208,7 @@ h1,p{
     color: white;
 }
 p{
-    font-family: var(--font-cuerpo) !important;
+    font-family: var(--font-cuerpo);
 }
 button {
     /* Reseteo y base */

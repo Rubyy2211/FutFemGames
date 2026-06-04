@@ -965,6 +965,17 @@ def paisxnombre(request):
         })
 
     return JsonResponse(salida, safe=False)
+
+def obtener_paises_con_ligas(request):
+    # .values_list('pais', flat=True) obtiene solo las IDs de los países en la tabla ligas
+    # .distinct() elimina duplicados a nivel de base de datos (SELECT DISTINCT)
+    ids_paises = Liga.objects.values_list('pais', flat=True).distinct()
+    
+    # Si necesitas los objetos completos de Pais:
+    # Filtramos la tabla Pais usando la lista de IDs que acabamos de obtener
+    paises = Pais.objects.filter(id_pais__in=ids_paises).values('id_pais', 'nombre', 'iso')
+    
+    return JsonResponse(list(paises), safe=False)
 #################################################################################################
 #########################################LIGAS###################################################
 #################################################################################################

@@ -110,6 +110,7 @@
     font-size: x-large;
     margin-bottom: 0;
     border: none;
+    font-family: "Oswald", sans-serif !important;
 }
 
 .detalles{
@@ -117,7 +118,7 @@
     flex-direction: column;
     align-items: center;
     justify-items: center;
-    background: var(--color-terciario);
+    /*background: var(--color-terciario);*/
     height: max-content;
     border-radius: 0px 0px 20px 20px;
 }
@@ -132,7 +133,11 @@
 }
 
 .detalles img{
-    width: 50px;
+    max-width: 40px;
+}
+
+.detalles span{
+    max-height: 40px;
 }
 
 .tarjeta-jugadora p{

@@ -15,6 +15,7 @@ urlpatterns = [
     path('paisesxid', api_views.paisesxid, name='paisesxid'),
     path('paisesall', api_views.paisesall, name='paisesall'),
     path('paisxnombre', api_views.paisxnombre, name='paisxnombre'),
+    path('paisesconligas', api_views.obtener_paises_con_ligas, name='paisesconligas'),
     path('ligasxid', api_views.ligasxid, name='ligasxid'),
     path('ligasxpais', api_views.ligasxpais, name='ligasxpais'),
     path('jugadora_aleatoria', api_views.jugadora_aleatoria, name='jugadora_aleatoria'),

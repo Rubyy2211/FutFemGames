@@ -125,35 +125,70 @@ async function cargarTrayectorias(jugadora, trayectorias, palmaresPromise) {
 
     trayectorias.forEach((trayectoria, index) => {
         console.log(`Procesando trayectoria ${index + 1}/${trayectorias.length}:`, trayectoria);
-        info.style.background = `linear-gradient(to top, color-mix(in srgb, transparent 30%, transparent), color-mix(in srgb, ${trayectoria.color} 100%, transparent 30%))`;
-        info.style.border = `1px solid ${trayectoria.color}`
-        // 1. Crear el Slide de Swiper
+        
+        // 1. Extraer colores con los mismos fallbacks del bucle for
+        const colorPrimario = trayectoria.color || trayectoria.equipo?.color || 'var(--color-primario)';
+        const colorSecundario = trayectoria.colorSecundario || trayectoria.equipo?.colorSecundario || 'transparent';
+
+        // 2. Aplicar el diseño de color-mix al elemento 'info'
+        if (typeof info !== 'undefined') {
+            info.style.background = `
+                linear-gradient(
+                    to bottom,
+                    color-mix(in srgb, ${colorPrimario} 30%, transparent),
+                    color-mix(in srgb, ${colorSecundario} 30%, transparent)
+                )
+            `;
+            info.style.border = `1px solid ${colorPrimario}`;
+        }
+
+        // 3. Crear el Slide de Swiper
         const swiperSlide = document.createElement('div');
         swiperSlide.classList.add('swiper-slide');
 
         const equipoId = trayectoria.equipo.id || trayectoria.equipo;
         swiperSlide.setAttribute('data-equipo-id', equipoId);
 
-        // 2. Crear el Wrapper de la Tarjeta (para el flip)
+        // 4. Crear el Wrapper de la Tarjeta (para el flip)
         const tarjetaWrapper = document.createElement('div');
         tarjetaWrapper.classList.add('tarjeta-wrapper');
 
         const tarjetaInner = document.createElement('div');
         tarjetaInner.classList.add('tarjeta-inner');
 
-        // Crear Front y Back (Tu lógica actual corregida)
+        // 5. Crear Front y Back
         const front = document.createElement('div');
         front.classList.add('tarjeta-front', 'glass', 'tarjeta-jugadora');
         
         const back = document.createElement('div');
         back.classList.add('tarjeta-back', 'glass');
 
-        // Lógica de colores y contenido...
-        const imgSrc = trayectoria.imagen ? `/${trayectoria.imagen}` : '/'+jugadora.imagen;
-        const iso = jugadora.pais_iso && jugadora.pais_iso.length > 0 ? jugadora.pais_iso[0] : 'xx';
-        const trofeosEquipo = palmares.equipo[index].success || [];
-        const trofeosAgrupados = agruparTrofeos(trofeosEquipo);
+        // --- APLICAR EL DISEÑO DEL BUCLE FOR A LAS TARJETAS FRONT/BACK ---
+        const backgroundGradient = `
+            linear-gradient(
+                to bottom,
+                color-mix(in srgb, ${colorPrimario} 30%, transparent),
+                color-mix(in srgb, ${colorSecundario} 30%, transparent)
+            )
+        `;
         
+        front.style.background = backgroundGradient;
+        front.style.border = `1px solid ${colorPrimario}`;
+        
+        back.style.background = backgroundGradient;
+        back.style.border = `1px solid ${colorPrimario}`;
+        // -----------------------------------------------------------------
+
+        // Lógica de contenido
+        const imgSrc = trayectoria.imagen ? `/${trayectoria.imagen}` : '/' + jugadora.imagen;
+        const iso = jugadora.pais_iso && jugadora.pais_iso.length > 0 ? jugadora.pais_iso[0] : 'xx';
+        const trofeosEquipo = palmares.equipo[index]?.success || [];
+        const trofeosAgrupados = agruparTrofeos(trofeosEquipo);
+        const anyosEnEquipo = document.createElement('p');
+        if (trayectoria.fecha_inicio) {
+            anyosEnEquipo.textContent = trayectoria.fecha_inicio.substring(0, 4) + (trayectoria.fecha_fin ? ' - ' + trayectoria.fecha_fin.substring(0, 4) : ' - Act.');
+        }
+
         front.innerHTML = `
             <img class="imagen-jugadora" src="${imgSrc}" alt="${jugadora.nombre_completo} - ${trayectoria.equipo.nombre}" width="300" height="400" style="width: 100%; height: auto; object-fit: cover;" fetchpriority="high" loading="eager">
             <p class="nombre">${jugadora.nombre_completo}</p>
@@ -163,10 +198,14 @@ async function cargarTrayectorias(jugadora, trayectorias, palmaresPromise) {
                     <img src="/${trayectoria.escudo}" alt="${trayectoria.equipo.nombre}" title="${trayectoria.equipo.nombre}">
                     <span class="fi fi-${iso}" style="font-size: xx-large;"></span>
                 </div>
-                <p>${trayectoria.fecha_inicio ? (trayectoria.fecha_inicio.substring(0, 4) + (trayectoria.fecha_fin ? ' - ' + trayectoria.fecha_fin.substring(0, 4) : ' - Act.')) : null}</p>            </div>
+                <p>${trayectoria.fecha_inicio ? (trayectoria.fecha_inicio.substring(0, 4) + (trayectoria.fecha_fin ? ' - ' + trayectoria.fecha_fin.substring(0, 4) : ' - Act.')) : ''}</p>
+            </div>
         `;
+
         if(trayectoria.club === 83){
-            info.querySelector('img').classList.add('vintage');
+            if (typeof info !== 'undefined' && info.querySelector('img')) {
+                info.querySelector('img').classList.add('vintage');
+            }
             front.querySelector('.imagen-jugadora').classList.add('vintage');
         }
 
@@ -182,20 +221,22 @@ async function cargarTrayectorias(jugadora, trayectorias, palmaresPromise) {
             </div>
         `;
 
-        // Estilos dinámicos de gradiente
+        // 6. Estilos dinámicos para nombre y detalles (Adaptado del for loop)
         const detalles = front.querySelector('.detalles');
         const nombre = front.querySelector('.nombre');
         if (detalles && nombre) {
-            const gradiente = `linear-gradient(to right, ${trayectoria.color}, transparent)`;
-            detalles.style.background = gradiente;
-            nombre.style.background = gradiente;
+            // Fondo sólido para el nombre, igual que 'pNombre.style.background = jugadora.equipo.color;'
+            nombre.style.background = colorPrimario; 
+            
+            // Gradiente decorativo para la sección de detalles
+            //detalles.style.background = `linear-gradient(to right, ${colorPrimario}, transparent)`;
         }
 
         // Ensamblaje
         tarjetaInner.appendChild(front);
         tarjetaInner.appendChild(back);
         tarjetaWrapper.appendChild(tarjetaInner);
-        
+
         // El wrapper de flip va dentro del slide de swiper
         swiperSlide.appendChild(tarjetaWrapper);
         fragment.appendChild(swiperSlide);
@@ -205,6 +246,7 @@ async function cargarTrayectorias(jugadora, trayectorias, palmaresPromise) {
             tarjetaInner.classList.toggle('flipped');
         });
     });
+    
     mostrador.appendChild(fragment);
 }
 
