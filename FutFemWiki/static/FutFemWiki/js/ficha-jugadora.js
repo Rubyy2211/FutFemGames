@@ -19,6 +19,7 @@ export async function cargarFichaJugadora(id_jugadora) {
     ]);   
     // 2. Cargamos lo secundario sin bloquear el primer render
     const companyeras = fetchJugadoraCompanyerasById(id_jugadora, 1000);
+    document.getElementById('nombre-jugadora').textContent = jugadora.nombre_completo;
     palmares = fetchJugadoraPalmaresById(id_jugadora, trayectorias);
 
     // Variables globales (o pasadas por parámetro) para usar en cargarTrayectorias

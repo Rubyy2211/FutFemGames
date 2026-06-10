@@ -10,12 +10,15 @@ body::before{
     flex-direction: column;
     max-height: calc(100vh - var(--header-height));
     align-items: center;
+    max-width: 1320px;
+    padding-block: 2.5%;
+    max-height: 75dvh;
 }
 #jugadora-info{
     display: flex;
     flex-direction: row;
     width: 100%;
-    align-items: center;
+    align-items: end;
     gap: 5%;
     padding-inline: 5%;
     height: 30%;
@@ -25,20 +28,23 @@ body::before{
 }
 #jugadora-info img{
     padding: unset;
-    width: 200px;
-    max-width: 200px;
+    width: 200px !important;
+    max-width: 200px !important;
+    max-height: 200px !important;
     aspect-ratio: 1/1;
     margin-bottom: 0;
     border: none;
 }
 #jugadora-info p{
     margin-bottom: 0;
+    margin-inline: 5px;
 }
 #jugadora-info h3{
     font-family: "Oswald", sans-serif;
 }
 #jugadora-info #datos-jugadora{
     width: 100%;
+    align-self: center;
 }
 #jugadora-info #datos-jugadora #posicion{
     display: flex;
@@ -52,7 +58,8 @@ body::before{
     display: flex;
     flex-direction: row;
     width: 100%;
-    justify-content: space-between;
+    align-items: center;
+    /*justify-content: space-between;*/
 }
 #jugadora-info .fi{
     border: 1px solid var(--color-detalles);
@@ -62,6 +69,8 @@ body::before{
 }
 #jugadora-ficha{
     height: 100%;
+    width: 100%;
+    background-color: var(--color-secundario);
 }
 #mostrador-tarjetas{
     height: 100%;
@@ -69,38 +78,77 @@ body::before{
 
 #companyeras{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
+    width: 100%;
     align-items: center;
     justify-content: center;
+}
+
+#companyeras h4{
+    margin-bottom: 0px;
 }
 
 #companyeras-container{
     display: flex;
     flex-direction: row;
     gap: 10px;
-    max-width: 90vw;
+    max-width: 97%;
     overflow-x: auto !important;
+    margin-bottom: 10px;
+    overflow-y: hidden !important;
+    cursor: grab;
+     /* Oculta la barra de desplazamiento en navegadores basados en WebKit */
+}
+
+#companyeras-container {
+    display: flex;
+    /*gap: 15px;            /* Espaciado entre las cartas de compañeras */
+    overflow-x: auto;     /* Permite el scroll horizontal */
+    white-space: nowrap;
+    cursor: grab;         /* Icono de mano abierta (disponible para agarrar) */
+    user-select: none;    /* Evita que se seleccione texto azul feo al arrastrar */
+    
+    /* Ocultar la barra de scroll clásica para mantener el look de juego */
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Ocultar barra de scroll en Chrome, Safari y Edge */
+#companyeras-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Cuando el usuario está arrastrando activamente */
+#companyeras-container.grabbing {
+    cursor: grabbing;     /* Icono de mano cerrada (agarrando) */
+}
+
+/* 🔥 TRUCO CLAVE: Evita que los escudos o fotos de jugadoras interrumpan el arrastre */
+#companyeras-container img,
+#companyeras-container .card-jugadora {
+    pointer-events: none; /* Hace que el clic atraviese las imágenes y vaya al contenedor */
 }
 
 #companyeras-container::-webkit-scrollbar {
     height: 8px; /* Altura de la barra de desplazamiento horizontal */
-    display: block;
+    display: none; /* Oculta la barra de desplazamiento en navegadores basados en WebKit */
 }
 
 #companyeras-container div{
     flex: 0 0 auto;
-    width: 100px;
-    height: 130px;
+    width: 70px;
+    height: 70px;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    padding-inline: 0 !important;
 }
 
 .companyera-card img{
     width: 50px;
     height: auto;
+    border-radius: 10px;
 }
 
 #companyeras-container div p{
@@ -116,6 +164,11 @@ body::before{
     text-align: center;
     display: block;
     margin-bottom: 0;
+    display: none; /* Oculta el nombre por defecto, se mostrará al hacer hover */
+}
+
+#companyeras-container div.sin-companyeras p{
+    display: block; /* Oculta el nombre por defecto, se mostrará al hacer hover */
 }
 
 /* 1. Clase base: aquí definimos la suavidad */
@@ -232,8 +285,11 @@ span.swiper-pagination-bullet-active{
     .swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .tarjeta-front .nombre{
         font-size: medium;
     }
+    #companyeras-container div{
+        width: 70px;
+        height: 70px;
+    }
     #jugadora-info{
-        flex-direction: column;
         gap: 1vh;
         padding-inline: 1%;
     }
@@ -246,8 +302,8 @@ span.swiper-pagination-bullet-active{
         align-items: center;
     }
     #jugadora-info img{
-        width: 100px;
-        max-width: 100px;
+        width: 100px !important;
+        max-width: 100px !important;
     }
     #jugadora-info .fi {
         font-size: large;
@@ -256,14 +312,14 @@ span.swiper-pagination-bullet-active{
         font-size: x-small;
     }
     #jugadora-info h3{
-        text-align: center;
+        /*text-align: center;*/
         margin-bottom: 0;
     }
     #jugadora-info .grid{
         display: grid;
         grid-template-rows: repeat(2, 1fr);
-        justify-items: center;
-        text-align: center;
+        /*justify-items: center;*/
+        /*text-align: center;*/
     }
     #jugadora-info .grid>div:first-child{
         width: fit-content;
@@ -276,7 +332,8 @@ span.swiper-pagination-bullet-active{
             font-size: medium;
         }
         #jugadora-info .grid>div p{
-            font-size: x-small;
+            font-size: 8px;
+            height: fit-content;
         }
     }
 }

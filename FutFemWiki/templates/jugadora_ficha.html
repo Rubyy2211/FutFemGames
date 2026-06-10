@@ -34,7 +34,7 @@
     <link rel="preload" href="/static/js/animations/header.js" as="script">
 
     <link rel="preload" href="/api/jugadora_trayectoria?id={{ jugadora.id_jugadora }}" as="fetch" crossorigin="anonymous">
-    <link rel="preload" href="/api/jugadora_companyeras?id_jugadora={{ jugadora.id_jugadora }}&limite=1000" as="script">
+    <link rel="preload" href="/api/jugadora_companyeras?id_jugadora={{ jugadora.id_jugadora }}&limite=1000" as="fetch" crossorigin="anonymous">
 
     {% compress css inline %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
@@ -70,11 +70,11 @@
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
     
     {% include 'partials/header.html' %}
-    <div id="ficha-jugadora-container">
+    <div id="ficha-jugadora-container" class="container">
         <div id="jugadora-info">
             <img src="/{{jugadora.imagen}}" id="jugadora-img" alt="{{ jugadora.Nombre }} {{ jugadora.Apellidos }}" fetchpriority="high" style="max-height: 125px; width: 125px; object-fit: cover;">
             <div id="datos-jugadora">
-                <h3>{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
+                <h3 id="nombre-jugadora">{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
                 <div class="grid">   
                     <div>
                         <div style="display: flex; align-items: center;">
@@ -83,9 +83,12 @@
                         </div>
                     </div>
                     <div>
-                        <p>{{ jugadora.Nacimiento }}</p>
+                        <p>{{ jugadora.Nacimiento|date:"d/m/Y" }}</p>
+                        |
                         <p>{{ jugadora.altura }} cm</p>
-                        <p>{% trans 'Pie' %}: {{ jugadora.pie_habil }}</p>      
+                        |
+                        <p>{% trans 'Pie' %}: {{ jugadora.pie_habil }}</p>    
+                        | 
                         <p>{% trans 'Value' %}: {{ jugadora.market_value }} €</p>
                     </div>
             </div>
@@ -117,6 +120,7 @@
                 </div>
                 <div class="swiper-pagination"></div></div>
             <div id="companyeras">
+                <h4>{% trans 'Teammates' %}</h4>
                 <div id="companyeras-container"></div>
             </div>
         </div>
@@ -129,6 +133,45 @@
 <script type="module">
     import { cargarFichaJugadora } from '/static/FutFemWiki/js/ficha-jugadora.js';
     await cargarFichaJugadora('{{ jugadora.id_jugadora }}');
+    const container = document.getElementById('companyeras-container');
+
+if (container) {
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    // Cuando el usuario hace clic (agarra)
+    container.addEventListener('mousedown', (e) => {
+        isDown = true;
+        container.classList.add('grabbing'); // Cambia el cursor a la mano cerrada
+        startX = e.pageX - container.offsetLeft;
+        scrollLeft = container.scrollLeft;
+    });
+
+    // Si el ratón sale del contenedor, dejamos de arrastrar
+    container.addEventListener('mouseleave', () => {
+        isDown = false;
+        container.classList.remove('grabbing');
+    });
+
+    // Cuando suelta el clic
+    container.addEventListener('mouseup', () => {
+        isDown = false;
+        container.classList.remove('grabbing');
+    });
+
+    // Mientras mueve el ratón
+    container.addEventListener('mousemove', (e) => {
+        if (!isDown) return; // Si no está haciendo clic, no hace nada
+        
+        e.preventDefault(); // Evita selecciones de texto raras durante el arrastre
+        const x = e.pageX - container.offsetLeft;
+        
+        // Multiplicador (* 2) para que el scroll sea más rápido y reactivo al movimiento
+        const walk = (x - startX) * 2; 
+        container.scrollLeft = scrollLeft - walk;
+    });
+}
 </script>
 </body>
 </html>

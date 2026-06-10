@@ -44,7 +44,7 @@ async function renderPlayer(container, data, hideValue) {
 
     colors = await getDominantColors(img, 4)
     console.log(data.imagen)
-    container.style.backgroundImage = `url(${data.imagen})`
+    container.style.backgroundImage = `url("${data.imagen}")`
     container.style.backgroundRepeat = 'no-repeat'
     container.style.backgroundSize = 'cover';
 }

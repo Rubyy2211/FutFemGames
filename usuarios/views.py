@@ -170,7 +170,6 @@ def registro_view(request):
             return render(request, 'registro.html', {
                 'error': 'Las contraseñas no coinciden'
             })
-
         try:
             Usuario.objects.create(
                 username=usuario, 
@@ -178,15 +177,12 @@ def registro_view(request):
                 password=make_password(password),
                 rol=2,
                 is_active=True,
-                is_staff=False,
-                is_superuser=False,
                 date_joined=timezone.now()
             )
         except IntegrityError:
             return render(request, 'registro.html', {
                 'error': 'El usuario ya existe'
             })
-
         return redirect('/accounts/login/')
 
     return render(request, 'registro.html')

@@ -25,6 +25,7 @@ class TrayectoriaInline(admin.TabularInline):
     extra = 1  # Número de filas vacías para añadir nuevos equipos
     fields = ('equipo', 'fecha_inicio', 'fecha_fin', 'equipo_actual', 'ver_escudo', 'imagen')
     readonly_fields = ('ver_escudo',)
+    ordering = ('-fecha_inicio',)  # Ordenamos por fecha de inicio descendente
     
     def ver_escudo(self, obj):
         if obj.equipo and obj.equipo.escudo:
