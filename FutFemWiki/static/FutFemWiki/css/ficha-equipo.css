@@ -436,6 +436,27 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
     gap: 2px;
 }
 
+.football-field td div span{
+    width: 100%;
+    z-index: 1;
+}
+
+.football-field td div:hover span{
+    background: var(--color-primario);
+    filter: 
+        drop-shadow(0 0 1px var(--color-primario)) 
+        drop-shadow(0 0 2px var(--color-primario))
+        drop-shadow(0 0 3px color-mix(in srgb, var(--color-primario) 50%, transparent));
+}
+
+.football-field td div:hover img{
+    filter: 
+        drop-shadow(0 0 1px var(--color-primario)) 
+        drop-shadow(0 0 2px var(--color-primario))
+        drop-shadow(0 0 3px color-mix(in srgb, var(--color-primario) 50%, transparent));
+}
+
+
 .football-field td div img {
     max-height: 100%;
     height: auto;

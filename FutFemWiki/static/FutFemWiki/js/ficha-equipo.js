@@ -248,6 +248,17 @@ async function displayJugadorasActuales(id, jugadoras, color){
         
         if (!jugadoras || jugadoras.length === 0) return;
 
+        // =========================================================================
+        // SOLUCIÓN 1: CORRECCIÓN DE CONDICIÓN DE CARRERA ("A veces ninguna")
+        // Si el grid táctico aún no se ha dibujado en el DOM, esperamos de forma 
+        // asíncrona en bloques de 50ms (máximo 20 intentos = 1 segundo).
+        // =========================================================================
+        let intentos = 0;
+        while (document.querySelectorAll('#grid td.activado').length === 0 && intentos < 20) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            intentos++;
+        }
+
         // 1. Encontrar las 3 destacadas (con validación de datos)
         const masCara = [...jugadoras].reduce((prev, curr) => 
             (Number(curr.market_value || 0) >= Number(prev.market_value || 0)) ? curr : prev
@@ -329,7 +340,16 @@ async function displayJugadorasActuales(id, jugadoras, color){
 
         for (let i = 0; i < jugadoras.length; i++) {
             const jugadora = jugadoras[i];
-            ponerJugadoraEnField(jugadora, jugadora.posiciones_ids[0], color);
+            // =====================================================================
+            // SOLUCIÓN 2: CONTROL DE EXCEPCIONES (Evitar crash por posiciones nulas)
+            // =====================================================================
+            const posicionPrincipal = jugadora.posiciones_ids?.[0];
+            if (posicionPrincipal) {
+                // ponerJugadoraEnField es síncrona en tu definición, no requiere await
+                ponerJugadoraEnField(jugadora, posicionPrincipal, color);
+            } else {
+                console.warn(`La jugadora ${jugadora.nombre_completo || jugadora.nombre} no tiene posiciones_ids válidos.`);
+            }
             const nombreCompleto = jugadora.nombre_completo || 'Desconocida';
             const slugNombre = nombreCompleto.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, ''); // Limpiamos caracteres especiales para el slug
             const div = document.createElement('div');
@@ -445,5 +465,4 @@ async function displayJugadorasActuales(id, jugadoras, color){
             fragment.appendChild(div);
         };
         container.appendChild(fragment);
-    return;
 }
