@@ -12,7 +12,8 @@ body::before{
     align-items: center;
     max-width: 1320px;
     padding-block: 2.5%;
-    max-height: 75dvh;
+    max-height: 80dvh;
+    overflow-y: hidden;
 }
 #jugadora-info{
     display: flex;
@@ -28,9 +29,8 @@ body::before{
 }
 #jugadora-info img{
     padding: unset;
-    width: 200px !important;
     max-width: 200px !important;
-    max-height: 200px !important;
+    max-height: 100% !important;
     aspect-ratio: 1/1;
     margin-bottom: 0;
     border: none;
@@ -71,6 +71,12 @@ body::before{
     height: 100%;
     width: 100%;
     background-color: var(--color-secundario);
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 #mostrador-tarjetas{
     height: 100%;
@@ -86,6 +92,7 @@ body::before{
 
 #companyeras h4{
     margin-bottom: 0px;
+    font-size: medium;
 }
 
 #companyeras-container{
@@ -135,8 +142,8 @@ body::before{
 
 #companyeras-container div{
     flex: 0 0 auto;
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -188,18 +195,48 @@ body::before{
     max-height: 330px;
 }
 
+.tarjeta-front, .tarjeta-back{
+    height: 100% !important;
+    align-items: center;
+    width: 100% !important;
+}
+
+.tarjeta-front{
+    height: fit-content !important;
+}
+
+.tarjeta-jugadora .nombre{
+    font-size: large !important;
+}
+
+.swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .imagen-jugadora{
+    max-width: 100% !important;
+}
+
+.swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .detalles{
+    width: 100% !important;
+}
+
+.swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .detalles img{
+    width: 30px !important;
+}
+
+.tarjeta-wrapper{
+    height: 100% !important;
+    width: 140px !important;
+}
+
 /* 2. Clase activa: aplicamos el escalado */
 .swiper-slide-active .tarjeta-wrapper {
-    transform: scale(1.05);
+    /*transform: scale(1.05);*/
     opacity: 1;
+    height: 100% !important;
 }
 
 /* 3. Asegurar que las tarjetas no se corten */
 .swiper {
-    /* Añadimos un poco de padding para que al escalar 
-       la tarjeta no se salga del borde del contenedor */
-    padding-top: 20px;
-    padding-bottom: 20px;
+    max-height: 70% !important;
+    min-height: 70% !important;
 }
 span.swiper-pagination-bullet{
     background: var(--color-secundario);

@@ -180,7 +180,7 @@ body{
 #tabla-info #info #escudo{
     width: 100%;
     height: auto;
-    max-width: 150px;
+    max-width: 120px;
 }
 
 #tabla-info #info #datos-equipo div{
@@ -239,13 +239,22 @@ body{
 section#jugadoras-actuales{
     height: 75%;
     max-height: 75%;
+    overflow-y: hidden;
+}
+
+#jugadoras-actuales .football-field tr td{
+    margin-block: 0 !important;
+}
+
+#jugadoras-actuales .football-field tr td span{
+    font-size: small;
 }
 
 section#jugadoras-destacadas{
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100%;
+    height: 25%;
 }
 
 section#jugadoras-destacadas .container-jugadoras{
@@ -265,8 +274,8 @@ section#jugadoras-destacadas .container-jugadoras p{
 }
 
 section#jugadoras-destacadas .container-jugadoras img{
-    width: 80px;
-    height: 80px;
+    width: 45px;
+    height: 45px;
 }
 
 section#jugadoras-destacadas .jugadora-item{
@@ -289,6 +298,7 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
     flex-direction: column;
     align-items: center;
     height: 100% !important;
+    overflow-y: hidden;
 }
 
 #jugadoras-actuales #campo-destacadas{
@@ -415,9 +425,21 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
 
 #jugadoras-actuales .football-field tr td{
     margin-inline: 0 !important;
-    margin: 10px 10px !important;
-    height: fit-content;
+    margin: 5px 5px !important;
+    height: 100%;
     margin-top: 0;
+    margin-block: 0 !important;
+}
+
+.football-field td div{
+    height: 100%;
+    gap: 2px;
+}
+
+.football-field td div img {
+    max-height: 100%;
+    height: auto;
+    width: auto;
 }
 
 #jugadoras-alltime{
@@ -652,12 +674,14 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
 }
 
 .badge-img{
-    border: 0.5px solid rgb(255, 255, 255);
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+    /*border: 0.5px solid rgb(255, 255, 255);*/
+    /*box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);*/
     transform: translateY(10px);
     margin-bottom: 5px;
+    border-radius: 0px !important;
+    background: none !important;
 }
 
 .jugadora-item{
@@ -784,6 +808,10 @@ body.no-scroll {
 }
 
 @media (max-width: 768px){
+    .trofeo img{
+        width: 50px !important;
+        height: auto !important;
+    }
     #info,#plantilla,#historicas{
         order: 1;
     }
@@ -815,7 +843,7 @@ body.no-scroll {
         justify-content: center;
         padding-inline: 0;
         flex-wrap: nowrap;
-        height: 50%;
+        /*height: 50%;*/
    }
 
    .row>div:first-child{
@@ -830,7 +858,8 @@ body.no-scroll {
 
    .resto{
         width: 100%;
-        /*height: 100%;*/
+        height: fit-content !important;
+        min-height: 20% !important;
         flex: unset;
         order: 1;
         justify-content: center;
@@ -839,7 +868,6 @@ body.no-scroll {
         overflow-y: hidden;
         max-height: 100%;
         padding-left: unset;
-        min-height: 30dvh !important;
         max-height: 33dvh !important;
     }
 
@@ -860,11 +888,11 @@ body.no-scroll {
     }
 
    .left{
-        height: 350px !important;
         min-height: 300px !important;
         width: 100%;
         align-self: flex-start;
         order: 2;
+        gap: 5px;
         justify-content: flex-start;
     }
 
@@ -876,7 +904,7 @@ body.no-scroll {
     section#jugadoras-destacadas{
         min-width: 95%;
         width: 95%;
-        height: 100% !important;
+        height: 25% !important;
     }
 
     
@@ -968,6 +996,7 @@ body.no-scroll {
 
     #tabla-trofeos{
         height: unset;
+        margin-bottom: 0px;
     }
 
     #tabla-trofeos h3{
@@ -977,6 +1006,8 @@ body.no-scroll {
     #tabla-trofeos #palmares{
         padding-inline: 1%;
         height: 100%;
+        display: flex;
+        flex-direction: row;
     }
 
     #tabla-trofeos #palmares .trofeo{
@@ -1001,11 +1032,12 @@ body.no-scroll {
 
     #tabla-info{
         height: unset;
-        margin-bottom: 5px;
+        margin-bottom: 0px;
     }
 
     #tabla-info #info{
         gap: 5px;
+        padding-top: 5px;
         overflow-x: hidden;
     }
 
@@ -1046,13 +1078,14 @@ body.no-scroll {
 
     #tabla-jugadoras-destacadas #jugadoras-destacadas-container .jugadora-item .jugadora-imagen{
         align-self: center !important;
-        width: 40px !important;
-        height: 40px !important;
+        max-width: 35px !important;
+        max-height: 35px !important;
     }
 
     #tabla-jugadoras-destacadas{
         height: 100%;
         margin-bottom: 0;
+        width: 95% !important;
     }
 
     #tabla-jugadoras-destacadas #jugadoras-destacadas-container p{
@@ -1063,6 +1096,11 @@ body.no-scroll {
 
     #tabla-jugadoras-actuales{
         min-height: 100px !important;
+        width: 95% !important;
+    }
+
+    #jugadoras-actuales{
+        max-height: 100% !important;
     }
 
     section#jugadoras-actuales{
@@ -1071,6 +1109,10 @@ body.no-scroll {
 
     #jugadoras-actuales .football-field tr{
         height: 7vh !important;
+    }
+
+    #jugadoras-actuales .football-field tr td {
+        margin: 5px 5px !important;
     }
 
     #jugadoras-actuales .football-field tr td .badge-img img{
@@ -1115,6 +1157,10 @@ body.no-scroll {
         margin-inline: 0 !important;
         /*margin: 30px 10px !important;*/
         width: 20%;
+    }
+
+    #jugadoras-actuales .football-field tr td span{
+        font-size: xx-small;
     }
 
     .tabla-jugadoras{

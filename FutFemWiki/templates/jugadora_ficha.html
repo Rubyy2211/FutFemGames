@@ -72,7 +72,7 @@
     {% include 'partials/header.html' %}
     <div id="ficha-jugadora-container" class="container">
         <div id="jugadora-info">
-            <img src="/{{jugadora.imagen}}" id="jugadora-img" alt="{{ jugadora.Nombre }} {{ jugadora.Apellidos }}" fetchpriority="high" style="max-height: 125px; width: 125px; object-fit: cover;">
+            <img src="/{{ jugadora.imagen|default:'static/img/predeterm.png' }}" id="jugadora-img" alt="{{ jugadora.Nombre }} {{ jugadora.Apellidos }}" fetchpriority="high" style="max-height: 125px; width: 125px; object-fit: cover;">
             <div id="datos-jugadora">
                 <h3 id="nombre-jugadora">{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
                 <div class="grid">   

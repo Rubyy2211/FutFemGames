@@ -995,6 +995,8 @@ h2{
         padding-top: 5px;
         height: 100%;
         max-width: 100% !important;
+        grid-auto-rows: minmax(20%, auto) !important; /* filas de altura automática */
+        align-content: start;
         /*grid-template-columns: repeat(2, 1fr);*/
         /*grid-template-rows: repeat(8, max-content) !important;*/
     }

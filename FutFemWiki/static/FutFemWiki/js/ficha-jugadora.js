@@ -181,7 +181,7 @@ async function cargarTrayectorias(jugadora, trayectorias, palmaresPromise) {
         // -----------------------------------------------------------------
 
         // Lógica de contenido
-        const imgSrc = trayectoria.imagen ? `/${trayectoria.imagen}` : '/' + jugadora.imagen;
+        const imgSrc =  trayectoria.imagen?.trim()  ? `/${trayectoria.imagen}`  : jugadora.imagen?.trim()   ? `/${jugadora.imagen}` : "/static/img/predeterm.jpg";
         const iso = jugadora.pais_iso && jugadora.pais_iso.length > 0 ? jugadora.pais_iso[0] : 'xx';
         const trofeosEquipo = palmares.equipo[index]?.success || [];
         const trofeosAgrupados = agruparTrofeos(trofeosEquipo);
@@ -197,7 +197,7 @@ async function cargarTrayectorias(jugadora, trayectorias, palmaresPromise) {
                 <div class="equipo-pais">
                     <p>${gettext(jugadora.Posiciones[0].abreviatura)}</p>
                     <img src="/${trayectoria.escudo}" alt="${trayectoria.equipo.nombre}" title="${trayectoria.equipo.nombre}">
-                    <span class="fi fi-${iso}" style="font-size: xx-large;"></span>
+                    <span class="fi fi-${iso}" style="font-size: large;"></span>
                 </div>
                 <p>${trayectoria.fecha_inicio ? (trayectoria.fecha_inicio.substring(0, 4) + (trayectoria.fecha_fin ? ' - ' + trayectoria.fecha_fin.substring(0, 4) : ' - Act.')) : ''}</p>
             </div>
@@ -266,9 +266,13 @@ async function cargarCompanyeras(equipoId) {
         const slugNombre = (compañera.Nombre_Completo || compañera.nombre).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, ''); // Limpiamos caracteres especiales para el slug
         const card = document.createElement('div');
         card.classList.add('companyera-card', 'glass');
-        const imgSrc = compañera.imagen ? `${compañera.imagen}` : 'static/img/predeterm.jpg';
+        const imgSrc = compañera.imagen?.trim()
+    ? `/${compañera.imagen.replace(/^\/+/, "")}`
+    : "/static/img/predeterm.png";
+
+        console.log(`Cargando compañera: ${compañera.Nombre_Completo} con imagen ${imgSrc}`);
         card.innerHTML = `
-            <img src="/${imgSrc}" alt="${compañera.Nombre_Completo}" width="100" height="130" style="width: 100%; height: auto; object-fit: cover;" loading="lazy">
+            <img src="${imgSrc}" alt="${compañera.Nombre_Completo}" width="100" height="130" style="width: 100%; height: auto; object-fit: cover;" loading="lazy">
             <p>${compañera.Nombre_Completo}</p>
         `;
         card.style.borderColor = compañera.color || '#ccc';

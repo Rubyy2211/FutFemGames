@@ -28,7 +28,7 @@ export function ponerJugadoraEnField(jugadora, positionId, color) {
     // 5. Contenido HTML
     badge.innerHTML = `
         <div class="badge-img">
-            <img src="/${jugadora.imagen || 'static/img/predeterm.jpg'}" alt="${jugadora.apodo}" width="70" height="70" style="width: 50px; height: 50px; object-fit: cover;" fetchpriority="high" loading="eager">
+            <img src="/${jugadora.imagen || 'static/img/predeterm.jpg'}" alt="${jugadora.apodo}" width="70" height="70" style="object-fit: cover; aspect-ratio: 1/1;" fetchpriority="high" loading="eager">
         </div>
         <span class="badge-name">${jugadora.apodo || jugadora.nombre}</span>
     `;

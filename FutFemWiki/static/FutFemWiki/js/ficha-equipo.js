@@ -45,6 +45,8 @@ export async function displayPalmares(equipo) {
 function agruparTrofeos(trofeos) {
     const agrupado = {};
 
+    if (!trofeos || trofeos.length === 0) return [];
+
     trofeos.forEach(t => {
         if (!agrupado[t.id]) {
             agrupado[t.id] = {
@@ -283,7 +285,7 @@ async function displayJugadorasActuales(id, jugadoras, color){
             badge.style.fontSize = '0.8em';
 
             const img = document.createElement('img');
-            img.src = jugadora.imagen ? '/' + jugadora.imagen : '/static/img/predeterm.jpg';
+            img.src = jugadora.imagen ? '/' + jugadora.imagen : '/static/img/predeterm.png';
             img.className = 'jugadora-imagen';
             img.loading = 'lazy';
             img.alt = jugadora.nombre_completo || jugadora.apodo || jugadora.nombre;
@@ -341,7 +343,7 @@ async function displayJugadorasActuales(id, jugadoras, color){
             div1_2.className = 'jugadora-div1_2';
 
             const img = document.createElement('img');
-            img.src = jugadora.imagen ? '/' + jugadora.imagen : '/static/img/predeterm.jpg';
+            img.src = jugadora.imagen ? '/' + jugadora.imagen : '/static/img/predeterm.png';
             img.width = 70;  // <-- Obligatorio para CLS
             img.height = 70; // <-- Obligatorio para CLS
             img.className = 'jugadora-imagen';
