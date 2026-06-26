@@ -1,6 +1,10 @@
+import os
 from django.contrib import admin
 from django.utils.html import format_html
+from django import forms
+from django.conf import settings
 from django.contrib.admin.models import LogEntry
+from django.core.files.storage import default_storage
 from .models import (
     JugadoraPosicion, Pais, Jugadora, Trayectoria, Equipo, 
     Liga, JugadoraPais, EquipoTrofeo, Trofeo, Juego,
@@ -8,6 +12,39 @@ from .models import (
 
 from minijuegos.models import Pista 
 
+# ==========================================
+# 📋 FORMULARIOS PERSONALIZADOS (CAMPOS VIRTUALES)
+# ==========================================
+
+class JugadoraAdminForm(forms.ModelForm):
+    subir_nueva_foto = forms.ImageField(
+        required=False,
+        label="📁 Subir archivo físico",
+        help_text="Selecciona una foto para subirla directamente a la ruta indicada en el campo 'Imagen'."
+    )
+    class Meta:
+        model = Jugadora
+        fields = '__all__'
+
+class EquipoAdminForm(forms.ModelForm):
+    subir_nuevo_escudo = forms.ImageField(
+        required=False,
+        label="📁 Subir escudo físico",
+        help_text="Selecciona una imagen para subirla directamente a la ruta indicada en el campo 'Escudo'."
+    )
+    class Meta:
+        model = Equipo
+        fields = '__all__'
+
+class LigaAdminForm(forms.ModelForm):
+    subir_nuevo_logo = forms.ImageField(
+        required=False,
+        label="📁 Subir logo físico",
+        help_text="Selecciona una imagen para subirla directamente a la ruta indicada en el campo 'Logo'."
+    )
+    class Meta:
+        model = Liga
+        fields = '__all__'
 # ==========================================
 # 1. CONTROL DE LOGS Y HISTORIAL (Oculto para colaboradores)
 # ==========================================
@@ -124,11 +161,12 @@ class PaisAdmin(admin.ModelAdmin):
 
 @admin.register(Jugadora)
 class JugadoraAdmin(admin.ModelAdmin):
-    # Una lista súper limpia con foto de perfil grande, banderas y valores de mercado
+    # Enlazamos nuestro formulario personalizado
+    form = JugadoraAdminForm
+
     list_display = ('ver_foto', 'Nombre', 'Apellidos', 'Apodo', 'ver_nacionalidades', 'market_value_format')
     list_display_links = ('ver_foto', 'Nombre', 'Apellidos')
     
-    # Filtros laterales claros con nombres descriptivos indirectos gracias a Django
     list_filter = (
         'retiro',
         'jugadorapais__pais', 
@@ -138,15 +176,15 @@ class JugadoraAdmin(admin.ModelAdmin):
     search_fields = ('Nombre', 'Apellidos', 'Apodo')
     readonly_fields = ('foto_perfil_bloque',)
     
-    # Agrupar campos para que parezca un perfil deportivo real
+    # Añadimos el nuevo campo 'subir_nueva_foto' dentro de los fields
     fieldsets = (
         ('👤 Ficha de Identidad y Perfil' , {
             'fields': (
                 ('Nombre', 'Apellidos', 'Apodo'),
                 ('Nacimiento', 'altura', 'pie_habil'),
-                ('imagen', 'retiro'),
+                ('imagen', 'subir_nueva_foto'), # <-- Quedan emparejados: texto a la izquierda, subida a la derecha
+                'retiro',
             ),
-            #'description': 'Información básica, datos físicos y estado de actividad de la jugadora.'
             'classes': ('bloque-campos-perfil',),
         }),
         ('💰 Mercado y Enlaces Externos', {
@@ -156,6 +194,34 @@ class JugadoraAdmin(admin.ModelAdmin):
     )
     inlines = [NacionalidadInline, PosicionInline, TrayectoriaInline]
 
+    # --- EL MOTOR: Procesamos la subida física usando la ruta del cuadro de texto ---
+    def save_model(self, request, obj, form, change):
+        # 1. Comprobamos si se seleccionó un archivo en el campo virtual
+        archivo_subido = form.cleaned_data.get('subir_nueva_foto')
+        
+        if archivo_subido:
+            # Si el usuario modificó o escribió una ruta en el campo 'imagen' (ej: media/ES/jugadoras/cardona.webp)
+            ruta_destino_texto = form.cleaned_data.get('imagen')
+            
+            if not ruta_destino_texto:
+                # Si dejó el campo de texto vacío, autogeneramos uno por defecto para que no falle
+                ruta_destino_texto = f"media/ES/jugadoras/{archivo_subido.name}"
+                obj.imagen = ruta_destino_texto
+
+            # Construimos la ruta absoluta en el disco del servidor (futfem/media/ES/jugadoras/cardona.webp)
+            ruta_absoluta = os.path.join(settings.BASE_DIR, 'futfem', ruta_destino_texto.lstrip('/'))
+            
+            # Creamos las carpetas físicas si no existen
+            os.makedirs(os.path.dirname(ruta_absoluta), exist_ok=True)
+            
+            # Guardamos el archivo binario exactamente en la ruta indicada por texto
+            with open(ruta_absoluta, 'wb+') as destination:
+                for chunk in archivo_subido.chunks():
+                    destination.write(chunk)
+                    
+        super().save_model(request, obj, form, change)
+
+    # --- VISTAS Y PREVISUALIZACIONES ---
     def foto_perfil_bloque(self, obj):
         if obj and obj.imagen:
             path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen}"
@@ -208,9 +274,9 @@ class JugadoraAdmin(admin.ModelAdmin):
     class Media:
         css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_jugadora.css')}
 
-
 @admin.register(Equipo)
 class EquipoAdmin(admin.ModelAdmin):
+    form = EquipoAdminForm
     list_display = ('ver_escudo', 'nombre', 'ver_logo_liga', 'ver_color')
     list_filter = ('liga',)
     ordering = ('nombre',)
@@ -220,13 +286,32 @@ class EquipoAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('🛡️ Datos del Club', {
-            'fields': (('nombre', 'liga'), ('escudo', 'equipo_sucesor'))
+            'fields': (('nombre', 'liga'), ('escudo', 'subir_nuevo_escudo'), 'equipo_sucesor')
         }),
         ('🎨 Identidad Visual y Mapa', {
             'fields': ('color', ('latitud', 'longitud')),
             'description': 'El color se aplicará dinámicamente como fondo de su cromo en la web.'
         }),
     )
+
+    def save_model(self, request, obj, form, change):
+        archivo_subido = form.cleaned_data.get('subir_nuevo_escudo')
+        if archivo_subido:
+            ruta_destino_texto = form.cleaned_data.get('escudo')
+            if not ruta_destino_texto:
+                # Si el campo de texto está vacío, autogeneramos una ruta razonable basándose en la Liga o por defecto
+                iso_liga = obj.liga.pais.iso.upper() if (obj.liga and obj.liga.pais) else 'ES'
+                ruta_destino_texto = f"media/{iso_liga}/clubes/{archivo_subido.name}"
+                obj.escudo = ruta_destino_texto
+
+            ruta_absoluta = os.path.join(settings.BASE_DIR, 'futfem', ruta_destino_texto.lstrip('/'))
+            os.makedirs(os.path.dirname(ruta_absoluta), exist_ok=True)
+            
+            with open(ruta_absoluta, 'wb+') as destination:
+                for chunk in archivo_subido.chunks():
+                    destination.write(chunk)
+                    
+        super().save_model(request, obj, form, change)
 
     def ver_escudo(self, obj):
         if obj.escudo:
@@ -260,18 +345,41 @@ class EquipoAdmin(admin.ModelAdmin):
     class Media:
         css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_equipo.css')}
 
-
-
 @admin.register(Liga)
 class LigaAdmin(admin.ModelAdmin):
+    form = LigaAdminForm
     list_display = ('ver_logo', 'nombre', 'ver_pais')
     search_fields = ('nombre',)
     list_filter = ('pais',)
 
+    fieldsets = (
+        ('🏆 Configuración de la Competición', {
+            'fields': ('nombre', 'pais', ('logo', 'subir_nuevo_logo'))
+        }),
+    )
+
+    def save_model(self, request, obj, form, change):
+        archivo_subido = form.cleaned_data.get('subir_nuevo_logo')
+        if archivo_subido:
+            ruta_destino_texto = form.cleaned_data.get('logo')
+            if not ruta_destino_texto:
+                iso_pais = obj.pais.iso.upper() if obj.pais else 'GLOBAL'
+                ruta_destino_texto = f"media/{iso_pais}/ligas/{archivo_subido.name}"
+                obj.logo = ruta_destino_texto
+
+            ruta_absoluta = os.path.join(settings.BASE_DIR, 'futfem', ruta_destino_texto.lstrip('/'))
+            os.makedirs(os.path.dirname(ruta_absoluta), exist_ok=True)
+            
+            with open(ruta_absoluta, 'wb+') as destination:
+                for chunk in archivo_subido.chunks():
+                    destination.write(chunk)
+                    
+        super().save_model(request, obj, form, change)
+
     def ver_logo(self, obj):
         if obj.logo:
             return format_html('<img src="/{}" width="45" height="45" style="object-fit: contain;" />', obj.logo)
-        return "League Logo"
+        return "❌ Sin Logo"
     ver_logo.short_description = 'Logo'
 
     def ver_pais(self, obj):
