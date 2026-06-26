@@ -10,6 +10,13 @@ class PistaAdmin(admin.ModelAdmin):
     search_fields = ('descripcion',)
     readonly_fields = ('ver_detalles_json',)
 
+    def has_module_permission(self, request):
+        return request.user.is_authenticated and getattr(request.user, 'rol', None) == 1
+        
+    # 2. Controla si el usuario puede entrar a ver el listado de logs
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_authenticated and getattr(request.user, 'rol', None) == 1
+
     def ver_detalles_json(self, obj):
         if not obj.valor:
             return "JSON vacío"
