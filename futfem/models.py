@@ -50,6 +50,7 @@ class Equipo(models.Model):
     latitud = models.FloatField(null=True, blank=True)
     longitud = models.FloatField(null=True, blank=True)
     equipo_sucesor = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='equipo_sucesor', related_name='versiones_antiguas',verbose_name="Convertido en / Sucesor de")
+    fundacion = models.IntegerField(null=True, blank=True)
 
     class Meta:
         db_table = 'equipos'
@@ -119,9 +120,9 @@ class Posicion(models.Model):
 
 class Jugadora(models.Model):
     id_jugadora = models.AutoField(primary_key=True)
-    Nombre = models.TextField()  
-    Apellidos = models.TextField()     
-    Apodo = models.TextField()     
+    Nombre = models.TextField(max_length=150, verbose_name="Nombre")  
+    Apellidos = models.TextField(max_length=150, verbose_name="Apellidos")     
+    Apodo = models.TextField(max_length=50, verbose_name="Apodo")     
     Nacimiento = models.DateField(max_length=255)     
     imagen = models.TextField(null=True, blank=True) 
     altura = models.FloatField(null=True, blank=True)
@@ -208,13 +209,4 @@ class Juego(models.Model):
         managed = False
     
     def __str__(self):
-        return self.Juego
-
-class Pista(models.Model):
-    juego = models.ForeignKey(Juego, on_delete=models.CASCADE, db_column='id_juego')
-    descripcion = models.TextField()
-    valor = models.TextField()
-
-    class Meta:
-        db_table = 'pistas'
-        managed = False
+        return self.nombre

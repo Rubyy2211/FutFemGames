@@ -746,7 +746,8 @@ def equipoxid(request):
             "color": e.color,
             "lat": e.latitud,
             "long": e.longitud,
-            "formacion": datos_formacion  # Esto ahora es un dict, no un objeto
+            "formacion": datos_formacion,  # Esto ahora es un dict, no un objeto
+            "fundacion": e.fundacion,
         }
         
         return JsonResponse({"success": salida})

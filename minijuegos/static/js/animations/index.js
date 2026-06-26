@@ -37,7 +37,7 @@ buttons.forEach(card => {
     hoverSound.play();
 
     buttons.forEach(other => {
-      if (other !== card) gsap.to(other, { opacity: 0.3, duration: 0.3 });
+      if (other !== card) gsap.to(other, { opacity: 1, duration: 0.3 });
     });
     gsap.to(card, { scale: 1.05, duration: 0.3 });
   });

@@ -149,6 +149,7 @@ function handleCellClick(cell, jugador) {
     // 4. VERIFICACIÓN DE TROFEOS (Corregido)
     if (lowerClass.includes("trofeo") && jugador.trofeos) {
         let trofeoMatch = false;
+        console.log('es trofeo', jugador.trofeos);
         
         if (img.id === 'jugadora' && Array.isArray(jugador.trofeos.individual)) {
             // Trofeos Individuales (Balón de Oro, MVP, etc.)
@@ -156,8 +157,14 @@ function handleCellClick(cell, jugador) {
         } else if (img.id === 'clubes' && Array.isArray(jugador.trofeos.equipo)) {
             // Trofeos de Equipo (Champions, Liga, etc.)
             // Aplanamos los arrays de 'success' para buscar el ID
-            const idsEquipo = jugador.trofeos.equipo.flatMap(item => item.success || []);
+            // 1. Entramos a cada sub-array (cada club)
+            // 2. Extraemos los IDs de sus trofeos internos
+            // 3. flatMap los une todos en una sola lista plana de números
+            const idsEquipo = jugador.trofeos.equipo.flatMap(subArray => 
+                subArray.map(trofeo => trofeo?.id).filter(id => id !== undefined)
+            );
             trofeoMatch = idsEquipo.some(idTrofeo => `trofeo${idTrofeo}` === imgClass);
+            console.log('idsEquipo:', idsEquipo, 'imgClass:', imgClass, 'trofeoMatch:', trofeoMatch);
         }
         
         if (trofeoMatch) hasMatch = true;

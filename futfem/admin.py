@@ -1,250 +1,297 @@
 from django.contrib import admin
-from django.contrib import admin
 from django.utils.html import format_html
 from django.contrib.admin.models import LogEntry
-from .models import JugadoraPosicion, Pais ,Jugadora, Trayectoria, Equipo, Liga, JugadoraPais, EquipoTrofeo, Trofeo
-# Register your models here.
+from .models import (
+    JugadoraPosicion, Pais, Jugadora, Trayectoria, Equipo, 
+    Liga, JugadoraPais, EquipoTrofeo, Trofeo, Juego,
+)
+
+from minijuegos.models import Pista 
+
+# ==========================================
+# 1. CONTROL DE LOGS Y HISTORIAL (Oculto para colaboradores)
+# ==========================================
 @admin.register(LogEntry)
 class LogEntryAdmin(admin.ModelAdmin):
-    # Configuramos qué columnas queremos ver
     list_display = ('action_time', 'user', 'content_type', 'object_repr', 'action_flag')
-    
-    # Filtros laterales para buscar por usuario, fecha o tipo de acción
-    list_filter = ('user', 'content_type', 'action_flag')
-    
-    # Buscador para encontrar objetos específicos por su nombre
+    list_filter = ('user', 'action_flag', 'content_type')
     search_fields = ('object_repr', 'change_message')
     
-    # Para que nadie pueda borrar o editar los logs desde aquí (solo lectura)
+    def has_module_permission(self, request): return request.user.is_superuser
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
-# 1. Definimos el Inline para la Trayectoria
+
+
+# ==========================================
+# 2. INLINES VISUALES (Tablas dinámicas dentro de fichas)
+# ==========================================
 class TrayectoriaInline(admin.TabularInline):
     model = Trayectoria
-    extra = 1  # Número de filas vacías para añadir nuevos equipos
-    fields = ('equipo', 'fecha_inicio', 'fecha_fin', 'equipo_actual', 'ver_escudo', 'imagen')
+    extra = 1
+    verbose_name = "📍 Equipo en su Carrera"
+    verbose_name_plural = "📊 Historial de Equipos (Trayectoria)"
+    fields = ('equipo', 'ver_escudo', 'fecha_inicio', 'fecha_fin', 'equipo_actual')
     readonly_fields = ('ver_escudo',)
-    ordering = ('-fecha_inicio',)  # Ordenamos por fecha de inicio descendente
-    
+    ordering = ('-fecha_inicio',)
+    autocomplete_fields = ['equipo']  # Buscador predictivo en vez de un desplegable infinito
+
     def ver_escudo(self, obj):
         if obj.equipo and obj.equipo.escudo:
-            # Usamos la ruta / porque tu campo imagen suele ser un TextField con la ruta
-            return format_html('<img src="/{}" width="30" height="30" />', obj.equipo.escudo)
-        return ""
+            return format_html('<img src="/{}" style="height: 35px; width: 35px; object-fit: contain;" />', obj.equipo.escudo)
+        return "⚠️ Sin escudo"
     ver_escudo.short_description = "Escudo"
 
-# 1. Inline para las Nacionalidades (Tabla Intermedia)
+
 class NacionalidadInline(admin.TabularInline):
     model = JugadoraPais
     extra = 1
-    fields = ('pais', 'es_primaria', 'ver_bandera')
+    verbose_name = "🌍 Nacionalidad"
+    verbose_name_plural = "🌍 Países / Pasaportes"
+    fields = ('pais', 'ver_bandera', 'es_primaria')
     readonly_fields = ('ver_bandera',)
+    autocomplete_fields = ['pais']
 
     def ver_bandera(self, obj):
-        if obj.pais:
-            return format_html('<span class="fi fi-{}"></span>', obj.pais.iso.lower())
+        if obj.pais and obj.pais.iso:
+            return format_html('<span class="fi fi-{}" style="font-size: 1.3em;"></span>', obj.pais.iso.lower())
         return ""
+    ver_bandera.short_description = "Ver"
+
 
 class PosicionInline(admin.TabularInline):
     model = JugadoraPosicion
-    extra = 1  # Número de filas vacías para añadir nuevas posiciones
-    verbose_name = "Posición de la Jugadora"
-    verbose_name_plural = "Posiciones de la Jugadora"
+    extra = 1
+    verbose_name = "🏃‍♀️ Demarcación"
+    verbose_name_plural = "🏃‍♀️ Posiciones en el Campo"
     fields = ('posicion', 'es_primaria')
 
-@admin.register(Trofeo)
-class TrofeoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'tipo')
-    search_fields = ('nombre',) # <-- ESTO es lo que necesita el Inline para funcionar
 
 class EquipoTrofeoInline(admin.TabularInline):
     model = EquipoTrofeo
     extra = 1
+    verbose_name = "🏆 Título Conquistado"
+    verbose_name_plural = "🏆 Vitrina de Trofeos (Palmarés)"
     fields = ('trofeo', 'temporada')
     autocomplete_fields = ['trofeo']
 
-    # FILTRO: Solo permite seleccionar trofeos donde tipo === 'clubes'
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('trofeo')
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "trofeo":
-            # Ajusta 'clubes' según cómo esté escrito exactamente en tu BD
             kwargs["queryset"] = Trofeo.objects.filter(tipo='clubes')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
+# ==========================================
+# 3. ENTIDADES DE FÚTBOL FEMENINO
+# ==========================================
+@admin.register(Trofeo)
+class TrofeoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'tipo')
+    search_fields = ('nombre',)
+    list_filter = ('tipo',)
+
+
 @admin.register(Pais)
 class PaisAdmin(admin.ModelAdmin):
-    # Columnas en la lista: ID, Nombre, ISO y una vista previa de la bandera
-    list_display = ('id_pais', 'nombre', 'iso', 'ver_bandera')
+    list_display = ('ver_bandera', 'nombre', 'iso')
     search_fields = ('nombre', 'iso')
     ordering = ('nombre',)
+    # Habilitar autocomplete_fields para que sea indexable desde los Inlines
+    search_fields = ['nombre', 'iso'] 
 
     def ver_bandera(self, obj):
         if obj.iso:
-            # Usamos la misma librería flag-icons que cargamos en los otros modelos
-            return format_html(
-                '<span class="fi fi-{}" style="font-size: 1.5em; border-radius: 2px;"></span>',
-                obj.iso.lower()
-            )
+            return format_html('<span class="fi fi-{}" style="font-size: 1.8em; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2);"></span>', obj.iso.lower())
         return "🏳️"
     ver_bandera.short_description = 'Bandera'
 
     class Media:
-        # Cargamos el CSS de banderas para verlo también aquí
-        css = {
-            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css','/static/futfem/css/custom_admin.css')
-        }
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)}
 
-# 2. Registramos la Jugadora con su configuración
+
 @admin.register(Jugadora)
 class JugadoraAdmin(admin.ModelAdmin):
-    # En list_display sustituimos 'Nacionalidad' por nuestro método 'ver_nacionalidades'
-    list_display = ('ver_foto', 'Nombre', 'Apellidos', 'ver_nacionalidades', 'market_value')
-    # Eliminamos 'Nacionalidad' de list_filter ya que ahora es una relación M2M
+    # Una lista súper limpia con foto de perfil grande, banderas y valores de mercado
+    list_display = ('ver_foto', 'Nombre', 'Apellidos', 'Apodo', 'ver_nacionalidades', 'market_value_format')
+    list_display_links = ('ver_foto', 'Nombre', 'Apellidos')
+    
+    # Filtros laterales claros con nombres descriptivos indirectos gracias a Django
     list_filter = (
         'retiro',
-        # Filtro por País (via tabla intermedia JugadoraPais -> Pais)
         'jugadorapais__pais', 
-        # Filtro por Posición (via tabla intermedia JugadoraPosicion -> Posicion)
         'jugadoraposicion__posicion',
-        # Filtro por Equipo Actual (via Trayectoria -> Equipo)
-        # Filtramos solo por los equipos donde equipo_actual es True
         ('trayectoria__equipo', admin.RelatedOnlyFieldListFilter),
     )
     search_fields = ('Nombre', 'Apellidos', 'Apodo')
+    readonly_fields = ('foto_perfil_bloque',)
     
+    # Agrupar campos para que parezca un perfil deportivo real
     fieldsets = (
-        ('Información Personal', {
-            # Quitamos 'Nacionalidad' de aquí, ahora se gestiona en el Inline abajo
-            'fields': (('Nombre', 'Apellidos'), 'Apodo', 'Nacimiento')
+        ('👤 Ficha de Identidad y Perfil' , {
+            'fields': (
+                ('Nombre', 'Apellidos', 'Apodo'),
+                ('Nacimiento', 'altura', 'pie_habil'),
+                ('imagen', 'retiro'),
+            ),
+            #'description': 'Información básica, datos físicos y estado de actividad de la jugadora.'
+            'classes': ('bloque-campos-perfil',),
         }),
-        ('Datos Deportivos', {
-            'fields': ('altura', 'pie_habil', 'retiro')
-        }),
-        ('Imagen y Enlaces', {
-            'fields': ('imagen', 'soccerdonna_url', 'market_value', 'soccerdonna_last_updated')
+        ('💰 Mercado y Enlaces Externos', {
+            'fields': ('market_value', 'soccerdonna_url', 'soccerdonna_last_updated'),
+            'description': 'Actualización automática y URLs de scouting.'
         }),
     )
-
-    # Añadimos ambos inlines: Nacionalidades y Trayectoria
     inlines = [NacionalidadInline, PosicionInline, TrayectoriaInline]
 
-    # --- MÉTODOS VISUALES ---
+    def foto_perfil_bloque(self, obj):
+        if obj and obj.imagen:
+            path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen}"
+        else:
+            path = "/static/img/predeterm.png"
+            
+        return format_html(
+            '<div class="contenedor-foto-bloque">'
+            '<img src="{}" />'
+            '</div>', 
+            path
+        )
+    foto_perfil_bloque.short_description = 'Fotografía'
 
     def ver_foto(self, obj):
         if obj.imagen:
-            # Si 'imagen' ya es la URL completa, quita el "/" inicial
             path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen}"
-            return format_html('<img src="{}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" />', path)
-        return "No foto"
-    ver_foto.short_description = 'Foto'
+        else:
+            path = "/static/img/predeterm.png"
+            
+        return format_html(
+            '<img src="{}" style="width: 50px; height: 50px; border-radius: 12px; object-fit: cover; box-shadow: 0 2px 5px rgba(0,0,0,0.15);" />', 
+            path
+        )
+    ver_foto.short_description = 'Perfil'
 
     def ver_nacionalidades(self, obj):
-        # Buscamos todas las nacionalidades asociadas a esta jugadora
         nacionalidades = JugadoraPais.objects.filter(jugadora=obj).select_related('pais')
-        if not nacionalidades:
-            return "Sin datos"
+        if not nacionalidades: return "⚠️ Sin asignar"
             
-        html = '<div style="display: flex; gap: 5px;">'
+        html = '<div style="display: flex; gap: 6px; align-items: center;">'
         for n in nacionalidades:
-            # Resaltamos la primaria con un borde o un estilo diferente
-            estilo = "border: 2px solid #79aec8;" if n.es_primaria else "opacity: 0.6;"
+            estilo = "border: 2px solid #264b5d; transform: scale(1.1);" if n.es_primaria else "opacity: 0.5;"
             html += format_html(
-                '<span class="fi fi-{}" title="{}" style="{} border-radius: 2px;"></span>',
+                '<span class="fi fi-{}" title="{}" style="{} border-radius: 3px; font-size: 1.2em;"></span>',
                 n.pais.iso.lower(),
                 f"{n.pais.nombre} ({'Principal' if n.es_primaria else 'Secundaria'})",
                 estilo
             )
         html += '</div>'
         return format_html(html)
-    ver_nacionalidades.short_description = 'Nacionalidades'
+    ver_nacionalidades.short_description = 'País'
+
+    def market_value_format(self, obj):
+        if obj.market_value:
+            return f"{obj.market_value:,} €".replace(",", ".")
+        return "—"
+    market_value_format.short_description = "Valor de Mercado"
 
     class Media:
-        css = {
-            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css',)
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_jugadora.css')}
 
-        }
 
 @admin.register(Equipo)
 class EquipoAdmin(admin.ModelAdmin):
-    list_display = ('ver_escudo', 'nombre', 'ver_logo_liga', 'ver_color', 'latitud', 'longitud')
+    list_display = ('ver_escudo', 'nombre', 'ver_logo_liga', 'ver_color')
     list_filter = ('liga',)
     ordering = ('nombre',)
-    search_fields = ('nombre',)
+    search_fields = ('nombre',) # Esto permite que funcione el autocomplete_fields desde TrayectoriaInline
     autocomplete_fields = ['equipo_sucesor']
     inlines = [EquipoTrofeoInline]
     
-    # Organizar el formulario por secciones
     fieldsets = (
-        ('Información Básica', {
-            'fields': ('nombre', 'liga', 'escudo', 'equipo_sucesor')
+        ('🛡️ Datos del Club', {
+            'fields': (('nombre', 'liga'), ('escudo', 'equipo_sucesor'))
         }),
-        ('Identidad y Ubicación', {
-            'fields': ('color', ('latitud', 'longitud'))
+        ('🎨 Identidad Visual y Mapa', {
+            'fields': ('color', ('latitud', 'longitud')),
+            'description': 'El color se aplicará dinámicamente como fondo de su cromo en la web.'
         }),
     )
 
     def ver_escudo(self, obj):
         if obj.escudo:
-            # Como indicas que 'escudo' ya es la URL propia, la usamos directamente
-            return format_html('<img src="/{}" width="35" height="35" style="object-fit: contain;" />', obj.escudo)
-        return "No logo"
+            return format_html('<img src="/{}" width="40" height="40" style="object-fit: contain; background: #fafafa; padding: 2px; border-radius: 6px; border: 1px solid #eee;" />', obj.escudo)
+        return "❌ Sin Escudo"
     ver_escudo.short_description = 'Escudo'
 
     def ver_logo_liga(self, obj):
         if obj.liga and obj.liga.logo:
-            # Detectamos si es una URL completa o una ruta relativa
             url = obj.liga.logo.url if hasattr(obj.liga.logo, 'url') else f"/{obj.liga.logo}"
             return format_html(
-                '<div style="display:flex; align-items:center; gap:5px;">'
-                '<img src="{}" width="25" height="25" style="object-fit:contain;">'
-                '<span>{}</span></div>', 
+                '<div style="display:flex; align-items:center; gap:8px;">'
+                '<img src="{}" width="28" height="28" style="object-fit:contain;">'
+                '<span style="font-weight: 500;">{}</span></div>', 
                 url, obj.liga.nombre
             )
-        return obj.liga.nombre if obj.liga else "-"
-    ver_logo_liga.short_description = 'Liga'
+        return obj.liga.nombre if obj.liga else "—"
+    ver_logo_liga.short_description = 'Competición'
 
     def ver_color(self, obj):
         if obj.color:
             return format_html(
                 '<div style="display: flex; align-items: center; gap: 8px;">'
-                '<div style="width: 20px; height: 20px; background-color: {}; border: 1px solid #ccc; border-radius: 3px;"></div>'
-                '<span>{}</span></div>',
+                '<div style="width: 24px; height: 24px; background-color: {}; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border-radius: 50%;"></div>'
+                '<code style="font-size: 11px;">{}</code></div>',
                 obj.color, obj.color
             )
-        return "Sin color"
+        return "⚠️ No asignado"
     ver_color.short_description = 'Color Principal'
+
     class Media:
-        css = {
-            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css','/static/futfem/css/custom_admin.css')
-        }
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_equipo.css')}
+
+
 
 @admin.register(Liga)
 class LigaAdmin(admin.ModelAdmin):
-    # Vista de lista: Nombre, Bandera del País y Logo de la Liga
     list_display = ('ver_logo', 'nombre', 'ver_pais')
-    search_fields = ('nombre',) # NECESARIO para que aparezca en el autocomplete de Equipo
+    search_fields = ('nombre',)
     list_filter = ('pais',)
 
     def ver_logo(self, obj):
         if obj.logo:
-            # Si el logo es una URL directa (TextField)
-            return format_html('<img src="/{}" width="40" height="40" style="object-fit: contain;" />', obj.logo)
-        return "Sin logo"
+            return format_html('<img src="/{}" width="45" height="45" style="object-fit: contain;" />', obj.logo)
+        return "League Logo"
     ver_logo.short_description = 'Logo'
 
     def ver_pais(self, obj):
         if obj.pais:
-            # Usando la librería de banderas que cargamos antes en PistaAdmin
             return format_html(
-                '<span class="fi fi-{}" style="margin-right: 8px;"></span> {}',
-                obj.pais.iso.lower(),
-                obj.pais.nombre
+                '<div style="display: flex; align-items: center; gap: 6px;">'
+                '<span class="fi fi-{}"></span> <span>{}</span></div>',
+                obj.pais.iso.lower(), obj.pais.nombre
             )
         return "-"
-    ver_pais.short_description = 'País'
+    ver_pais.short_description = 'País Organizado'
 
-    # Cargamos los iconos de banderas también aquí
     class Media:
-        css = {
-            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css','/static/futfem/css/custom_admin.css')
-        }
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)}
+
+
+# ==========================================
+# 4. MÓDULO DE SEGURIDAD (Totalmente oculto para no-superusuarios)
+# ==========================================
+class PistaInline(admin.TabularInline):
+    model = Pista
+    extra = 1
+
+@admin.register(Juego)
+class JuegoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'slug')
+    inlines = [PistaInline]
+    def has_module_permission(self, request): return request.user.is_superuser
+
+#@admin.register(Pista)
+#class PistaAdmin(admin.ModelAdmin):
+#    list_display = ('juego', 'descripcion', 'valor')
+#    def has_module_permission(self, request): return request.user.is_superuser

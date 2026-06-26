@@ -1,3 +1,4 @@
+import json  # <- Importamos json para deserializar el campo
 from django.contrib import admin
 from .models import Pista
 from django.utils.html import format_html
@@ -5,7 +6,7 @@ from futfem.models import Jugadora, Liga, Equipo, Pais
 
 @admin.register(Pista)
 class PistaAdmin(admin.ModelAdmin):
-    list_display = ('id_juego', 'descripcion', 'ver_detalles_json')
+    list_display = ('juego', 'descripcion', 'ver_detalles_json')
     search_fields = ('descripcion',)
     readonly_fields = ('ver_detalles_json',)
 
@@ -13,9 +14,24 @@ class PistaAdmin(admin.ModelAdmin):
         if not obj.valor:
             return "JSON vacío"
 
+        # --- SOLUCIÓN DEL ERROR ---
+        # Si 'obj.valor' viene como texto plano (str), lo convertimos a diccionario de Python
+        datos = obj.valor
+        if isinstance(datos, str):
+            try:
+                datos = json.loads(datos)
+            except (json.JSONDecodeError, TypeError):
+                return format_html('<span style="color:red;">⚠️ Error: El texto de la base de datos no tiene un formato JSON válido.</span>')
+
+        # Si tras el parseo no es un diccionario (ej: es una lista o un número suelto), cancelamos de forma segura
+        if not isinstance(datos, dict):
+            return format_html('<span style="color:red;">⚠️ Error: El formato JSON no es un diccionario (clave: valor).</span>')
+        # ---------------------------
+
         html_resultado = format_html('<div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">')
         
-        for clave, valor in obj.valor.items():
+        # Ahora recorremos 'datos.items()' de forma 100% segura
+        for clave, valor in datos.items():
             # Normalizamos el valor a lista siempre para simplificar el código
             ids = valor if isinstance(valor, list) else [valor]
 
@@ -49,7 +65,7 @@ class PistaAdmin(admin.ModelAdmin):
                         html_resultado += format_html('<small style="color:red;">🛡️ {}?</small>', id_e)
                 html_resultado += format_html('</div>')
 
-            # 3. CASO JUGADORA (Nuevo caso como pista)
+            # 3. CASO JUGADORA
             elif 'jugadora' in clave.lower():
                 html_resultado += format_html('<div style="display:flex; flex-direction:column; gap:8px; align-items:center;">')
                 for id_j in ids:
@@ -88,5 +104,5 @@ class PistaAdmin(admin.ModelAdmin):
 
     class Media:
         css = {
-            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css','/static/futfem/css/custom_admin.css')
+            'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css')
         }

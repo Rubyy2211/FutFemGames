@@ -85,7 +85,7 @@ def juegoxid(request):
         return JsonResponse({'error': 'No se proporcionó id_juego.'}, status=400)
 
     try:
-        pista = Pista.objects.get(id_juego=id_juego)
+        pista = Pista.objects.get(juego=id_juego)
     except Pista.DoesNotExist:
         return JsonResponse({'error': 'No se encontraron datos para el id_juego proporcionado.'}, status=404)
 

@@ -16,7 +16,7 @@ function fetchData(idJuego) {
             // Manejar los datos recibidos
             console.log(data);
             // Devolver los datos obtenidos para su uso posterior
-            return data.success;
+            return JSON.parse(data.success);  // Retornar los datos como un objeto
         })
         .catch(error => {
             // Manejar errores

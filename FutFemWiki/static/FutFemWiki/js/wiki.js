@@ -552,9 +552,9 @@ export function displayEquipos(equipos, container) {
         equipoElement.className = 'equipo-item';
         equipoElement.innerHTML = `
             <img src="${fotoMini}" alt="${equipo.nombre} Escudo" class="equipo-escudo">
-            <div class="equipo-info">
-            <h4>${equipo.nombre}</h4>  
-            </div>
+            <!--<div class="equipo-info">
+                <h4>${equipo.nombre}</h4> 
+            </div>-->
         `;
 
         // Aplicar degradado usando los colores de la BD

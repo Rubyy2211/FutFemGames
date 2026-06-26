@@ -25,6 +25,89 @@ body{
     justify-content: center;
     width: fit-content;
 }
+
+#historicas{
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    max-height: 85%;
+}
+
+#historicas #slider-temporadas{
+    display: flex;
+    flex-direction: row;
+    max-width: 80dvw;
+}
+
+#historicas #slider-temporadas .slider-button{
+    background: none;
+}
+
+#historicas #slider-temporadas .slider-button svg{
+    width: 25px;
+    height: auto;
+}
+
+#historicas #slider-temporadas .slider-button:hover{
+    box-shadow: none;
+    color: white;
+}
+
+#historicas #slider-temporadas .slider-button:hover svg{
+    box-shadow: white;
+    transform: scale(1.08);
+    transition: all ease 0.3s;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    #historicas{
+        max-height: 100% !important;
+    }
+    #historicas #slider-temporadas{
+        max-width: 95dvw;
+        order: 1;
+    }
+
+    #historicas #jugadoras-container, #historicas #historicas-placeholder{
+        order: 2;
+    }
+
+    #historicas #temporadas-container .temporada-button{
+        min-width: 15dvw !important;
+        font-size: xx-small;
+        padding-inline: 0;
+    }
+}
+
+#historicas #temporadas-container{
+    display: flex;
+    flex-direction: row;
+    max-width: 100%;
+    overflow-x: scroll;
+    gap: 5px;
+    overflow-y: hidden;
+}
+
+#historicas #temporadas-container .temporada-button{
+    min-width: 10dvw;
+    background: var(--color-secundario);
+    color: var(--color-detalles);
+}
+
+.temporada-button.activo{
+    background: var(--color-primario) !important;
+}
+
+.temporada-button:hover{
+    background: var(--color-primario) !important;
+    color: var(--color-texto) !important;
+    border-radius: 12px;
+    transform: scale(1.0) !important;
+    box-shadow: none;
+}
+
 #equipo-container {
     display: flex;
     flex-direction: column;
@@ -675,7 +758,7 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
     grid-template-columns: repeat(4, minmax(0, 150px));
     overflow-y: auto;
     justify-items: center;
-    width: 100%;
+    width: fit-content;
     height: 100%;
     max-width: 1000px;
 }

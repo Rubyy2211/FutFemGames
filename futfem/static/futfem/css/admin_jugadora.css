@@ -1,0 +1,150 @@
+h1, h2{
+    color: white;
+}
+
+.datetime{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-row.field-foto_perfil_bloque{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    padding-bottom: 0;
+    background: var(--color-secundario);
+}
+
+.form-row.field-foto_perfil_bloque label{
+    display: none;
+}
+
+.form-row.field-foto_perfil_bloque div{
+    padding-bottom: 0 !important;
+}
+
+.form-row.field-foto_perfil_bloque img{
+    width: 100px;
+    height: auto;
+    padding-bottom: 0;
+}
+
+.form-row.field-Nombre.field-Apellidos.field-Apodo{
+    display: flex;
+    flex-direction: row;
+}
+
+.form-row .flex-container{
+    flex-direction: row !important;
+}
+
+.form-row.field-Nombre .flex-container>div, .form-row.field-Nacimiento .flex-container>div{
+    max-width: 30%;
+}
+
+.form-row.field-Nombre .flex-container>div label, .form-row.field-Nacimiento .flex-container>div label{
+    min-width: fit-content !important;
+    width: fit-content;
+}
+
+fieldset.module{
+    overflow-x: hidden !important;
+}
+
+#trayectoria_set-group table{
+    max-width: 100% !important;
+    display: flex;
+    flex-direction: row;
+    overflow-x: hidden;
+}
+
+#trayectoria_set-group table thead tr{
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 100%;
+    height: 100%;
+}
+
+#trayectoria_set-group table thead tr th{
+    max-height: 16.66666666666667%;
+}
+
+#trayectoria_set-group table thead tr th.original{
+    display: none;
+}
+
+#trayectoria_set-group table thead tr th.column-equipo{
+    height: 75px;
+}
+
+#trayectoria_set-group table thead tr th.column-ver_escudo{
+    height: 90px !important;
+    max-height: unset;
+}
+
+#trayectoria_set-group table thead tr th.column-fecha_inicio, #trayectoria_set-group table thead tr th.column-fecha_fin{
+    height: 40px;
+}
+
+#trayectoria_set-group table thead tr th.column-equipo_actual, #trayectoria_set-group table thead tr>th:last-child{
+    height: 16px;
+}
+
+#trayectoria_set-group table tbody{
+    display: flex;
+    flex-direction: row;
+    overflow-x: scroll;
+}
+
+#trayectoria_set-group table tbody tr{
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+}
+
+#trayectoria_set-group table tbody tr td.original{
+    display: none;
+}
+
+#trayectoria_set-group table tbody tr td.field-equipo div, #trayectoria_set-group table tbody tr td.field-equipo div>*{
+    max-width: 100% !important;
+}
+
+#trayectoria_set-group table tbody tr td.field-equipo div a{
+    max-width: 100% !important;
+}
+
+#trayectoria_set-group table tbody tr td.field-equipo, #trayectoria_set-group table tbody tr td.field-fecha_inicio, #trayectoria_set-group table tbody tr td.field-fecha_fin{
+    max-height: 16.66666666666667%;
+    padding-top: 8px !important;
+}
+
+#trayectoria_set-group table tbody tr td{
+    padding-top: 8px !important;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    max-width: 100% !important;
+}
+
+#trayectoria_set-group table tbody tr td.field-ver_escudo p{
+    width: fit-content !important;
+    padding-inline: 0px !important;
+}
+
+#trayectoria_set-group table tbody tr td.field-ver_escudo img{
+    width: 80px !important;
+    height: auto !important;
+    max-width: 80px !important;
+    max-height: 80px !important;
+}
+
+#trayectoria_set-group table tbody tr td.field-equipo_actual, #trayectoria_set-group table tbody tr td.delete{
+    padding-top: 8px;
+}
+
+#trayectoria_set-group table tbody tr td .timezonewarning, .form-row.field-Nacimiento .timezonewarning{
+    display: none;
+}

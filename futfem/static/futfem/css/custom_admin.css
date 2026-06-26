@@ -41,6 +41,10 @@ th a{
     color: white;
 }
 
+textarea{
+    max-height: 20px !important;
+}
+
 /* Cambiamos los títulos de los módulos (las cajas de las tablas) */
 .module h2, .module caption, .inline-group h2 {
     background: var(--color-secundario, #27ae60) !important; 

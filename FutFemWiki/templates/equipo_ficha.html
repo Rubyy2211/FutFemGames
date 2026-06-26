@@ -76,7 +76,7 @@
                 <div id="tabla-trofeos" class="tabla-jugadoras">
                     <div id="cabecera-tabla" class="cabecera-tabla">
                         <h3>{% trans "Palmarés" %}</h3>
-                        <a id="ver-trofeos" href="#">{% trans "Ver Más" %}</a>
+                        <!--<a id="ver-trofeos" href="#">{% trans "Ver Más" %}</a>-->
                     </div>
                     <div id="palmares" class="container-jugadoras"></div>
                 </div>
@@ -113,7 +113,7 @@
                             <!--<a id="ver-jugadoras-actuales" href="#">{% trans "Ver Más" %}</a>-->
                         </div>
                         <div id="jugadoras-actuales">
-                            <div id="campo-destacadas">
+                            <div id="campo-destacadas" class="campo-contenedor-wrapper">
                             {% include 'partials/football_field.html' %}
                             </div>
                         </div>
@@ -135,10 +135,30 @@
 
         </div>
         <div id="plantilla" class="tab-content">  
-            <div id="jugadoras-actuales-container" class="container-jugadoras"></div>
+            <div id="jugadoras-actuales-container" class="container-jugadoras">
+            </div>
         </div>
         <div id="historicas" class="tab-content">
-            <div id="jugadoras-container" class="container-jugadoras"></div>
+            <div id="jugadoras-container" class="container-jugadoras" style="display: none;"></div>
+            <div id="historicas-placeholder" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+                <h3>{{ equipo.nombre }}</h3>
+                <img src="/{{ equipo.escudo }}" alt="{{ equipo.nombre }}">
+                <p>Haz click en una temporada para ver las jugadoras que han estado en el club</p>
+            </div>
+
+            <div id="slider-temporadas">
+                <button id="prev-temporada" class="slider-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"/>
+                    </svg>
+                </button>
+                <div id="temporadas-container"></div>
+                <button id="next-temporada" class="slider-button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+            </div>
+            
+
         </div>
     </div>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
@@ -271,11 +291,12 @@
 
 </script>
 <script type="module">
-    import { crearFichaJugadorasActuales, crearFichaJugadorasDeSiempre, displayPalmares } from '{% static "FutFemWiki/js/ficha-equipo.js" %}';
+    import { crearFichaJugadorasActuales, crearFichaJugadorasDeSiempre, displayPalmares, filtrarJugadorasPorTemporada } from '{% static "FutFemWiki/js/ficha-equipo.js" %}';
     import { fetchEquipoById } from '{% static "futfem/js/equipos.js" %}';
 
     const color = '{{equipo.color}}';
     const idEquipo = '{{equipo.id_equipo}}';    
+    let equipoData = null;
 
     // 1. Carga inmediata de datos de texto y jugadoras (Pesa poco)
     //actualizarHeader();
@@ -284,10 +305,12 @@
 
     async function cargarDatosPrincipales() {
         // Ejecutamos las peticiones de datos en paralelo
-        const [equipoData] = await Promise.all([
+        [equipoData] = await Promise.all([
             fetchEquipoById(idEquipo),
             displayPalmares(idEquipo)
         ]);
+
+        console.log("Datos del equipo:", equipoData);
 
         if (equipoData) {
             // 2. CARGA BAJO DEMANDA (Lazy Import)
@@ -299,58 +322,49 @@
             //prepararDisparadorMapa(equipoData);
         }
     }
-    window.addEventListener('pageshow', (event) => {
+    window.addEventListener('pageshow', async (event) => {
         // Reiniciamos la lógica
-        cargarDatosPrincipales();
+        await cargarDatosPrincipales();
+        crearBotonesTemporada(equipoData.fundacion);
     });
 
-    // 2. LA MAGIA: Solo cargar el mapa si el usuario llega a él
-    /*function observarMapa(equipo) {
-        const mapaContenedor = document.getElementById('mapa-equipos');
-        
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(async (entry) => {
-                if (entry.isIntersecting) {
-                    console.log("Cargando recursos del mapa...");
-                    await cargarRecursosMapa(equipo);
-                    observer.disconnect(); // Dejar de observar una vez cargado
-                }
-            });
-        }, { rootMargin: '200px' }); // Empieza a cargar 200px antes de llegar
+    function crearBotonesTemporada(anyo_fundacion) {
+        const mainContainer = document.getElementById('historicas');
+        const containerTemporadas = document.getElementById('temporadas-container');
 
-        observer.observe(mapaContenedor);
-    }*/
+        // Limpiamos el contenedor por si acaso se vuelve a ejecutar la función
+        if (containerTemporadas) containerTemporadas.innerHTML = '';
 
-    /*async function cargarRecursosMapa(equipo) {
-        // 1. CSS
-        if (!document.getElementById('maplibre-css')) {
-            const link = document.createElement('link');
-            link.id = 'maplibre-css';
-            link.rel = 'stylesheet';
-            link.href = 'https://unpkg.com/maplibre-gl@5.18.0/dist/maplibre-gl.css';
-            document.head.appendChild(link);
-        }
+        if (anyo_fundacion) {
+            const currentYear = new Date().getFullYear(); // En 2026 generará hasta la 2026-2027
 
-        // 2. JS de la librería
-        await import('https://unpkg.com/maplibre-gl@5.18.0/dist/maplibre-gl.js');
-        
-        // 3. Importar TU JS con un parámetro para evitar caché (?v=2)
-        const mapaModulo = await import('{% static "FutFemWiki/js/mapa.js" %}?v=2');
-        
-        // 4. Obtener la instancia de forma segura
-        const instanciaMapa = mapaModulo.inicializarMapaEquipos();
+            for (let year = anyo_fundacion; year <= currentYear; year++) {
+                const button = document.createElement('button');
+                button.textContent = year + '-' + (year + 1);
+                button.classList.add('temporada-button', 'season-badge'); // Añadimos tus clases de diseño estético
+                
+                button.addEventListener('click', () => {
+                    // 👉 LA MAGIA: Buscamos si ya había algún botón activo en el contenedor y le quitamos la clase
+                    const botonActivoAnterior = containerTemporadas.querySelector('.activo');
+                    if (botonActivoAnterior) {
+                        botonActivoAnterior.classList.remove('activo');
+                    }
 
-        if (instanciaMapa) {
-            instanciaMapa.on("load", () => {
-                console.log("Mapa cargado con éxito");
-                mapaModulo.añadirEquipoMapa(equipo.id, equipo.nombre, equipo.lat, equipo.long, '/' + equipo.escudo, equipo.color);
-                mapaModulo.actualizarMarkersZoom();
-                mapaModulo.centrarMapaEnEquipos();
-            });
+                    // Ahora hacemos que el botón actual pase a ser el único activo
+                    button.classList.add('activo');
+                    
+                    // Tu lógica para cargar y mostrar los datos de las jugadoras
+                    const jugadorasFiltradas = filtrarJugadorasPorTemporada(button.textContent);
+                });
+                
+                containerTemporadas.appendChild(button);
+            }
         } else {
-            console.error("No se pudo obtener la instancia del mapa");
+            const mensaje = document.createElement('p');
+            mensaje.textContent = '{% trans "No hay información de fundación disponible para este equipo." %}';
+            containerTemporadas.appendChild(mensaje);
         }
-    }*/
+    }
 </script>
 </body>
 </html>

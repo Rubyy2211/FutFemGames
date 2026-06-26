@@ -279,7 +279,7 @@ span.swiper-pagination-bullet-active{
         max-height: 40vh;
     }*/
     .swiper-pagination{
-        bottom: 15px !important;
+        bottom: -5px !important;
     }
 
     .swiper #mostrador-tarjetas{
@@ -301,7 +301,7 @@ span.swiper-pagination-bullet-active{
     }
 
     .swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .tarjeta-front, .swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .tarjeta-back{
-        max-height: 40vh;
+        max-height: 35vh;
         max-width: 100%;
     }
     .swiper #mostrador-tarjetas .swiper-slide .tarjeta-wrapper .imagen-jugadora{

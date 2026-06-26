@@ -199,6 +199,7 @@
     align-items: center;
     height: 100%;
     gap: 12px;
+    max-height: 30dvh;
 }
 
 .tarjeta-back .trofeos{
@@ -225,7 +226,7 @@
         max-height: 242.55px;
     }
     #mostrador-tarjetas{
-        padding-top: 0;
+        padding-top: 15px;
         padding-bottom: 15px;
     }
 }

@@ -80,9 +80,9 @@ body::before {
     #selector a p{
         display: none;
     }
-    header .botones{
+    /*header .botones{
         display: none !important;
-    }
+    }*/
 }
 
 /*------------------MODAL------------------*/

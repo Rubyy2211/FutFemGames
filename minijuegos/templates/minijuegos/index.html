@@ -323,12 +323,12 @@
             actualizarExpo(firstButton);
 
             // Animación GSAP para el primer botón
-            gsap.to(firstButton, { scale: 1.05, duration: 0.3, opacity: 1 });
+            gsap.to(firstButton, { scale: 1.05, duration: 1, opacity: 1 });
 
             // Apagamos el resto de botones para centrar la vista
             const otherButtons = activeSection.querySelectorAll('.game-button');
             otherButtons.forEach(btn => {
-                if (btn !== firstButton) gsap.to(btn, { opacity: 0.3, duration: 0.3, scale: 1 });
+                if (btn !== firstButton) gsap.to(btn, { opacity: 1, duration: 0.3, scale: 1 });
             });
         } else {
             // Si no hay botones (ej: Perfil), ocultamos la expo
@@ -348,7 +348,7 @@
 
             // Lógica de opacidad para el resto
             buttons.forEach(other => {
-                if (other !== card) gsap.to(other, { opacity: 0.3, duration: 0.3 });
+                if (other !== card) gsap.to(other, { opacity: 1, duration: 0.3 });
             });
             gsap.to(card, { scale: 1.05, duration: 0.3 });
         });
