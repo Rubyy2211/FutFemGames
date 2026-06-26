@@ -17,7 +17,15 @@ class LogEntryAdmin(admin.ModelAdmin):
     list_filter = ('user', 'action_flag', 'content_type')
     search_fields = ('object_repr', 'change_message')
     
-    def has_module_permission(self, request): return request.user.is_superuser
+    # 1. Controla si el modelo aparece en la página principal del admin
+    def has_module_permission(self, request):
+        return request.user.is_authenticated and getattr(request.user, 'rol', None) == 1
+        
+    # 2. Controla si el usuario puede entrar a ver el listado de logs
+    def has_view_permission(self, request, obj=None):
+        return request.user.is_authenticated and getattr(request.user, 'rol', None) == 1
+        
+    # Bloqueo total de acciones (Lectura pura)
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
@@ -92,6 +100,8 @@ class TrofeoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'tipo')
     search_fields = ('nombre',)
     list_filter = ('tipo',)
+    class Media:
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_jugadora.css')}
 
 
 @admin.register(Pais)
@@ -109,7 +119,7 @@ class PaisAdmin(admin.ModelAdmin):
     ver_bandera.short_description = 'Bandera'
 
     class Media:
-        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)}
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css')}
 
 
 @admin.register(Jugadora)
@@ -275,7 +285,7 @@ class LigaAdmin(admin.ModelAdmin):
     ver_pais.short_description = 'País Organizado'
 
     class Media:
-        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',)}
+        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css')}
 
 
 # ==========================================

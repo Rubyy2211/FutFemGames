@@ -47,6 +47,19 @@ class Usuario(AbstractUser):
     date_joined = models.DateTimeField(auto_now_add=True, null=True)
     last_login = models.DateTimeField(null=True, blank=True)
 
+    # --- CONTROL DE ACCESO GLOBAL AL PANEL ---
+    def has_perm(self, perm, obj=None):
+        # El usuario debe estar activo y pertenecer al rol 1 o 3
+        if self.is_active and self.rol in [1, 3]:
+            return True
+        return False
+
+    def has_module_perms(self, app_label):
+        # Permite que los roles 1 y 3 vean los bloques de las apps en el índice
+        if self.is_active and self.rol in [1, 3]:
+            return True
+        return False
+
     USERNAME_FIELD = 'username'      # ← obligatorio
     REQUIRED_FIELDS = ['first_name'] # ← obligatorio (puede estar vacío: [])
 
