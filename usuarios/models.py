@@ -23,7 +23,12 @@ class Usuario(AbstractUser):
 
     # Campos adicionales que NO están en el User estándar de Django:
     rol = models.IntegerField()
-    token = models.CharField(max_length=36)
+    token = models.CharField(
+        max_length=255,   # O el tipo de campo que tengas (TextField, UUIDField, etc.)
+        blank=True,       # <--- Esto le dice a Django Admin que puede dejarse en blanco en el formulario
+        null=True,        # <--- Esto permite que en la Base de Datos se guarde como NULL si está vacío
+        verbose_name="Token"
+    )
     jugadora_favorita = models.ForeignKey(
         Jugadora, 
         db_column='jugadora_favorita', 
