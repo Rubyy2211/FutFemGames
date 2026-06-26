@@ -343,11 +343,11 @@ function displayJugadorasHistoricas(id, jugadoras, color) {
     const jugadorasAgrupadas = agruparJugadorasPorTrayectoria(jugadoras);
 
     // Ordenar por fecha de inicio histórico
-    jugadorasAgrupadas.sort((a, b) => {
+    /*jugadorasAgrupadas.sort((a, b) => {
         const fechaA = a.trayectoria?.inicio ? new Date(a.trayectoria.inicio) : new Date(0);
         const fechaB = b.trayectoria?.inicio ? new Date(b.trayectoria.inicio) : new Date(0);
         return fechaA - fechaB;
-    });
+    });*/
 
     const fragment = document.createDocumentFragment();
 
@@ -375,9 +375,21 @@ export function filtrarJugadorasPorTemporada(temporada) {
         return (inicio <= temporada && (fin === 'act' || fin >= temporada));
     }) || [];
 
+    // Ordenar de menor a mayor (Ascendente: 1, 2, 3...)
+    jugadorasFiltradas.sort((a, b) => {
+        // Extraemos la posición principal de cada una, o un valor infinito si no tienen
+        const posA = (a.posiciones_ids && a.posiciones_ids.length > 0) ? Number(a.posiciones_ids[0]) : Infinity;
+        const posB = (b.posiciones_ids && b.posiciones_ids.length > 0) ? Number(b.posiciones_ids[0]) : Infinity;
+
+        return posA - posB;
+    });
+
+console.log(jugadorasFiltradas);
+
     if (jugadorasFiltradas.length === 0) {
         console.warn(`No se encontraron jugadoras para la temporada ${temporada}`);
     }else{
+        console.log(jugadorasFiltradas)
         historicasPlaceholder.style.display = 'none';
         jugadorasContainer.style.display = 'grid';
         displayJugadorasHistoricas('jugadoras-container', jugadorasFiltradas, jugadorasHistoricas.success?.[0]?.equipo?.color || 'var(--color-primario)');
