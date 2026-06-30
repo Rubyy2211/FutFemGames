@@ -313,37 +313,38 @@ section .container .web-button{
     flex-direction: row;
     position: relative;
     overflow: hidden;
+    border-radius: 20px;
     box-shadow: 0 5px 15px color-mix(in srgb, black 30%, transparent 70%);
 }
 
 /* El patrón estilo FIFA en la esquina */
-section .container .web-button::after {
+/*section .container .web-button::after {
     content: "";
     position: absolute;
     bottom: 0;
     right: 0;
     
     /* Dimensiones: 50% de ancho y 50% de alto */
-    width: 50%;
+    /*width: 50%;
     height: 50%;
     
     /* Variables del patrón */
-    --s: 56px; 
+    /*--s: 56px; 
     --c1: var(--color-primario);
     --c2: transparent;
 
     /* Aplicamos tu gradiente */
-    background: 
+    /*background: 
         linear-gradient(atan(-.5), var(--c1) 33%, var(--c2) 33.5% 66.5%, var(--c1) 67%) 
         0 0 / var(--s) var(--s);
     
     /* Corte diagonal para que parezca más "diseño de interfaz" */
-    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+    /*clip-path: polygon(100% 0, 100% 100%, 0 100%);
     
     /* Opacidad opcional para que no tape el texto si es muy oscuro */
-    opacity: 0.6;
-    pointer-events: none; /* Para que no interfiera con los clics */
-}
+    /*opacity: 0.6;
+    pointer-events: none; /* Para que no interfiera con los clics 
+}*/
 
 section .container .web-button:hover:after{
     --c1: var(--color-secundario);
@@ -352,13 +353,13 @@ section .container .web-button:hover:after{
 section .container .web-button:hover{
     background: var(--color-primario);
     color: var(--color-texto);
-    transform: scale(1.01);
+    /*transform: scale(1.01);*/
     cursor: pointer;
 }
 
 section .container .web-button:focus{
     background: var(--color-primario);
-    transform: scale(1.01);
+    /*transform: scale(1.01);*/
 }
 
 section .container .web-button img, section .container .web-button svg  {

@@ -7,7 +7,7 @@ import { getDominantColors, rgbToRgba } from '/static/js/utils/color.thief.js';
 
 let jugadorasOriginal;
 let currentPage = 1;
-const itemsPerPage = 14;
+const itemsPerPage = 10;
 let totalPages = 1;
 let jugadorasGlobal = []; // Guardaremos todas las jugadoras aquí
 const btnMapa = document.getElementById("ver-mapa");
@@ -167,23 +167,39 @@ export async function inicializarWiki(arg) {
     // ==========================================
     // 5. LISTENERS DE FILTROS Y AUTOCOMPLETADOS
     // ==========================================
-    botonFiltro.addEventListener('click', () => {
+    /*botonFiltro.addEventListener('click', () => {
         const paisInput = inputPaises[0];
         if (!paisInput) return;
         filtroJugadoras(Number(inputEquipo.dataset.id), Number(paisInput.dataset.id), Number(inputPosiciones.dataset.id));
-    });
+    });*/
 
+    // --- LISTENER DE EQUIPO ---
     inputEquipo.addEventListener('input', (event) => {
-        handleAutocompleteEquipo(event, 'sugerencias-equipo');
+        handleAutocompleteEquipo(event, 'sugerencias-equipo', (equipo) => {
+            // Al elegir equipo, rescatamos el país y posición actuales si existen
+            const idPais = inputPaises[0] && inputPaises[0].dataset.id ? Number(inputPaises[0].dataset.id) : null;
+            const idPosicion = inputPosiciones.dataset.id ? Number(inputPosiciones.dataset.id) : null;
+
+            filtroJugadoras(Number(equipo.id_equipo), idPais, idPosicion);
+        });
     });
 
+    // --- LISTENER DE POSICIONES (Si usa la misma lógica de callback, aplícale esto mismo) ---
     inputPosiciones.addEventListener('input', (event) => {
         handleAutocompletePosicion(event);
     });
 
+    // --- LISTENER DE PAÍSES ---
     if (inputPaises[0]) {
         inputPaises[0].addEventListener('input', (event) => {
-            handleAutocompletePais(event, 'sugerencias-pais2' );
+            handleAutocompletePais(event, 'sugerencias-pais2', (idPaisSeleccionado) => {
+                // Al elegir país, rescatamos el equipo y posición actuales si existen
+                const idEquipo = inputEquipo.dataset.id ? Number(inputEquipo.dataset.id) : null;
+                const idPosicion = inputPosiciones.dataset.id ? Number(inputPosiciones.dataset.id) : null;
+
+                // Usamos idPaisSeleccionado (que viene del callback y controla si es el ID o null si se borró)
+                filtroJugadoras(idEquipo, idPaisSeleccionado, idPosicion);
+            });
         });
     }
 
@@ -360,12 +376,12 @@ function renderJugadorasPage(page = 1) {
             linear-gradient(
                 to bottom,
                 color-mix(in srgb, ${colorPrimario} 70%, transparent),
-                color-mix(in srgb, ${colorSecundario} 70%, transparent)
+                color-mix(in srgb, var(--color-secundario) 70%, transparent)
             )
         `;
         }
 
-        div.style.border = `1px solid color-mix(in srgb, ${colorPrimario} 50%, transparent)`;
+        /*div.style.border = `1px solid color-mix(in srgb, ${colorPrimario} 50%, transparent)`;*/
 
         pNombre.addEventListener('click', () => {
             window.location.href = `/jugadora/${jugadora.id_jugadora}/${slugNombre}/`;
@@ -563,11 +579,12 @@ export function displayEquipos(equipos, container) {
         equipoElement.style.background = `
             linear-gradient(
                 to bottom,
-                color-mix(in srgb, ${colorPrimario} 70%, transparent 0%),
-                color-mix(in srgb, ${colorSecundario} 70%, transparent)
+                color-mix(in srgb, ${colorPrimario} 100%, transparent 0%),
+                color-mix(in srgb, var(--color-secundario) 100%, transparent 0%)
             )
         `;
         
+        //equipoElement.style.border = '0.5px solid rgba(255, 255, 255, 0.7)';
         equipoElement.style.setProperty('--equipo-shadow-color', colorPrimario);
 
         container.appendChild(equipoElement);

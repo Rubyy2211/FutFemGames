@@ -57,29 +57,34 @@
                             <h3>{% trans "Club" %}</h3>
                         </div>
                         <div id="info" class="container-jugadoras">
-                            <div id="escudo-container">
-                                <img src="/{{ equipo.escudo }}" id="escudo" alt="{{ equipo.nombre }}" fetchpriority="high">
+                            <div id="fundacion" style="height: 20%; display: flex; flex-direction: column; justify-content: center;">
+                                <p style="margin-bottom: 0;">{% trans 'Fundado' %}</p>
+                                <h3>{{ equipo.fundacion }}</h3>
                             </div>
                             <div id="datos-equipo">
                                 <h3>{{ equipo.nombre }}</h3>
                                 <div>
-                                <img src="/{{ equipo.liga.logo }}" id="liga-item" alt="{{ equipo.liga.nombre }}">
-                                <span class="fi fi-{{ equipo.liga.pais.iso.lower }}" id="pais"></span>
+                                    <img src="/{{ equipo.liga.logo }}" id="liga-item" alt="{{ equipo.liga.nombre }}">
+                                    <div id="escudo-container">
+                                        <img src="/{{ equipo.escudo }}" id="escudo" alt="{{ equipo.nombre }}" fetchpriority="high">
+                                    </div>
+                                    <span class="fi fi-{{ equipo.liga.pais.iso.lower }}" id="pais"></span>
                                 </div>
-                                <a href="https://www.google.com/maps/search/?api=1&query={{ equipo.latitud|unlocalize }},{{ equipo.longitud|unlocalize }}" target="_blank" rel="noopener noreferrer" class="btn-mapa"><i class="bi bi-geo-alt-fill"></i> Google Maps
-                                </a>
+                                <span>{% trans "Estadio:" %}<a href="https://www.google.com/maps/search/?api=1&query={{ equipo.latitud|unlocalize }},{{ equipo.longitud|unlocalize }}" target="_blank" rel="noopener noreferrer" class="btn-mapa"><i class="bi bi-geo-alt-fill"></i> Google Maps
+                                </a></span>
                                 <!--<p>{{ equipo.latitud }}</p>
                                 <p>{{ equipo.longitud }}</p>-->
                             </div>
+                            <hr>
+                            <div id="tabla-trofeos" class="tabla-jugadoras">
+                                <div id="cabecera-tabla" class="cabecera-tabla">
+                                    <h3>{% trans "Palmarés" %}</h3>
+                                    <!--<a id="ver-trofeos" href="#">{% trans "Ver Más" %}</a>-->
+                                </div>
+                                <div id="palmares" class="container-jugadoras"></div>
+                            </div>
                         </div>
                     </div>
-                <div id="tabla-trofeos" class="tabla-jugadoras">
-                    <div id="cabecera-tabla" class="cabecera-tabla">
-                        <h3>{% trans "Palmarés" %}</h3>
-                        <!--<a id="ver-trofeos" href="#">{% trans "Ver Más" %}</a>-->
-                    </div>
-                    <div id="palmares" class="container-jugadoras"></div>
-                </div>
                 </div>
 
             <div class="right" style="display: none;">
@@ -130,9 +135,6 @@
                     </div>
             </section>
             </div>
-    
-
-
         </div>
         <div id="plantilla" class="tab-content">  
             <div id="jugadoras-actuales-container" class="container-jugadoras">
@@ -340,6 +342,12 @@
 
             for (let year = anyo_fundacion; year <= currentYear; year++) {
                 const button = document.createElement('button');
+                button.style.background =
+                `radial-gradient(
+                    farthest-corner at left bottom,
+                    color-mix(in srgb, var(--color-secundario) 80%, black) 0%,
+                    ${color} 100%
+                )`;
                 button.textContent = year + '-' + (year + 1);
                 button.classList.add('temporada-button', 'season-badge'); // Añadimos tus clases de diseño estético
                 

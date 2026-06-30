@@ -70,58 +70,60 @@
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
     
     {% include 'partials/header.html' %}
-    <div id="ficha-jugadora-container" class="container">
-        <div id="jugadora-info">
-            <img src="/{{ jugadora.imagen|default:'static/img/predeterm.png' }}" id="jugadora-img" alt="{{ jugadora.Nombre }} {{ jugadora.Apellidos }}" fetchpriority="high" style="max-height: 125px; width: 125px; object-fit: cover;">
-            <div id="datos-jugadora">
-                <h3 id="nombre-jugadora">{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
-                <div class="grid">   
-                    <div>
-                        <div style="display: flex; align-items: center;">
-                        <div id="pais"></div>
-                        <div id="posicion"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <p>{{ jugadora.Nacimiento|date:"d/m/Y" }}</p>
-                        |
-                        <p>{{ jugadora.altura }} cm</p>
-                        |
-                        <p>{% trans 'Pie' %}: {{ jugadora.pie_habil }}</p>    
-                        | 
-                        <p>{% trans 'Value' %}: {{ jugadora.market_value }} €</p>
-                    </div>
-            </div>
-            </div>
-        </div>
-        <div id="jugadora-ficha">
-            <div class="swiper mySwiper">
-                <div class="swiper-wrapper" id="mostrador-tarjetas">
-                    <!--<div class="tarjeta-wrapper">
-                        <div class="tarjeta-inner">
-                            <div id="tarjeta-jugadora" class="glass tarjeta-jugadora tarjeta-front">
-                                <img id="imagen-jugadora" src="#" alt="{{ jugadora.Apodo }}" fetchpriority="high" width="400" height="500">
-                                <p id="nombre" class="nombre">{{ jugadora.Apodo }}</p>
-                                <div id="detalles" class="detalles">
-                                    <img src="/{{ jugadora.Nacionalidad.bandera }}" alt="{{ jugadora.Nacionalidad.nombre }}">
-                                    <p id="edad">{{ jugadora.Nacimiento }}<span></span></p>
-                                    <p> {{ jugadora.Posicion.abreviatura }} </p>
-                                </div>
+    <div id="pagina-container">
+        <div id="ficha-jugadora-container" class="container">
+            <div id="jugadora-info">
+                <img src="/{{ jugadora.imagen|default:'static/img/predeterm.png' }}" id="jugadora-img" alt="{{ jugadora.Nombre }} {{ jugadora.Apellidos }}" fetchpriority="high" style="max-height: 125px; width: 125px; object-fit: cover;">
+                <div id="datos-jugadora">
+                    <h3 id="nombre-jugadora">{{ jugadora.Nombre }} {{ jugadora.Apellidos }}</h3>
+                    <div class="grid">   
+                        <div>
+                            <div style="display: flex; align-items: center;">
+                            <div id="pais"></div>
+                            <div id="posicion"></div>
                             </div>
-
-                            <div class="glass tarjeta-back">
-                                <h4>Palmarés</h4>
-                                <div class="trofeos" id="palmares-individual">
-                                    <p>Cargando...</p>
-                                </div>
                         </div>
-                    </div>
-                </div>-->
+                        <div>
+                            <p>{{ jugadora.Nacimiento|date:"d/m/Y" }}</p>
+                            |
+                            <p>{{ jugadora.altura }} cm</p>
+                            |
+                            <p>{% trans 'Pie' %}: {{ jugadora.pie_habil }}</p>    
+                            | 
+                            <p>{% trans 'Value' %}: {{ jugadora.market_value }} €</p>
+                        </div>
                 </div>
-                <div class="swiper-pagination"></div></div>
-            <div id="companyeras">
-                <h4>{% trans 'Teammates' %}</h4>
-                <div id="companyeras-container"></div>
+                </div>
+            </div>
+            <div id="jugadora-ficha">
+                <div class="swiper mySwiper">
+                    <div class="swiper-wrapper" id="mostrador-tarjetas">
+                        <!--<div class="tarjeta-wrapper">
+                            <div class="tarjeta-inner">
+                                <div id="tarjeta-jugadora" class="glass tarjeta-jugadora tarjeta-front">
+                                    <img id="imagen-jugadora" src="#" alt="{{ jugadora.Apodo }}" fetchpriority="high" width="400" height="500">
+                                    <p id="nombre" class="nombre">{{ jugadora.Apodo }}</p>
+                                    <div id="detalles" class="detalles">
+                                        <img src="/{{ jugadora.Nacionalidad.bandera }}" alt="{{ jugadora.Nacionalidad.nombre }}">
+                                        <p id="edad">{{ jugadora.Nacimiento }}<span></span></p>
+                                        <p> {{ jugadora.Posicion.abreviatura }} </p>
+                                    </div>
+                                </div>
+
+                                <div class="glass tarjeta-back">
+                                    <h4>Palmarés</h4>
+                                    <div class="trofeos" id="palmares-individual">
+                                        <p>Cargando...</p>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>-->
+                    </div>
+                    <div class="swiper-pagination"></div></div>
+                <div id="companyeras">
+                    <h4>{% trans 'Teammates' %}</h4>
+                    <div id="companyeras-container"></div>
+                </div>
             </div>
         </div>
     </div>

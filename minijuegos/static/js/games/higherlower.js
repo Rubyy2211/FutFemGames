@@ -109,6 +109,10 @@ async function siguienteRonda(ganadoraId){
         racha = 1;
     }
 
+    // Desactivar las dos opciones mientras la animación
+    player1.disabled = true;
+    player2.disabled = true;
+
     // --- Animar salida de la que se va ---
     await animarSalida(player2, "right");
 

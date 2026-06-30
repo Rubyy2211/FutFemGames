@@ -32,9 +32,7 @@ div.cont{
     background: none;
 }
 th{
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-primario) 30%, transparent), 
-    color-mix(in srgb, var(--color-primario) 30%, transparent));
+    background: linear-gradient(to bottom,color-mix(in srgb, var(--color-primario) 100%, transparent 0%),color-mix(in srgb, var(--color-secundario) 100%, transparent 0%));
     border: 1px solid color-mix(in srgb, var(--color-primario) 50%, transparent);
 }
 th, td {

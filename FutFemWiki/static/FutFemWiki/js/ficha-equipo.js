@@ -25,8 +25,9 @@ export async function displayPalmares(equipo) {
         div.dataset.trofeoName = trofeo.nombre;
         
         div.innerHTML = `
-            <img src="/${trofeo.icono}" alt="${trofeo.nombre}" loading="lazy" style="width: 100px; height: 100px; object-fit: contain;">
-            <p>${gettext("Ganado")} ${trofeo.count} ${gettext("veces")}</p>
+            <img src="/${trofeo.icono}" alt="${trofeo.nombre}" loading="lazy" style="width: 60px; height: 60px; object-fit: contain;">
+            <p class="trofeo-pc">${gettext("Ganado")} ${trofeo.count} ${gettext("veces")}</p>
+            <p class="trofeo-movil">${trofeo.count}</p>
         `;
 
         divPalmares.appendChild(div);
@@ -119,7 +120,7 @@ function crearCardDestacada(jugadora, etiqueta) {
     const cardContainer = document.createElement('div');
     const slugNombre = (jugadora.nombre_completo || jugadora.nombre).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
     const card = document.createElement('div');
-    
+    card.style.setProperty('--equipo-color', jugadora.equipo.color);
     card.className = 'jugadora-item glass destacada-card visible'; 
     Object.assign(cardContainer.style, {
         display: 'flex',
@@ -127,6 +128,13 @@ function crearCardDestacada(jugadora, etiqueta) {
         alignItems: 'center',
         flex: '1'
     });
+
+    cardContainer.style.background =
+    `radial-gradient(
+      farthest-corner at left bottom,
+      color-mix(in srgb, var(--color-secundario) 80%, black) 0%,
+      ${jugadora.equipo.color} 100%
+    )`;
     
     const badge = document.createElement('span');
     badge.className = 'badge-destacada';

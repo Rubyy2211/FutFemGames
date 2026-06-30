@@ -54,7 +54,7 @@ export async function fetchEquiposById(ids) {
     }
 }
 
-export async function handleAutocompleteEquipo(event, id) {
+export async function handleAutocompleteEquipo(event, id, onSelectCallback = null) {
     const input = event.target;
     const texto = input.value.trim();
     const suggestionsList = document.getElementById(id);
@@ -87,16 +87,22 @@ export async function handleAutocompleteEquipo(event, id) {
                     input.value = nombre;
                     input.setAttribute('data-id', id_equipo); // Guardar el ID del equipo
                     suggestionsList.innerHTML = '';  // Limpiar las sugerencias
+
+                    // 🚀 SOLO AQUÍ EJECUTAMOS EL CALLBACK (Al seleccionar con éxito)
+                    // Comprobamos que pasaron el parámetro y que es una función real
+                    if (onSelectCallback && typeof onSelectCallback === 'function') {
+                        onSelectCallback(equipo); // Le pasamos todo el objeto por si necesitas usar su ID, color, etc.
+                    }
                 });
 
                 suggestionsList.appendChild(listItem);
-
             });
         } catch (error) {
             console.error('Error al buscar el equipo:', error);
         }
-    }else{
-        input.setAttribute('data-id', null); // Guardar el ID del equipo
+    } else {
+        // Al borrar o vaciar el buscador, limpiamos el atributo sin lanzar errores
+        input.setAttribute('data-id', null); 
     }
 }
 

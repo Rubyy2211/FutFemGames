@@ -1,4 +1,4 @@
-export async function handleAutocompletePais(event, id, funcion) {
+export async function handleAutocompletePais(event, id, onSelectCallback = null) {
     const input = event.target;
     const texto = input.value.trim();
     const suggestionsList = document.getElementById(id);
@@ -24,13 +24,6 @@ export async function handleAutocompletePais(event, id, funcion) {
 
                     const listItem = document.createElement('li');
                     listItem.classList.add('suggestion-item');
-
-                   /* listItem.innerHTML = `
-                        <img src="/${bandera}" alt="${nombre}" class="jugadora-img">
-                        <div class="jugadora-info">
-                            <strong>${nombre}</strong>
-                        </div>
-                    `;*/
 
                     listItem.innerHTML = `
                         <span class="fi fi-${iso} fis"></span>
@@ -64,11 +57,16 @@ export async function handleAutocompletePais(event, id, funcion) {
                             input.value = ''; // Limpiamos el texto
                             input.setAttribute('data-id', null);
                             input.focus();
-                            if (funcion) funcion(null); // Avisar que se canceló
+                            
+                            // 🚀 AVISAMOS AL CALLBACK QUE SE QUITÓ EL FILTRO (Enviando null)
+                            if (onSelectCallback && typeof onSelectCallback === 'function') {
+                                onSelectCallback(null);
+                            }
                         });
 
-                        if (funcion) {
-                            funcion(pais);
+                        // 🚀 EJECUTAMOS EL CALLBACK AL SELECCIONAR CON ÉXITO
+                        if (onSelectCallback && typeof onSelectCallback === 'function') {
+                            onSelectCallback(pais); 
                         }
                     });
 
@@ -78,8 +76,8 @@ export async function handleAutocompletePais(event, id, funcion) {
         } catch (error) {
             console.error('Error al buscar la jugadora:', error);
         }
-    }else{
-        input.setAttribute('data-id', null); // Guardar el ID del equipo
+    } else {
+        input.setAttribute('data-id', null); // Limpiar el ID si se borra el texto de búsqueda
     }
 }
 

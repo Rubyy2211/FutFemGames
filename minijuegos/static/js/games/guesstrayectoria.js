@@ -145,8 +145,8 @@ function displayTrayectoria(data, acertaste) {
             escudoImg.style.background = `
                 linear-gradient(
                     to bottom,
-                    color-mix(in srgb, ${item.color} 30%, transparent),
-                    color-mix(in srgb, transparent 30%, transparent)
+                    color-mix(in srgb, ${item.color} 80%, transparent),
+                    color-mix(in srgb, var(--color-secundario) 80%, transparent)
                 )
             `;
             escudoImg.style.borderColor = item.color;
