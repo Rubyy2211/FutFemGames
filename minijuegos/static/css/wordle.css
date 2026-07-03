@@ -12,43 +12,83 @@
     align-items: center;
     z-index: 2;
     height: 100%;
+    width: 100%;
+    max-height: 100%;
+    max-width: 1000px;
+    overflow: hidden;
 }
 
 .container-wordle h1{
     margin-top: 0;
 }
 #board {
-    display: grid;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
     /*grid-template-columns: repeat(5, 60px);
     grid-gap: 0 10px;
     /*margin-bottom: 20px;*/
     justify-items: center;
 }
-#message {
-    /*margin-top: 20px;*/
-    font-size: 1.2rem;
-    height: 30px;
+#board {
+    display: grid;
+    /* Genera las 6 filas de igual tamaño */
+    grid-template-rows: repeat(var(--rows, 6), 1fr); 
+    gap: 8px; /* Espacio uniforme entre filas */
+    width: 100%;
+    max-width: 500px; /* Tamaño máximo óptimo para un Wordle */
+    box-sizing: border-box;
+    padding: 10px;
 }
-input{
+
+#board .row {
+    display: grid;
+    /* 🚀 Magia: Las columnas se adaptan EXACTAMENTE al número de letras */
+    grid-template-columns: repeat(var(--cols), 1fr); 
+    gap: 8px; /* Espacio uniforme entre celdas */
+    width: 100%;
+}
+
+input {
     color: #1a1a1a;
 }
+
 .tile {
-    width: 70px !important;
-    height: 70px !important;
-    margin: 5px;
+    /* 🌟 Al estar dentro de un Grid con '1fr', el ancho se calcula solo */
+    width: 100% !important; 
+    /* Obligamos a que mantenga forma de cuadrado perfecto basado en su ancho */
+    aspect-ratio: 1 / 1; 
+    border-radius: 10px !important;
+    transform: none !important;
+    
+    box-sizing: border-box;
     text-align: center;
+    margin-bottom: 0;
     font-size: 24px;
+    font-weight: bold;
     text-transform: uppercase;
     border: 1px solid #333;
     border-radius: 8px;
-    background-color: rgba(255,255,255,0.8); /* Color de fondo primario */
-    color: var(--color-detalles); /* Color del texto */
-    transition: transform 0.2s; /* Suavizar el efecto de transformación */
+    color: var(--color-detalles);
+    transition: transform 0.2s, background 0.3s;
     box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(10px);
     background: linear-gradient(to bottom, 
     color-mix(in srgb, var(--color-primario) 30%, transparent), 
     color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+}
+
+/* Ajuste móvil para pantallas muy pequeñas */
+@media (max-width: 450px) {
+    #board {
+        gap: 5px;
+    }
+    #board .row {
+        gap: 5px;
+    }
+    .tile {
+        font-size: 18px;
+    }
 }
 
 .tile.correct {
@@ -74,4 +114,10 @@ input{
     color-mix(in srgb, var(--color-gray-dark) 60%, transparent), 
     color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
     border: 1px solid var(--color-gray-dark);
+}
+
+@media (max-width: 600px) {
+    .tile {
+        margin: 0px;
+    }
 }

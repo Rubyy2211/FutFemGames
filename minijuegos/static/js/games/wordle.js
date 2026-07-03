@@ -5,6 +5,7 @@ import { victory } from "../sounds.js";
 let answer = "";
 let currentRow = 0;
 let jugadora;
+let ultimaRespuesta = null;
 const maxRows = 6;
 const celdasTd = document.querySelectorAll('input');
 
@@ -12,19 +13,18 @@ const celdasTd = document.querySelectorAll('input');
 async function iniciar() {
     jugadora = await fetchData(2);
     localStorage.setItem('res2', jugadora.idJugadora);
-    const ultima = await obtenerUltimaRespuesta(2);
-    let ultimaArray = JSON.parse(ultima);
+    let ultimaArray = JSON.parse(ultimaRespuesta);
     let usuarioAnswer;
     if(ultimaArray) usuarioAnswer= ultimaArray[ultimaArray.length - 1].answer;
     console.log(usuarioAnswer, jugadora.idJugadora)
     if(usuarioAnswer === jugadora.idJugadora){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr2', ultima);
+        localStorage.setItem('Attr2', ultimaRespuesta);
     }
 
     if(usuarioAnswer === 'loss'+jugadora.idJugadora){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr2', ultima);
+        localStorage.setItem('Attr2', ultimaRespuesta);
     }
 
     answer = jugadora.idJugadora;
@@ -93,8 +93,12 @@ async function loadJugadoraApodo(id, ganaste) {
 
 function createBoard() {
     const board = document.getElementById("board");
-    board.style.gridTemplateColumns = `repeat(${answer.length}, 70px)`;
+    //board.style.gridTemplateColumns = `repeat(${answer.length}, calc(100% / ${answer.length}))`; // Ajustar columnas según la longitud de la palabra
     for (let i = 0; i < maxRows; i++) {
+        // Crear un div para cada fila de inputs
+        const row = document.createElement("div");
+        row.classList.add("row");
+        board.appendChild(row);
         for (let j = 0; j < answer.length; j++) {
             const input = document.createElement("input");
             input.type = "text";
@@ -104,9 +108,12 @@ function createBoard() {
             input.setAttribute("id", `row-${i}-tile-${j}`);
             input.addEventListener("input", handleInputChange); // Mover al siguiente input automáticamente
             input.addEventListener("keydown", handleKeyDown); // Manejar el retroceso
-            board.appendChild(input);
+            row.appendChild(input);
         }
     }
+    // enviar numero de filas y columnas al css
+    board.style.setProperty('--rows', maxRows);
+    board.style.setProperty('--cols', answer.length);
 }
 
 function handleInputChange(event) {
@@ -344,10 +351,15 @@ const imagen = "static/img/wordle.webp";
 play().then(r => r);
 async function play() {
     const lastAnswer= localStorage.getItem('Attr2');
+    ultimaRespuesta = await obtenerUltimaRespuesta(2);
     let jugadora = await fetchData(2);
     let jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res2');
-    if(res !== jugadoraId || !res){
+    let ultimaArray = JSON.parse(ultimaRespuesta);
+    console.log('Jugadora ID asignada:', jugadoraId, ultimaArray[ultimaArray.length - 1], res);
+    if(ultimaArray[ultimaArray.length - 1].answer === jugadoraId){
+        await iniciar();
+    }else if(res !== jugadoraId || !res){
         /*if(lastAnswer !== res || !lastAnswer){
             await updateRacha(2, 0);
         }*/

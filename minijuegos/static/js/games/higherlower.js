@@ -15,8 +15,10 @@ let data2;
 let rachaActual=0;
 let racha = 0;      // cuántas rondas lleva la jugadora actual
 let currentChampionId = null; // id de la jugadora que está dominando
+let bloqueado = false;
 
 async function initGame() {
+    bloqueado = false;
     data1 = await fetchRandomPlayer();
     data2 = await fetchRandomPlayer();
 
@@ -50,8 +52,9 @@ async function renderPlayer(container, data, hideValue) {
 }
 
 async function verificar(event){
-    const pulsado = event.currentTarget;
+    if (bloqueado) return;
 
+    const pulsado = event.currentTarget;
     const valor1 = data1.market_value;
     const valor2 = data2.market_value;
 
@@ -84,18 +87,12 @@ async function verificar(event){
 }
 
 async function siguienteRonda(ganadoraId){
-
-    player1.style.pointerEvents = "none";
-    player2.style.pointerEvents = "none";
-
     let forzarCambio = false;
 
     // --- Determinar nueva campeona ---
     if (ganadoraId === "option1") {
         racha++;
-        if (racha >= 2) {
-            forzarCambio = true;
-        }
+        if (racha >= 2) { forzarCambio = true;}
     } else {
         // Gana la retadora
         data1 = data2;
@@ -104,14 +101,9 @@ async function siguienteRonda(ganadoraId){
 
     // Si ha llegado al límite → forzar que la campeona sea la otra
     if (forzarCambio) {
-        console.log("🔄 Límite alcanzado → se fuerza cambio");
         data1 = data2;
         racha = 1;
     }
-
-    // Desactivar las dos opciones mientras la animación
-    player1.disabled = true;
-    player2.disabled = true;
 
     // --- Animar salida de la que se va ---
     await animarSalida(player2, "right");
@@ -131,8 +123,7 @@ async function siguienteRonda(ganadoraId){
 
     await animarEntrada(player2, "right");
 
-    player1.style.pointerEvents = "auto";
-    player2.style.pointerEvents = "auto";
+    bloqueado = false;
 }
 
 

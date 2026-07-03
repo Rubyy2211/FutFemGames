@@ -1,8 +1,8 @@
 import { victory, wrong, correct } from "../sounds.js";
 import { Ganaste, calcularEdad } from "./funciones-comunes.js";
 
-let idres, currentPlayerData, paises, equipos, ligas, trofeos, lastPlayer, jugadora, jugadoraAnterior;
-
+let idres, currentPlayerData, paises, equipos, ligas, trofeos, lastPlayer, jugadora, jugadoraAnterior, ultimaRespuesta;
+const skipButton = document.querySelector('.skip-button');
 
 async function iniciar(dificultad) {
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
@@ -17,21 +17,20 @@ async function iniciar(dificultad) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
 
-    const {obtenerUltimaRespuesta, updateRacha} = await import('/static/usuarios/js/rachas.js');
+    const {updateRacha} = await import('/static/usuarios/js/rachas.js');
     window.updateRacha = updateRacha; // Hacer updateRacha global para poder usarlo en Ganaste()
-    const ultima = await obtenerUltimaRespuesta(6);
-    let ultimaArray = JSON.parse(ultima);
+    let ultimaArray = JSON.parse(ultimaRespuesta);
     let usuarioAnswer = null;   // ← AQUÍ sí
     if(Array.isArray(ultimaArray)){usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer || null;}
 
     if(usuarioAnswer === idres){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr6', ultima);
+        localStorage.setItem('Attr6', ultimaRespuesta);
     }
     
     if(usuarioAnswer === 'loss'+idres){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr6', ultima);
+        localStorage.setItem('Attr6', ultimaRespuesta);
     }
 
     if (lastPlayer) {
@@ -97,6 +96,9 @@ async function iniciar(dificultad) {
 
 play().then(r => r)
 async function play() {
+    const {obtenerUltimaRespuesta} = await import('/static/usuarios/js/rachas.js');
+    ultimaRespuesta = await obtenerUltimaRespuesta(6);
+    let ultimaArray = JSON.parse(ultimaRespuesta);
     jugadora = await fetchData(6);
     paises = [jugadora.paises[0], jugadora.paises[1], jugadora.paises[2]];
     equipos = [jugadora.equipos[0], jugadora.equipos[1], jugadora.equipos[2]];
@@ -107,7 +109,10 @@ async function play() {
     const texto = gettext('¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria. Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero. Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!');
     const imagen = '/static/img/Bingo.webp';
     const {crearPopupInicialJuego} = await import('./funciones-comunes.js');
-    if(res !== idres || !res){
+    if(ultimaArray[ultimaArray.length - 1].answer === idres){
+        skipButton.style.display = 'none';
+        await iniciar('');
+    } else if(res !== idres || !res){
         localStorage.removeItem('Attr6');
         localStorage.removeItem('last-player-bingo');
         crearPopupInicialJuego(gettext('Futfem Bingo'), texto, imagen, '', iniciar);

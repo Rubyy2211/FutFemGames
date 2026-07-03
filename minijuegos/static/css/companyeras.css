@@ -5,14 +5,37 @@ h1{
     margin-bottom: 30px;
 }
 
+.mystery{
+    width: 100px !important;
+    height: 100px !important;
+    z-index: 1;
+}
+
 .mates-container{
     display: flex;
     flex-direction: column;
     width: 100%;
     height: 100%;
+    max-height: 100%;
+    max-width: 100%;
     justify-content: center;
     align-items: center;
     gap: 15px;
+    overflow: hidden;
+}
+
+.mates-container>.flip-container{
+    width: 100px;
+    height: 100px;
+    max-width: 100px;
+    max-height: 100px;
+    min-width: 100px;
+    min-height: 100px;
+}
+
+.mates-container>.flip-container img{
+    max-width: 100%;
+    max-height: 100%;
 }
 
 .mates-container #reloj{
@@ -29,13 +52,14 @@ h1{
 .compañeras{
     width: 100%;
     max-height: 50%;
-    height: 30%;
+    height: fit-content;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: 2vw;
     margin-bottom: 15px;
+    max-width: 750px;
 }
 .compañeras div{
     max-height: 115px;
@@ -46,6 +70,13 @@ h1{
     
 
 }
+
+.compañeras div.flip-container{
+    width: 20% !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+}
+
 .compañeras div .flipper{
     background: linear-gradient(to bottom, 
     color-mix(in srgb, var(--color-primario) 40%, transparent), 
@@ -93,12 +124,6 @@ h1{
         min-height: unset;
         max-width: 80px;
     }
-    
-
-    .compañeras div img{
-        max-height: 80px;
-        width: 80px;
-    }
 }
 
 @media (max-width: 425px) {
@@ -110,11 +135,5 @@ h1{
     .compañeras div.flip-container{
         min-height: unset;
         max-width: 70px;
-    }
-    
-
-    .compañeras div img{
-        max-height: 70px;
-        width: 70px;
     }
 }

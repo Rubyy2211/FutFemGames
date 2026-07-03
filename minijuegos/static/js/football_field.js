@@ -28,7 +28,7 @@ export function ponerJugadoraEnField(jugadora, positionId, color) {
     // 5. Contenido HTML
     badge.innerHTML = `
         <div class="badge-img">
-            <img src="/${jugadora.imagen || 'static/img/predeterm.jpg'}" alt="${jugadora.apodo}" width="70" height="70" style="object-fit: cover; aspect-ratio: 1/1;" fetchpriority="high" loading="eager">
+            <img src="/${jugadora.imagen || 'static/img/predeterm.jpg'}" alt="${jugadora.apodo}" width="70" height="70" style="object-fit: contain; aspect-ratio: 1/1;" fetchpriority="high" loading="eager">
         </div>
         <span class="badge-name">${jugadora.apodo || jugadora.nombre}</span>
     `;
@@ -65,8 +65,8 @@ export function crearAlineacion(formacion) {
     const esquemas = {
         // --- LÍNEA DE 4 ---
         "4-3-3":        ['c53', 'c41','c42','c44','c45', 'c32','c33','c34', 'c11','c13','c15'],
-        "4-3-3(4)":     ['c53', 'c41','c42','c44','c45', 'c32','c23','c34', 'c11','c13','c15'], // Ofensivo
-        "4-3-3(2)":     ['c53', 'c41','c42','c44','c45', 'c33', 'c22','c24', 'c11','c13','c15'], // Con MCD
+        "4-3-3(4)":     ['c63', 'c51','c52','c54','c55', 'c32','c23','c34', 'c21','c13','c25'], // Ofensivo
+        "4-3-3(2)":     ['c63', 'c51','c52','c54','c55', 'c43', 'c32','c34', 'c21','c13','c25'], // Con MCD
         "4-4-2":        ['c53', 'c41','c42','c44','c45', 'c21','c32','c34','c25', 'c12','c14'],
         "4-4-2(2)":     ['c53', 'c41','c42','c44','c45', 'c32','c34', 'c21','c25', 'c12','c14'], // MCDs
         "4-1-2-1-2":    ['c53', 'c41','c42','c44','c45', 'c33', 'c22','c24', 'c23', 'c12','c14'], // Rombo
@@ -79,7 +79,7 @@ export function crearAlineacion(formacion) {
         "3-4-1-2":      ['c53', 'c42','c43','c44', 'c22','c24', 'c21','c25', 'c23', 'c12','c14'],
 
         // --- LÍNEA DE 5 ---
-        "5-3-2":        ['c53', 'c41','c42','c43','c44','c45', 'c22','c33','c24', 'c12','c14'],
+        "5-3-2":        ['c63', 'c41','c52','c53','c54','c45', 'c32','c33','c34', 'c12','c14'],
         "5-4-1":        ['c53', 'c41','c42','c43','c44','c45', 'c21','c32','c34','c25', 'c13'],
         "5-2-1-2":      ['c53', 'c41','c42','c43','c44','c45', 'c32','c34', 'c23', 'c12','c14'],
 
@@ -99,7 +99,11 @@ export function crearAlineacion(formacion) {
 export function activarCeldas(celdas) {
     // 1. Limpiamos TODO el campo antes de aplicar la nueva formación
     const todasLasCeldas = document.querySelectorAll('#grid td');
+    const todasLasFilas = document.querySelectorAll('#grid tr');
     
+    // Limpiamos también la clase de la fila del reseteo anterior
+    todasLasFilas.forEach(fila => fila.classList.remove('fila-vacia'));
+
     todasLasCeldas.forEach(celda => {
         // Quitamos las clases de estado
         celda.classList.remove('activado', 'oculto-total'); 
@@ -137,18 +141,34 @@ export function activarCeldas(celdas) {
         celda.classList.add('activado');
     });
 
-    // 3. LOGICA EXTRA: Si hay más de 2 activos en la fila, ocultamos el resto totalmente
-    const filas = document.querySelectorAll('#grid tr');
-    
-    filas.forEach(fila => {
+    // 3. LOGICA EXTRA: Control de filas (Ocultar vacías y ajustar saturadas)
+    let filasOcultas = 0;
+
+    todasLasFilas.forEach(fila => {
         const activosEnEstaFila = fila.querySelectorAll('td.activado');
+        
+        // Si la fila está completamente vacía de activos, la desactivamos
+        if (activosEnEstaFila.length === 0) {
+            fila.classList.add('fila-vacia');
+            filasOcultas++; // 🚀 Contamos las que vamos ocultando
+            return; 
+        }
         
         // Si hay 3 o más jugadoras (ej: 3 centrales o 4 medios)
         if (activosEnEstaFila.length > 2) {
             const inactivos = fila.querySelectorAll('td:not(.activado)');
             inactivos.forEach(td => {
-                td.classList.add('oculto-total'); // Aplicamos el display: none
+                td.classList.add('oculto-total'); 
             });
         }
     });
+
+    // 🔥 4. CÁLCULO DINÁMICO DEL ALTO
+    const totalFilasVisibles = todasLasFilas.length - filasOcultas;
+    const gridContenedor = document.getElementById('grid');
+    
+    if (gridContenedor) {
+        // Le inyectamos al table/tbody el número exacto de filas visibles en el HTML
+        gridContenedor.style.setProperty('--filas-visibles', totalFilasVisibles);
+    }
 }

@@ -17,13 +17,13 @@ let answer;
 let vidas = 10;
 let jugadoraId;
 let jugadorasProhibidas = [];
+let ultimaRespuesta = null;
 
 async function iniciar(dificultad) {
     
     btn.addEventListener('click', verificar); // Habilitar el botón al iniciar el juego
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
-    const ultima = await obtenerUltimaRespuesta(3);
-    const ultimaObj = JSON.parse(ultima); 
+    const ultimaObj = JSON.parse(ultimaRespuesta); 
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
@@ -35,12 +35,12 @@ async function iniciar(dificultad) {
 
     if(ultimaObj.answer === jugadoraId){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr3', ultima);
+        localStorage.setItem('Attr3', ultimaRespuesta);
     }
 
     if(ultimaObj.answer === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr3', ultima);
+        localStorage.setItem('Attr3', ultimaRespuesta);
     }
 
     let userAnswer = JSON.parse(localStorage.getItem('Attr3')) || [];
@@ -76,9 +76,13 @@ async function iniciar(dificultad) {
 play().then(r => r);
 async function play() {
     let jugadora = await fetchData(3);
+    ultimaRespuesta = await obtenerUltimaRespuesta(3);
+    const ultimaArray = JSON.parse(ultimaRespuesta); 
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res3');
-    if(res !== jugadoraId || !res){
+    if(ultimaArray.answer === jugadoraId){
+        await iniciar();
+    }else if(res !== jugadoraId || !res){
         localStorage.removeItem('Attr3');
         jugadorasProhibidas.pop()
         crearPopupInicialJuego('Guess Player', texto, imagen, '', iniciar);
@@ -112,6 +116,7 @@ async function verificar(){
     displayRespuesta(jugadoraAnswer)
     if(nombreJugadora === jugadoraId){
         victory.play()
+        gestionarAciertos(nombreJugadora)
         updateRacha(3, 1, localStorage.getItem('Attr3'))
     }else{
         vidas--;

@@ -5,7 +5,7 @@ import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
 import { cambiarImagenConFlip } from "/static/js/animations/generales.js";
 
 
-let jugadoraId, jugadoraObj;
+let jugadoraId, jugadoraObj, ultimaRespuesta;
 let currentRonda = 1;
 // Añadir el evento de input al campo de texto
 const textoInput = document.getElementById("jugadoraInput");
@@ -16,8 +16,7 @@ textoInput.addEventListener('input', debounce(handleAutocompletePlayer, 200)); /
 async function iniciar(dificultad) {
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     //const name = await sacarJugadora(jugadoraId);
-    const ultima = await obtenerUltimaRespuesta(5);
-    const ultimaObj = JSON.parse(ultima); 
+    const ultimaObj = JSON.parse(ultimaRespuesta); 
 
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
@@ -35,12 +34,12 @@ async function iniciar(dificultad) {
 
     if(ultimaObj.answer === jugadoraId){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr8', ultima);
+        localStorage.setItem('Attr8', ultimaRespuesta);
     }
 
     if(ultimaObj.answer === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr8', ultima);
+        localStorage.setItem('Attr8', ultimaRespuesta);
     }
 
     let userAnswer = JSON.parse(localStorage.getItem('Attr8')) || [];
@@ -148,7 +147,7 @@ async function checkJugadora() {
     const div = document.getElementById('compañeras');
     const idClass = `id-${idJugadora}`;
     const found = div.classList.contains(idClass);
-    const resultDiv = document.getElementById('result');
+    const resultDiv = document.getElementById('resultado');
     if (found) {
         gestionarAciertos(idJugadora);
         resultDiv.textContent = `${texto}`;
@@ -233,7 +232,7 @@ function gestionarRespuesta() {
 async function companyerasPerder() {
     // Bloquear el botón y el input
     const boton = document.getElementById('botonVerificar');
-    const resultDiv = document.getElementById('result');
+    const resultDiv = document.getElementById('resultado');
     imgJugadora.src = jugadoraObj.Imagen;
 
     boton.disabled = true;
@@ -252,11 +251,15 @@ const texto = '"Futfem Relations" es un juego de trivia en el que los jugadores 
 const imagen = '/static/img/ComingSoon.webp';
 play().then(r => r);
 async function play() {
+    ultimaRespuesta = await obtenerUltimaRespuesta(5);
+    const ultimaArray = JSON.parse(ultimaRespuesta); 
     const lastAnswer= localStorage.getItem('Attr8');
     let jugadora = await fetchData(5);
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res8');
-    if(res !== jugadoraId || !res){
+    if(ultimaArray.answer === jugadoraId){
+        await iniciar();
+    } else if(res !== jugadoraId || !res){
         /*if(lastAnswer !== res || !lastAnswer){
             await updateRacha(5, 0);
         }*/

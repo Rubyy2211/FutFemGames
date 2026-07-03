@@ -6,7 +6,7 @@ import { wrong, correct } from "../sounds.js";
 let idres, columnas, filas;
 let ultimaJugadoraId = null; // Aquí guardamos la ID de la última jugadora verificada
 let jugadorasProhibidas = [];
-let boton, input, resultDiv;
+let boton, input, resultDiv, ultimaRespuesta;
 // --------------------------------------------------------- 
 // INICIAR JUEGO (modo grid) 
 // dificultad = "facil" | "medio" | "dificil" 
@@ -30,9 +30,7 @@ async function iniciar(dificultad) {
     // ----------------------------------------------------- 
     // 3. Comprobar si el usuario ya jugó antes 
     // -----------------------------------------------------
-    const {obtenerUltimaRespuesta} = await import('/static/usuarios/js/rachas.js');
-    const ultima = await obtenerUltimaRespuesta(4);
-    let ultimaArray = JSON.parse(ultima);
+    let ultimaArray = JSON.parse(ultimaRespuesta);
     let usuarioAnswer = null;   // ← AQUÍ sí
     
     if(Array.isArray(ultimaArray)){
@@ -42,13 +40,13 @@ async function iniciar(dificultad) {
     // Guardar si coincide con la respuesta correcta
     if(usuarioAnswer === idres){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr4', ultima);
+        localStorage.setItem('Attr4', ultimaRespuesta);
     }
     
     // Guardar si coincide con la respuesta incorrecta
     if(usuarioAnswer === 'loss'+idres){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr4', ultima);
+        localStorage.setItem('Attr4', ultimaRespuesta);
     }
 
     // ----------------------------------------------------- 
@@ -117,6 +115,9 @@ async function iniciar(dificultad) {
 // Inicia el juego 
 // ---------------------------------------------------------
 export async function play() {
+    const {obtenerUltimaRespuesta} = await import('/static/usuarios/js/rachas.js');
+    ultimaRespuesta = await obtenerUltimaRespuesta(4);
+    let ultimaArray = JSON.parse(ultimaRespuesta);
     let jugadora = await fetchData(4);
     const {handleAutocompletePlayer} = await import("/static/futfem/js/jugadora.js");
     const {crearPopupInicialJuego} = await import("./funciones-comunes.js");
@@ -131,7 +132,9 @@ export async function play() {
     const texto = gettext('¡Pon a prueba tu conocimiento! Rellena la cuadrícula con nombres de jugadoras que hayan militado en los dos equipos que coinciden en cada celda (fila y columna). ¡Completa el tablero y demuestra que eres quien más sabe de fútbol femenino!');
     const imagen = 'static/img/grid.webp';
     const titulo = gettext('Futfem Grid');
-    if(res !== idres || !res){
+    if(ultimaArray[ultimaArray.length - 1].answer === idres){
+        await iniciar();
+    }else if(res !== idres || !res){
         localStorage.removeItem('Attr4');
         jugadorasProhibidas.pop()
         crearPopupInicialJuego(titulo, texto, imagen, '', iniciar);

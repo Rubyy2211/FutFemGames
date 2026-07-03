@@ -47,7 +47,7 @@ h2{
 }
 
 .icono-pagina div.tabla-jugadoras{
-    background: url("/static/img/fondo-icono.jpeg") !important;
+    /*background: url("/static/img/fondo-icono.jpeg") !important;*/
     border-color: #FFD700 !important;
 }
 
@@ -57,8 +57,9 @@ h2{
 }
 
 .icono-pagina div.tabla-jugadoras .football-field .badge-img{
-    background: url("/static/img/cartas/fondo-icono.webp") !important;
+    /*background: url("/static/img/cartas/fondo-icono.webp") !important;*/
     border-color: #FFD700 !important;
+    filter: sepia(1.0);
 }
 
 .club-icono{

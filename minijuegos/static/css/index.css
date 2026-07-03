@@ -62,7 +62,12 @@ body::before {
     display: flex;
     flex-direction: row;
     background: var(--color-secundario);
-    width: max-content;
+    width: 40%;
+}
+
+#selector a{
+    width: 100%;
+    text-align: center;
 }
 
 @media (max-width: 768px) {
