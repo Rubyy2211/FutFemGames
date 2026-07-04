@@ -990,7 +990,7 @@ h2{
     #items-container.equipos{
         gap: 8px;
         padding-top: 5px;
-        height: 100%;
+        height: 60% !important;
         max-width: 100% !important;
         grid-auto-rows: minmax(20%, auto) !important; /* filas de altura automática */
         align-content: start;

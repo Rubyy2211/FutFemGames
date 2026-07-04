@@ -286,7 +286,7 @@ class EquipoAdmin(admin.ModelAdmin):
     
     fieldsets = (
         ('🛡️ Datos del Club', {
-            'fields': (('nombre', 'liga'), ('escudo', 'subir_nuevo_escudo'), 'equipo_sucesor')
+            'fields': (('nombre', 'liga'), ('escudo', 'subir_nuevo_escudo'), ('fundacion', 'equipo_sucesor'))
         }),
         ('🎨 Identidad Visual y Mapa', {
             'fields': ('color', ('latitud', 'longitud')),

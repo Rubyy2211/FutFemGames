@@ -94,11 +94,14 @@
                         </div>
                 </div>
                 </div>
+                <div id="escudo-container" style="aspect-ratio: 1/1; width: auto; z-index: -1;">
+                    <img id="escudo-equipo" src="/{{ jugadora.equipo.escudo|default:'static/img/predeterm.png' }}" id="escudo" alt="{{ jugadora.EquipoActual.nombre|default:'' }}">
+                </div>
             </div>
-            <div id="jugadora-ficha">
+            <div id="jugadora-ficha" class="section">
                 <div class="swiper mySwiper">
                     <div class="swiper-wrapper" id="mostrador-tarjetas">
-                        <!--<div class="tarjeta-wrapper">
+                        <div class="tarjeta-wrapper">
                             <div class="tarjeta-inner">
                                 <div id="tarjeta-jugadora" class="glass tarjeta-jugadora tarjeta-front">
                                     <img id="imagen-jugadora" src="#" alt="{{ jugadora.Apodo }}" fetchpriority="high" width="400" height="500">
@@ -117,13 +120,24 @@
                                     </div>
                             </div>
                         </div>
-                    </div>-->
+                    </div>
                     </div>
                     <div class="swiper-pagination"></div></div>
-                <div id="companyeras">
-                    <h4>{% trans 'Teammates' %}</h4>
-                    <div id="companyeras-container"></div>
+                <div id="palmares" style="height: 100%; min-width: 300px;">
+                    <div id="palmares-container" style="display: flex; flex-direction: row; height: 100%; align-items: center; justify-content: space-around;"></div>
                 </div>
+            </div>
+            <div id="jugadora-companyeras" class="section" style="overflow-y: hidden;">
+                <div id="header-compañeras">
+                    <div id="filtros-equipo"></div>
+                </div>
+                <div id="companyeras">
+                    <div id="container-companyeras"></div>
+                </div>
+            </div>
+            <div id="selector">
+                <a href="#jugadora-ficha">{% trans 'Trayectoria' %}</a>
+                <a href="#jugadora-companyeras">{% trans 'Compañeras' %}</a>
             </div>
         </div>
     </div>
@@ -134,46 +148,55 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" defer></script>
 <script type="module">
     import { cargarFichaJugadora } from '/static/FutFemWiki/js/ficha-jugadora.js';
+    
+    // Una vez cargados los datos, inicializamos las pestañas inmediatamente
+    const links = document.querySelectorAll('#selector a');
+
+    console.log(links)
+
+    // 🚀 ACTIVACIÓN POR DEFECTO: Forzamos la clase active en el primer enlace y su div
+    if (links.length > 0) {
+        const primerLink = links[0];
+        const targetId = primerLink.getAttribute('href');
+        
+        primerLink.classList.add('active');
+        
+        if (targetId && targetId.startsWith('#')) {
+            const primerDiv = document.querySelector(targetId);
+            if (primerDiv) primerDiv.classList.add('active');
+        }
+    }
+
+    // Configuración de los eventos Click para los cambios de pestaña
+    links.forEach(link => {
+        link.addEventListener('click', function(e) {
+            const targetId = this.getAttribute('href');
+
+            if (!targetId || !targetId.startsWith('#') || targetId.length < 2) {
+                return; 
+            }
+
+            e.preventDefault();
+
+            // Limpiar activos en enlaces
+            links.forEach(a => a.classList.remove('active'));
+
+            // Limpiar activos en contenedores
+            document.querySelectorAll('#jugadora-ficha, #jugadora-companyeras').forEach(div => {
+                div.classList.remove('active');
+            });
+
+            // Activar actual
+            this.classList.add('active');
+            const targetDiv = document.querySelector(targetId);
+            if (targetDiv) {
+                targetDiv.classList.add('active');
+            }
+        });
+    });
+
+    // Ejecutamos la carga de datos de la jugadora
     await cargarFichaJugadora('{{ jugadora.id_jugadora }}');
-    const container = document.getElementById('companyeras-container');
-
-if (container) {
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    // Cuando el usuario hace clic (agarra)
-    container.addEventListener('mousedown', (e) => {
-        isDown = true;
-        container.classList.add('grabbing'); // Cambia el cursor a la mano cerrada
-        startX = e.pageX - container.offsetLeft;
-        scrollLeft = container.scrollLeft;
-    });
-
-    // Si el ratón sale del contenedor, dejamos de arrastrar
-    container.addEventListener('mouseleave', () => {
-        isDown = false;
-        container.classList.remove('grabbing');
-    });
-
-    // Cuando suelta el clic
-    container.addEventListener('mouseup', () => {
-        isDown = false;
-        container.classList.remove('grabbing');
-    });
-
-    // Mientras mueve el ratón
-    container.addEventListener('mousemove', (e) => {
-        if (!isDown) return; // Si no está haciendo clic, no hace nada
-        
-        e.preventDefault(); // Evita selecciones de texto raras durante el arrastre
-        const x = e.pageX - container.offsetLeft;
-        
-        // Multiplicador (* 2) para que el scroll sea más rápido y reactivo al movimiento
-        const walk = (x - startX) * 2; 
-        container.scrollLeft = scrollLeft - walk;
-    });
-}
 </script>
 </body>
 </html>
