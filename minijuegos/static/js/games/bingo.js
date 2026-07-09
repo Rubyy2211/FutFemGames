@@ -109,7 +109,7 @@ async function play() {
     const texto = gettext('¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria. Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero. Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!');
     const imagen = '/static/img/Bingo.webp';
     const {crearPopupInicialJuego} = await import('./funciones-comunes.js');
-    if(ultimaArray[ultimaArray.length - 1].answer === idres){
+    if(ultimaArray && ultimaArray[ultimaArray.length - 1].answer === idres){
         skipButton.style.display = 'none';
         await iniciar('');
     } else if(res !== idres || !res){

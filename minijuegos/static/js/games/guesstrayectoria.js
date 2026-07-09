@@ -89,7 +89,7 @@ async function play() {
     const texto = gettext('Adivina la Jugadora de Fútbol es un juego de trivia donde debes identificar a una futbolista según los equipos en los que ha jugado. Usa las pistas, demuestra tu conocimiento y compite para ver quién acierta más.');
     const imagen = '/static/img/trayectoria.webp';
     const {crearPopupInicialJuego} = await import("./funciones-comunes.js");
-    if(ultimaRespuesta === jugadoraId){       
+    if(ultimaRespuesta && ultimaRespuesta === jugadoraId){       
         await iniciar('');
     }else if(res !== jugadoraId || !res){
         /*if(lastAnswer !== res || !lastAnswer){

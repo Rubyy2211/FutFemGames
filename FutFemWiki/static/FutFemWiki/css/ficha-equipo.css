@@ -940,7 +940,7 @@ section#jugadoras-actuales, section#jugadoras-destacadas{
     transform: translateY(10px);
 }
 
-.jugadora-item:hover {
+.jugadora-item.glass:hover {
     transform: translateY(0) scale(1.01);
 
     box-shadow:

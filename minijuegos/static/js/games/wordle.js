@@ -357,7 +357,7 @@ async function play() {
     const res = localStorage.getItem('res2');
     let ultimaArray = JSON.parse(ultimaRespuesta);
     console.log('Jugadora ID asignada:', jugadoraId, ultimaArray[ultimaArray.length - 1], res);
-    if(ultimaArray[ultimaArray.length - 1].answer === jugadoraId){
+    if(ultimaArray && ultimaArray[ultimaArray.length - 1].answer === jugadoraId){
         await iniciar();
     }else if(res !== jugadoraId || !res){
         /*if(lastAnswer !== res || !lastAnswer){

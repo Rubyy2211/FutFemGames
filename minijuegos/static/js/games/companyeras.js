@@ -257,7 +257,7 @@ async function play() {
     let jugadora = await fetchData(5);
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res8');
-    if(ultimaArray.answer === jugadoraId){
+    if(ultimaArray && ultimaArray.answer === jugadoraId){
         await iniciar();
     } else if(res !== jugadoraId || !res){
         /*if(lastAnswer !== res || !lastAnswer){

@@ -60,6 +60,18 @@ body::before{
     background: none;
     border-radius: 0%;
 }
+
+@media (max-width: 768px){
+
+    #ficha-jugadora-container .section #header-compañeras div{
+        gap: 5px;
+    }
+
+    #ficha-jugadora-container .section #header-compañeras div button{
+        max-height: 40px;
+    }
+}
+
 #ficha-jugadora-container .section #header-compañeras div button img{
     height: 100%;
     aspect-ratio: 1/1;

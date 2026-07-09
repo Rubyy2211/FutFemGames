@@ -121,7 +121,7 @@ function crearCardDestacada(jugadora, etiqueta) {
     const slugNombre = (jugadora.nombre_completo || jugadora.nombre).toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
     const card = document.createElement('div');
     card.style.setProperty('--equipo-color', jugadora.equipo.color);
-    card.className = 'jugadora-item glass destacada-card visible'; 
+    card.className = 'jugadora-item destacada-card visible'; 
     Object.assign(cardContainer.style, {
         display: 'flex',
         flexDirection: 'column',
@@ -288,7 +288,7 @@ function crearFichaBaseJugadora(jugadora, colorPredeterminado, mostrarEtapas = f
 // ==========================================
 
 export async function crearFichaJugadorasActuales(equipo, color) {
-    const jugadoras = await jugadorasxTemporadaYEquipo(equipo, 2026);
+    const jugadoras = await jugadorasxTemporadaYEquipo(equipo, 'actual');
     if (jugadoras.error) {
         console.error('Error al obtener jugadoras:', jugadoras.error);
         return;

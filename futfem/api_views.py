@@ -529,15 +529,18 @@ def jugadoras_por_equipo_y_temporada(request):
     params = [equipo_id]
 
     if temporada:
-        try:
-            temporada_int = int(temporada)
-            query_filtro = """
-                AND tc.fecha_inicio <= %s 
-                AND (tc.fecha_fin >= %s OR tc.equipo_actual = 1)
-            """
-            params.extend([f"{temporada_int}-12-31", f"{temporada_int}-01-01"])
-        except ValueError:
-            return JsonResponse({"success": [], "error": "Temporada inválida"}, status=400)
+        if temporada == 'actual':
+            query_filtro = " AND tc.equipo_actual = 1 "
+        else:
+            try:
+                temporada_int = int(temporada)
+                query_filtro = """
+                    AND tc.fecha_inicio <= %s 
+                    AND (tc.fecha_fin >= %s OR tc.equipo_actual = 1)
+                """
+                params.extend([f"{temporada_int}-12-31", f"{temporada_int}-01-01"])
+            except ValueError:
+                return JsonResponse({"success": [], "error": "Temporada inválida"}, status=400)
 
     with connection.cursor() as cursor:
         cursor.execute(f"""

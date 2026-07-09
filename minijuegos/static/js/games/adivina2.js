@@ -80,7 +80,7 @@ async function play() {
     const ultimaArray = JSON.parse(ultimaRespuesta); 
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res3');
-    if(ultimaArray.answer === jugadoraId){
+    if(ultimaArray && ultimaArray.answer === jugadoraId){
         await iniciar();
     }else if(res !== jugadoraId || !res){
         localStorage.removeItem('Attr3');
