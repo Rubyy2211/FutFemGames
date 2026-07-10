@@ -51,7 +51,8 @@
 }
 .football-field tr{
     display: flex;
-    justify-content: space-around;
+    justify-content: center;
+    align-items: center;
 }
 .football-field td.activado{
     visibility: visible;
@@ -77,6 +78,11 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.football-field td div.jugadora-badge{
+    height: fit-content !important;
+    max-height: 90%;
 }
 .football-field td div img{
     width: 50px;
