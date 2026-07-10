@@ -7,7 +7,7 @@ from django.contrib.admin.models import LogEntry
 from django.core.files.storage import default_storage
 from .models import (
     JugadoraPosicion, Pais, Jugadora, Trayectoria, Equipo, 
-    Liga, JugadoraPais, EquipoTrofeo, Trofeo, Juego,
+    Liga, JugadoraPais, EquipoTrofeo, Trofeo, Juego, Formacion, EquipoFormacion
 )
 
 from minijuegos.models import Pista 
@@ -128,6 +128,12 @@ class EquipoTrofeoInline(admin.TabularInline):
             kwargs["queryset"] = Trofeo.objects.filter(tipo='clubes')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+class EquipoFormacionInline(admin.TabularInline):
+    model = EquipoFormacion
+    extra = 1 # Muestra 1 fila vacía por defecto para añadir rápido
+    fields = ('formacion', 'temporada', 'es_principal')
+    # Si la lista de formaciones es muy larga, puedes habilitar autocomplete:
+    # autocomplete_fields = ['formacion']
 
 # ==========================================
 # 3. ENTIDADES DE FÚTBOL FEMENINO
@@ -282,7 +288,7 @@ class EquipoAdmin(admin.ModelAdmin):
     ordering = ('nombre',)
     search_fields = ('nombre',) # Esto permite que funcione el autocomplete_fields desde TrayectoriaInline
     autocomplete_fields = ['equipo_sucesor']
-    inlines = [EquipoTrofeoInline]
+    inlines = [EquipoTrofeoInline, EquipoFormacionInline]
     
     fieldsets = (
         ('🛡️ Datos del Club', {
@@ -395,6 +401,10 @@ class LigaAdmin(admin.ModelAdmin):
     class Media:
         css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css')}
 
+@admin.register(Formacion)
+class FormacionAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion')
+    search_fields = ('nombre',)
 
 # ==========================================
 # 4. MÓDULO DE SEGURIDAD (Totalmente oculto para no-superusuarios)
