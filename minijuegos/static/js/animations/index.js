@@ -7,11 +7,34 @@ const webButtons = document.querySelectorAll('.web-button');
 const hoverSound = new Audio('/static/sounds/hover2.mp3');
 
 webButtons.forEach(card => {
-  // ENTRAR
+  // Buscamos la imagen dentro de la etiqueta picture de ESTE botón web
+  const innerImg = card.querySelector('picture img');
+
+  // ENTRAR: Suena el audio y escalamos la imagen interna con GSAP
   card.addEventListener('mouseenter', () => {
     hoverSound.currentTime = 0;
-    hoverSound.play();})
-  })
+    hoverSound.play();
+
+    if (innerImg) {
+      gsap.to(innerImg, { 
+        scale: 1.05,        // Cambia este valor si quieres que se estire más o menos
+        duration: 0.4, 
+        ease: "power2.out" 
+      });
+    }
+  });
+
+  // SALIR: Restauramos la imagen a su tamaño original (scale: 1)
+  card.addEventListener('mouseleave', () => {
+    if (innerImg) {
+      gsap.to(innerImg, { 
+        scale: 1, 
+        duration: 0.3, 
+        ease: "power2.out" 
+      });
+    }
+  });
+});
 
 buttons.forEach(card => {
   card.addEventListener('mouseenter', () => {

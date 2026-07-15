@@ -358,7 +358,7 @@ function renderJugadorasPage(page = 1) {
         pPosicion.className = 'jugadora-posicion';
         jugadora.posiciones_abrev.forEach(pos => {
             const span = document.createElement('span');
-            span.textContent = gettext(pos);
+            span.textContent = pos;
             span.id = jugadora.posiciones_ids[jugadora.posiciones_abrev.indexOf(pos)];
             span.className = 'pos-'+pos;
             pPosicion.appendChild(span);

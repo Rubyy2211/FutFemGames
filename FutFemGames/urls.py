@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import path, include
 from django.conf import settings
 from django.views.i18n import JavaScriptCatalog, set_language
@@ -47,8 +48,16 @@ def serve_media_with_smart_cache(request, path, document_root=None, show_indexes
         patch_cache_control(response, public=True, max_age=31536000, immutable=True)
     return response
 
+# 2. Nueva función de redirección a Cloudinary
+def redirect_to_cloudinary(request, path):
+    cloud_name = settings.CLOUDINARY_STORAGE.get('CLOUD_NAME')
+    cloudinary_base_url = f"https://res.cloudinary.com/{cloud_name}/image/upload/media/"
+    
+    # Redirige dinámicamente al CDN de Cloudinary
+    return redirect(f"{cloudinary_base_url}{path}", permanent=False)
+
 if settings.DEBUG:
     # No usamos static(), usamos nuestra vista personalizada
     urlpatterns += [
-        path(f"{settings.MEDIA_URL.lstrip('/')}<path:path>", serve_media_with_smart_cache, {'document_root': settings.MEDIA_ROOT}),
+        path(f"{settings.MEDIA_URL.lstrip('/')}<path:path>", redirect_to_cloudinary),
     ]

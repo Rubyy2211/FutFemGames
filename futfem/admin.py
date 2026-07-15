@@ -1,8 +1,10 @@
 import os
 from django.contrib import admin
 from django.utils.html import format_html
+import cloudinary.uploader
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin.models import LogEntry
 from django.core.files.storage import default_storage
 from .models import (
@@ -167,7 +169,6 @@ class PaisAdmin(admin.ModelAdmin):
 
 @admin.register(Jugadora)
 class JugadoraAdmin(admin.ModelAdmin):
-    # Enlazamos nuestro formulario personalizado
     form = JugadoraAdminForm
 
     list_display = ('ver_foto', 'Nombre', 'Apellidos', 'Apodo', 'ver_nacionalidades', 'market_value_format')
@@ -182,13 +183,12 @@ class JugadoraAdmin(admin.ModelAdmin):
     search_fields = ('Nombre', 'Apellidos', 'Apodo')
     readonly_fields = ('foto_perfil_bloque',)
     
-    # Añadimos el nuevo campo 'subir_nueva_foto' dentro de los fields
     fieldsets = (
         ('👤 Ficha de Identidad y Perfil' , {
             'fields': (
                 ('Nombre', 'Apellidos', 'Apodo'),
                 ('Nacimiento', 'altura', 'pie_habil'),
-                ('imagen', 'subir_nueva_foto'), # <-- Quedan emparejados: texto a la izquierda, subida a la derecha
+                ('imagen', 'subir_nueva_foto'),
                 'retiro',
             ),
             'classes': ('bloque-campos-perfil',),
@@ -200,37 +200,95 @@ class JugadoraAdmin(admin.ModelAdmin):
     )
     inlines = [NacionalidadInline, PosicionInline, TrayectoriaInline]
 
-    # --- EL MOTOR: Procesamos la subida física usando la ruta del cuadro de texto ---
+    # --- MÉTODO AUXILIAR: Obtiene el ISO del país principal (Soporta creación y edición) ---
+    def obtener_iso_pais_principal(self, request, obj):
+        # 1. Si la jugadora ya existe en la BD, buscamos su país principal guardado
+        if obj.pk:
+            nacionalidad_primaria = obj.jugadorapais_set.filter(es_primaria=True).select_related('pais').first()
+            if nacionalidad_primaria and nacionalidad_primaria.pais:
+                return nacionalidad_primaria.pais.iso.upper()
+        
+        # 2. Si es una jugadora nueva (o no tiene país en BD), buscamos en los datos enviados por el formulario (POST)
+        # Django organiza los inlines en el POST como 'jugadorapais_set-X-campo'
+        prefix = 'jugadorapais_set'
+        total_forms_key = f'{prefix}-TOTAL_FORMS'
+        
+        if total_forms_key in request.POST:
+            try:
+                total_forms = int(request.POST.get(total_forms_key, 0))
+                for i in range(total_forms):
+                    # Omitimos si se ha marcado para borrar en el inline
+                    delete = request.POST.get(f'{prefix}-{i}-DELETE')
+                    if delete:
+                        continue
+                        
+                    es_primaria = request.POST.get(f'{prefix}-{i}-es_primaria')
+                    # En Django, si el checkbox de primaria está marcado, viene en el POST como 'on' o 'true'
+                    if es_primaria:
+                        pais_id = request.POST.get(f'{prefix}-{i}-pais')
+                        if pais_id:
+                            try:
+                                pais = Pais.objects.get(pk=pais_id)
+                                return pais.iso.upper()
+                            except Pais.DoesNotExist:
+                                pass
+            except ValueError:
+                pass
+                
+        # 3. Fallback por defecto si no se encuentra ningún país seleccionado
+        return 'ES'
+
+    # --- EL MOTOR: Procesamos la subida física usando la ruta y el país principal ---
     def save_model(self, request, obj, form, change):
-        # 1. Comprobamos si se seleccionó un archivo en el campo virtual
         archivo_subido = form.cleaned_data.get('subir_nueva_foto')
         
         if archivo_subido:
-            # Si el usuario modificó o escribió una ruta en el campo 'imagen' (ej: media/ES/jugadoras/cardona.webp)
             ruta_destino_texto = form.cleaned_data.get('imagen')
             
+            # Obtenemos el ISO dinámicamente
+            iso_pais = self.obtener_iso_pais_principal(request, obj)
+            
+            # 1. Aplicamos la regla inteligente de rutas
             if not ruta_destino_texto:
-                # Si dejó el campo de texto vacío, autogeneramos uno por defecto para que no falle
-                ruta_destino_texto = f"media/ES/jugadoras/{archivo_subido.name}"
-                obj.imagen = ruta_destino_texto
+                # Si está vacío -> Genera la ruta completa con el nombre del archivo subido
+                ruta_destino_texto = f"media/{iso_pais}/jugadoras/{archivo_subido.name}"
+            elif '/' not in ruta_destino_texto:
+                # Si solo has escrito el nombre de archivo (ej: "asllani.webp") -> Le pega la ruta automáticamente
+                ruta_destino_texto = f"media/{iso_pais}/jugadoras/{ruta_destino_texto}"
+            
+            # 2. Aseguramos que siempre empiece por 'media/'
+            ruta_limpia = ruta_destino_texto.lstrip('/')
+            if not ruta_limpia.startswith('media/'):
+                ruta_limpia = f"media/{ruta_limpia}"
+                
+            # 3. Desglosamos la ruta para Cloudinary
+            # Ej: 'media/SE/jugadoras/asllani.webp' -> folder='media/SE/jugadoras', public_id='asllani'
+            folder_path, full_filename = os.path.split(ruta_limpia)
+            filename_without_ext, _ = os.path.splitext(full_filename)
+            
+            try:
+                # 4. Subida directa a Cloudinary sin guardar nada local
+                cloudinary.uploader.upload(
+                    archivo_subido,
+                    public_id=filename_without_ext,
+                    folder=folder_path,
+                    unique_filename=False,  # Mantiene el nombre limpio sin sufijos aleatorios
+                    overwrite=True          # Sobrescribe si ya existiera
+                )
+                
+                # 5. Guardamos en la base de datos la ruta formateada
+                obj.imagen = ruta_limpia
+                
+            except Exception as e:
+                messages.error(request, f"❌ Error crítico al subir la foto a Cloudinary: {e}")
+                return  # Cancela el guardado en la BD si la subida a la nube falla
 
-            # Construimos la ruta absoluta en el disco del servidor (futfem/media/ES/jugadoras/cardona.webp)
-            ruta_absoluta = os.path.join(settings.BASE_DIR, 'futfem', ruta_destino_texto.lstrip('/'))
-            
-            # Creamos las carpetas físicas si no existen
-            os.makedirs(os.path.dirname(ruta_absoluta), exist_ok=True)
-            
-            # Guardamos el archivo binario exactamente en la ruta indicada por texto
-            with open(ruta_absoluta, 'wb+') as destination:
-                for chunk in archivo_subido.chunks():
-                    destination.write(chunk)
-                    
         super().save_model(request, obj, form, change)
 
     # --- VISTAS Y PREVISUALIZACIONES ---
     def foto_perfil_bloque(self, obj):
         if obj and obj.imagen:
-            path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen}"
+            path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen.lstrip('/')}"
         else:
             path = "/static/img/predeterm.png"
             
@@ -244,7 +302,7 @@ class JugadoraAdmin(admin.ModelAdmin):
 
     def ver_foto(self, obj):
         if obj.imagen:
-            path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen}"
+            path = obj.imagen if obj.imagen.startswith('http') else f"/{obj.imagen.lstrip('/')}"
         else:
             path = "/static/img/predeterm.png"
             
@@ -286,9 +344,9 @@ class EquipoAdmin(admin.ModelAdmin):
     list_display = ('ver_escudo', 'nombre', 'ver_logo_liga', 'ver_color')
     list_filter = ('liga',)
     ordering = ('nombre',)
-    search_fields = ('nombre',) # Esto permite que funcione el autocomplete_fields desde TrayectoriaInline
+    search_fields = ('nombre',)
     autocomplete_fields = ['equipo_sucesor']
-    inlines = [EquipoTrofeoInline, EquipoFormacionInline]
+    inlines = []  # Añade tus inlines aquí: [EquipoTrofeoInline, EquipoFormacionInline]
     
     fieldsets = (
         ('🛡️ Datos del Club', {
@@ -302,26 +360,51 @@ class EquipoAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         archivo_subido = form.cleaned_data.get('subir_nuevo_escudo')
+        
         if archivo_subido:
             ruta_destino_texto = form.cleaned_data.get('escudo')
+            
+            # 1. Si no ha escrito ruta, la autogeneramos
             if not ruta_destino_texto:
-                # Si el campo de texto está vacío, autogeneramos una ruta razonable basándose en la Liga o por defecto
                 iso_liga = obj.liga.pais.iso.upper() if (obj.liga and obj.liga.pais) else 'ES'
                 ruta_destino_texto = f"media/{iso_liga}/clubes/{archivo_subido.name}"
-                obj.escudo = ruta_destino_texto
-
-            ruta_absoluta = os.path.join(settings.BASE_DIR, 'futfem', ruta_destino_texto.lstrip('/'))
-            os.makedirs(os.path.dirname(ruta_absoluta), exist_ok=True)
             
-            with open(ruta_absoluta, 'wb+') as destination:
-                for chunk in archivo_subido.chunks():
-                    destination.write(chunk)
-                    
+            # 2. Normalizamos la ruta para que siempre empiece por 'media/'
+            ruta_limpia = ruta_destino_texto.lstrip('/')
+            if not ruta_limpia.startswith('media/'):
+                ruta_limpia = f"media/{ruta_limpia}"
+            
+            # 3. Desglosamos la ruta para Cloudinary
+            # Ej: 'media/ES/clubes/barcelona.webp' -> folder='media/ES/clubes', public_id='barcelona'
+            folder_path, full_filename = os.path.split(ruta_limpia)
+            filename_without_ext, _ = os.path.splitext(full_filename)
+            
+            try:
+                # 4. Subida directa a Cloudinary sin tocar el disco local
+                cloudinary.uploader.upload(
+                    archivo_subido,
+                    public_id=filename_without_ext,
+                    folder=folder_path,
+                    unique_filename=False,  # 👈 Mantiene el nombre limpio sin sufijos aleatorios
+                    overwrite=True          # Sobrescribe si ya existiera
+                )
+                
+                # 5. Guardamos en la base de datos la ruta formateada
+                obj.escudo = ruta_limpia
+                
+            except Exception as e:
+                # Si Cloudinary falla (ej. sin conexión), avisamos al admin y cancelamos el guardado del archivo
+                messages.error(request, f"❌ Error crítico al subir el escudo a Cloudinary: {e}")
+                return  # Detiene la ejecución para no guardar datos inconsistentes
+
         super().save_model(request, obj, form, change)
 
     def ver_escudo(self, obj):
         if obj.escudo:
-            return format_html('<img src="/{}" width="40" height="40" style="object-fit: contain; background: #fafafa; padding: 2px; border-radius: 6px; border: 1px solid #eee;" />', obj.escudo)
+            # Nos aseguramos de que empiece por '/' para que la URL sea relativa a tu dominio
+            # y así tu urls.py intercepte el '/media/...' y lo redirija a Cloudinary
+            ruta_url = f"/{obj.escudo.lstrip('/')}"
+            return format_html('<img src="{}" width="40" height="40" style="object-fit: contain; background: #fafafa; padding: 2px; border-radius: 6px; border: 1px solid #eee;" />', ruta_url)
         return "❌ Sin Escudo"
     ver_escudo.short_description = 'Escudo'
 
@@ -364,27 +447,63 @@ class LigaAdmin(admin.ModelAdmin):
         }),
     )
 
+    # --- EL MOTOR: Procesamos la subida a Cloudinary usando el país de la liga ---
     def save_model(self, request, obj, form, change):
         archivo_subido = form.cleaned_data.get('subir_nuevo_logo')
+        
         if archivo_subido:
             ruta_destino_texto = form.cleaned_data.get('logo')
-            if not ruta_destino_texto:
-                iso_pais = obj.pais.iso.upper() if obj.pais else 'GLOBAL'
-                ruta_destino_texto = f"media/{iso_pais}/ligas/{archivo_subido.name}"
-                obj.logo = ruta_destino_texto
-
-            ruta_absoluta = os.path.join(settings.BASE_DIR, 'futfem', ruta_destino_texto.lstrip('/'))
-            os.makedirs(os.path.dirname(ruta_absoluta), exist_ok=True)
             
-            with open(ruta_absoluta, 'wb+') as destination:
-                for chunk in archivo_subido.chunks():
-                    destination.write(chunk)
-                    
+            # Obtenemos el ISO del país asignado a la liga (o 'GLOBAL' si no tiene país)
+            iso_pais = obj.pais.iso.upper() if obj.pais else 'GLOBAL'
+            
+            # 1. Aplicamos la regla inteligente de rutas
+            if not ruta_destino_texto:
+                # Si está vacío -> Genera la ruta completa con el nombre del archivo subido
+                ruta_destino_texto = f"media/{iso_pais}/ligas/{archivo_subido.name}"
+            elif '/' not in ruta_destino_texto:
+                # Si solo has escrito el nombre (ej: "liga_f.webp") -> Le pega la ruta automáticamente
+                ruta_destino_texto = f"media/{iso_pais}/ligas/{ruta_destino_texto}"
+            
+            # 2. Aseguramos que siempre empiece por 'media/' sin barras iniciales duplicadas
+            ruta_limpia = ruta_destino_texto.lstrip('/')
+            if not ruta_limpia.startswith('media/'):
+                ruta_limpia = f"media/{ruta_limpia}"
+                
+            # 3. Desglosamos la ruta para Cloudinary
+            # Ej: 'media/ES/ligas/liga_f.webp' -> folder='media/ES/ligas', public_id='liga_f'
+            folder_path, full_filename = os.path.split(ruta_limpia)
+            filename_without_ext, _ = os.path.splitext(full_filename)
+            
+            try:
+                # 4. Subida directa a Cloudinary sin guardar nada localmente
+                cloudinary.uploader.upload(
+                    archivo_subido,
+                    public_id=filename_without_ext,
+                    folder=folder_path,
+                    unique_filename=False,  # Mantiene el nombre limpio sin hashes extraños
+                    overwrite=True          # Sobrescribe el logo anterior si tiene el mismo nombre
+                )
+                
+                # 5. Guardamos en la base de datos la ruta formateada para redirección local
+                obj.logo = ruta_limpia
+                
+            except Exception as e:
+                # Alerta visual en el admin si falla el servicio o las credenciales de Cloudinary
+                messages.error(request, f"❌ Error crítico al subir el logo a Cloudinary: {e}")
+                return  # Detiene la operación para proteger la base de datos
+
         super().save_model(request, obj, form, change)
 
+    # --- VISTAS Y PREVISUALIZACIONES ---
     def ver_logo(self, obj):
         if obj.logo:
-            return format_html('<img src="/{}" width="45" height="45" style="object-fit: contain;" />', obj.logo)
+            # Aseguramos que empiece por '/' para que la URL sea relativa y funcione con tu redirector
+            path = obj.logo if str(obj.logo).startswith('http') else f"/{str(obj.logo).lstrip('/')}"
+            return format_html(
+                '<img src="{}" width="45" height="45" style="object-fit: contain; background: #fafafa; padding: 3px; border-radius: 8px; border: 1px solid #eee;" />', 
+                path
+            )
         return "❌ Sin Logo"
     ver_logo.short_description = 'Logo'
 
@@ -399,7 +518,12 @@ class LigaAdmin(admin.ModelAdmin):
     ver_pais.short_description = 'País Organizado'
 
     class Media:
-        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css')}
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', 
+                '/static/futfem/css/custom_admin.css'
+            )
+        }
 
 @admin.register(Formacion)
 class FormacionAdmin(admin.ModelAdmin):

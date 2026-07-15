@@ -359,8 +359,8 @@ section#jugadoras-actuales{
 
 #jugadoras-actuales .football-field tr{
     height: 100%;
-    max-height: 20%;
-    min-height: 16.66666666666667%;
+    max-height: 25%;
+    min-height: 20%;
 }
 
 #jugadoras-actuales .football-field tr.fila-vacia{
