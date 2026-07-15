@@ -3,4 +3,6 @@ futfem/__pycache__/
 
 futfem/management/commands/__pycache__/
 
+futfem/media/
+
 *.pyc
