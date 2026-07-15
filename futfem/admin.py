@@ -1,4 +1,6 @@
+import io
 import os
+from PIL import Image as PILImage
 from django.contrib import admin
 from django.utils.html import format_html
 import cloudinary.uploader
@@ -362,40 +364,92 @@ class EquipoAdmin(admin.ModelAdmin):
         archivo_subido = form.cleaned_data.get('subir_nuevo_escudo')
         
         if archivo_subido:
+            # 1. Extraemos la liga directamente del FORMULARIO (100% fiable) 🛡️
+            liga_seleccionada = form.cleaned_data.get('liga')
+            
+            # 🔍 IMPRESIONES DE CONTROL (Míralas en tu terminal o logs de Render)
+            print("\n🔍 === DEBUG DE RUTA DE EQUIPO ===")
+            print(f"Club a guardar: {obj.nombre}")
+            print(f"Liga seleccionada: {liga_seleccionada}")
+            
+            # Obtener el ISO de forma segura
+            iso_liga = 'ES'  # Valor por defecto si todo falla
+            if liga_seleccionada:
+                print(f"País de la liga: {liga_seleccionada.pais}")
+                if liga_seleccionada.pais and liga_seleccionada.pais.iso:
+                    iso_liga = liga_seleccionada.pais.iso.upper()
+                    print(f"✅ ISO Detectado correctamente: {iso_liga}")
+                else:
+                    print("⚠️ La liga seleccionada existe, pero NO tiene un país o un ISO asignado.")
+            else:
+                print("⚠️ No se ha seleccionado ninguna liga en el formulario.")
+            print("===================================\n")
+
             ruta_destino_texto = form.cleaned_data.get('escudo')
             
-            # 1. Si no ha escrito ruta, la autogeneramos
+            # 2. Si no ha escrito ruta, la autogeneramos con el ISO correcto
             if not ruta_destino_texto:
-                iso_liga = obj.liga.pais.iso.upper() if (obj.liga and obj.liga.pais) else 'ES'
                 ruta_destino_texto = f"media/{iso_liga}/clubes/{archivo_subido.name}"
+            elif '/' not in ruta_destino_texto:
+                # Si solo escribió el nombre (ej: "juve.webp") -> Le pega la ruta automática
+                ruta_destino_texto = f"media/{iso_liga}/clubes/{ruta_destino_texto}"
             
-            # 2. Normalizamos la ruta para que siempre empiece por 'media/'
+            # 3. Normalizamos la ruta para que siempre empiece por 'media/'
             ruta_limpia = ruta_destino_texto.lstrip('/')
             if not ruta_limpia.startswith('media/'):
                 ruta_limpia = f"media/{ruta_limpia}"
             
-            # 3. Desglosamos la ruta para Cloudinary
-            # Ej: 'media/ES/clubes/barcelona.webp' -> folder='media/ES/clubes', public_id='barcelona'
+            # 4. Desglosamos carpetas y nombre para Cloudinary
             folder_path, full_filename = os.path.split(ruta_limpia)
             filename_without_ext, _ = os.path.splitext(full_filename)
             
             try:
-                # 4. Subida directa a Cloudinary sin tocar el disco local
+                # -------------------------------------------------------------
+                # SUBIDA 1: Imagen Normal
+                # -------------------------------------------------------------
                 cloudinary.uploader.upload(
                     archivo_subido,
                     public_id=filename_without_ext,
                     folder=folder_path,
-                    unique_filename=False,  # 👈 Mantiene el nombre limpio sin sufijos aleatorios
-                    overwrite=True          # Sobrescribe si ya existiera
+                    unique_filename=False,
+                    overwrite=True
                 )
                 
-                # 5. Guardamos en la base de datos la ruta formateada
+                # -------------------------------------------------------------
+                # SUBIDA 2: Imagen Mini 100x100
+                # -------------------------------------------------------------
+                archivo_subido.seek(0) # Reseteamos el lector del archivo original
+                
+                with PILImage.open(archivo_subido) as img:
+                    formato_original = img.format if img.format else 'WEBP'
+                    
+                    try:
+                        filtro_calidad = PILImage.Resampling.LANCZOS
+                    except AttributeError:
+                        filtro_calidad = PILImage.ANTIALIAS
+                        
+                    img_mini = img.resize((100, 100), filtro_calidad)
+                    
+                    buffer_ram = io.BytesIO()
+                    img_mini.save(buffer_ram, format=formato_original)
+                    buffer_ram.seek(0)
+                    
+                    folder_mini = f"{folder_path}/mini"
+                    
+                    cloudinary.uploader.upload(
+                        buffer_ram,
+                        public_id=filename_without_ext,
+                        folder=folder_mini,
+                        unique_filename=False,
+                        overwrite=True
+                    )
+                
+                # 5. Guardamos en la base de datos la ruta final corregida
                 obj.escudo = ruta_limpia
                 
             except Exception as e:
-                # Si Cloudinary falla (ej. sin conexión), avisamos al admin y cancelamos el guardado del archivo
-                messages.error(request, f"❌ Error crítico al subir el escudo a Cloudinary: {e}")
-                return  # Detiene la ejecución para no guardar datos inconsistentes
+                messages.error(request, f"❌ Error crítico en Cloudinary: {e}")
+                return
 
         super().save_model(request, obj, form, change)
 
