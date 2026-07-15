@@ -360,6 +360,8 @@ class EquipoAdmin(admin.ModelAdmin):
         }),
     )
 
+    inlines = [EquipoTrofeoInline, EquipoFormacionInline]
+
     def save_model(self, request, obj, form, change):
         archivo_subido = form.cleaned_data.get('subir_nuevo_escudo')
         
