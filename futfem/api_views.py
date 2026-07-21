@@ -2,6 +2,7 @@ from webbrowser import get
 from django.core.cache import cache
 import json, random, pycountry
 from django.utils import timezone
+from .utils import construir_url_imagen
 from django.http import JsonResponse
 from django.db import connection, IntegrityError
 from django.db.models import Q, CharField, Value
@@ -111,12 +112,12 @@ def jugadoras_All(request):
             "apellido": fila[2],
             "apodo": fila[3],
             "nacimiento": fila[4].strftime("%Y-%m-%d") if fila[4] else None,
-            "imagen": fila[5],
+            "imagen": construir_url_imagen(fila[5]),
             "retiro": fila[6],
             "equipo": {
                 "id": fila[7],
                 "nombre": fila[8],
-                "escudo": fila[9],
+                "escudo": construir_url_imagen(fila[9]),
                 "color": fila[10]
             },
             "nacionalidades_ids": lista_ids_paises,
@@ -745,7 +746,7 @@ def equipoxid(request):
         salida = {
             "club": e.id_equipo,
             "nombre": e.nombre,
-            "escudo": e.escudo,
+            "escudo": construir_url_imagen(e.escudo),
             "color": e.color,
             "lat": e.latitud,
             "long": e.longitud,
@@ -779,7 +780,7 @@ def equiposxid(request):
         salida.append({
             "club": e.id_equipo,
             "nombre": e.nombre,
-            "escudo": e.escudo,
+            "escudo": construir_url_imagen(e.escudo),
             "color": e.color
         })
 
@@ -799,7 +800,7 @@ def equiposAll(request):
         equipos.append({
             "nombre": nombre,
             "id": id_equipo,
-            "escudo": escudo,
+            "escudo": construir_url_imagen(escudo),
             "color": color,
             "lat": latitud,
             "long": longitud,
@@ -834,7 +835,7 @@ def equiposxliga(request):
         equipos.append({
             "nombre": nombre,
             "id": id_equipo,
-            "escudo": escudo,
+            "escudo": construir_url_imagen(escudo),
             "color": color,
             "lat": latitud,
             "lon": longitud
@@ -860,7 +861,7 @@ def equipoxnombre(request):
             "id_equipo": e.id_equipo,
             "liga": e.liga.id_liga,
             "nombre": e.nombre,
-            "escudo": e.escudo,
+            "escudo": construir_url_imagen(e.escudo),
             "color": e.color
         })
 
@@ -1011,7 +1012,7 @@ def ligasxid(request):
         salida.append({
             "liga": l.id_liga,
             "nombre": l.nombre,
-            "logo": escudo_base64
+            "logo": construir_url_imagen(escudo_base64)
         })
 
     return JsonResponse({"success": salida})
@@ -1043,7 +1044,7 @@ def ligasxpais(request):
         salida.append({
             "liga": l.id_liga,
             "nombre": l.nombre,
-            "logo": l.logo
+            "logo": construir_url_imagen(l.logo)
         })
 
     return JsonResponse({"success": salida})
