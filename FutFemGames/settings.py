@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     #'django_browser_reload',
     #"debug_toolbar",
+    'corsheaders',
     'compressor',
     'minijuegos',
     'futfem',
@@ -97,6 +98,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.gzip.GZipMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -148,6 +150,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://127.0.0.1:8000',
     'https://futfemgames-production.up.railway.app',
 ]
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 WSGI_APPLICATION = 'FutFemGames.wsgi.application'
 
