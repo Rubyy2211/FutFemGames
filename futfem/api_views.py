@@ -475,7 +475,7 @@ def jugadora_aleatoria(request):
                     jugadoras_finales[j.id_jugadora] = {
                         "id": j.id_jugadora,
                         "nombre": formatear_nombre_corto(j.Nombre, j.Apellidos),
-                        "imagen": j.imagen if j.imagen else None,
+                        "imagen": construir_url_imagen(j.imagen) if j.imagen else None,
                         "pais": id_pais,
                         "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
                     }
@@ -615,7 +615,7 @@ def jugadoras_por_equipo_y_temporada(request):
         equipo_obj = {
             "id": fila[11],
             "nombre": "Retirada" if es_retirada else fila[12],
-            "escudo": "static/img/retirada.svg" if es_retirada else escudo_path, # O un escudo por defecto
+            "escudo": "static/img/retirada.svg" if es_retirada else construir_url_imagen(escudo_path), # O un escudo por defecto
             "color": fila[14] if fila[14] else "#808080", # Gris si no hay color
              "liga_id": fila[15],
             "liga_logo": "static/img/retirada.svg" if es_retirada else fila[16],
@@ -628,7 +628,7 @@ def jugadoras_por_equipo_y_temporada(request):
             "apodo": fila[3],
             "nombre_completo": formatear_nombre_corto(fila[1], fila[2]),
             "nacimiento": fila[4].strftime("%Y-%m-%d") if fila[4] else None,
-            "imagen": fila[5],
+            "imagen": construir_url_imagen(fila[5]),
             "retiro": fila[6],
             "market_value": fila[7],
             "equipo": equipo_obj,
@@ -713,7 +713,7 @@ def api_random_player(request):
         "id": jugadora.id_jugadora,
         "nombre": f"{jugadora.Nombre} {jugadora.Apellidos}",
         "market_value": jugadora.market_value,
-        "imagen": jugadora.imagen if jugadora.imagen else None
+        "imagen": construir_url_imagen(jugadora.imagen) if jugadora.imagen else None
     })
 #################################################################################################
 ########################################EQUIPOS##################################################
