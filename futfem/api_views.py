@@ -618,7 +618,7 @@ def jugadoras_por_equipo_y_temporada(request):
             "escudo": "static/img/retirada.svg" if es_retirada else construir_url_imagen(escudo_path), # O un escudo por defecto
             "color": fila[14] if fila[14] else "#808080", # Gris si no hay color
              "liga_id": fila[15],
-            "liga_logo": "static/img/retirada.svg" if es_retirada else fila[16],
+            "liga_logo": "static/img/retirada.svg" if es_retirada else construir_url_imagen(fila[16]),
         }
 
         resultado.append({
