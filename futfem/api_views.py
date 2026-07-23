@@ -1179,7 +1179,7 @@ def trofeos_individuales(request):
             "id": fila[0],
             "nombre": fila[1],
             "tipo": fila[2],
-            "icono": fila[3],
+            "icono": construir_url_imagen(fila[3]),
         })
     return JsonResponse({"success": resultado})
 
@@ -1249,7 +1249,7 @@ def equipo_palmares(request):
                         "id": id_trofeo,
                         "nombre": nombre,
                         "tipo": tipo,
-                        "icono": icono,
+                        "icono": construir_url_imagen(icono),
                         "temporada": temporada_trofeo
                     })
         
@@ -1280,7 +1280,7 @@ def trofeosxid (request):
             "id": t.id,
             "nombre": t.nombre,
             "tipo": t.tipo,
-            "icono": t.icono
+            "icono": construir_url_imagen(t.icono)
         })
 
     return JsonResponse({"success": salida})
