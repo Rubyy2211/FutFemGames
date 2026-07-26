@@ -726,14 +726,13 @@ def equipoxid(request):
         return JsonResponse({"error": "ID de equipo no proporcionado."}, status=400)
 
     try:
-        # 1. Obtenemos el equipo
-        e = Equipo.objects.get(id_equipo=id_equipo)
+        # 1. Obtenemos el equipo junto con su liga (usamos select_related para optimizar la consulta SQL)
+        e = Equipo.objects.select_related('liga').get(id_equipo=id_equipo)
         
-        # 2. Buscamos la formación (usamos select_related para traer los datos de un solo golpe)
-        # Priorizamos la que esté marcada como principal
+        # 2. Buscamos la formación
         ef = EquipoFormacion.objects.filter(equipo=e).select_related('formacion').order_by('-es_principal').first()
 
-        # 3. Extraemos solo los DATOS, no el objeto completo
+        # 3. Extraemos los datos de la formación
         datos_formacion = None
         if ef and ef.formacion:
             datos_formacion = {
@@ -742,7 +741,17 @@ def equipoxid(request):
                 "temporada": ef.temporada
             }
 
-        # 4. Construimos la salida
+        # 4. Extraemos los datos de la Liga
+        datos_liga = None
+        if hasattr(e, 'liga') and e.liga:
+            datos_liga = {
+                "id": e.liga.pk,  # 👈 .pk siempre obtiene la clave primaria sin importar su nombre
+                "nombre": e.liga.nombre,
+                "logo": construir_url_imagen(e.liga.logo) if hasattr(e.liga, 'logo') and e.liga.logo else None,
+                "pais": e.liga.pais.nombre if hasattr(e.liga, 'pais') and e.liga.pais else None,
+            }
+
+        # 5. Construimos la salida incluyendo el objeto 'liga'
         salida = {
             "club": e.id_equipo,
             "nombre": e.nombre,
@@ -750,8 +759,9 @@ def equipoxid(request):
             "color": e.color,
             "lat": e.latitud,
             "long": e.longitud,
-            "formacion": datos_formacion,  # Esto ahora es un dict, no un objeto
             "fundacion": e.fundacion,
+            "liga": datos_liga,  # 👈 Añadido aquí
+            "formacion": datos_formacion,
         }
         
         return JsonResponse({"success": salida})
