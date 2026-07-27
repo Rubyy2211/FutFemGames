@@ -253,7 +253,7 @@ def jugadora_companeras(request):
         r['Nombre_Completo'] = formatear_nombre_corto(n, a)
         
         # Manejo de imagen predeterminada si no hay en trayectoria ni en jugadora
-        r['imagen'] = r['foto_jugadora'] or '/static/img/predeterm.jpg'
+        r['imagen'] = r['foto_jugadora'] or '/img/predeterm.jpg'
 
     return JsonResponse(results, safe=False)
 
@@ -397,7 +397,7 @@ def jugadora_trayectoria(request):
             'fecha_fin': t.fecha_fin,
             'imagen': construir_url_imagen(t.imagen),
             'equipo_actual': t.equipo_actual,
-            'escudo': escudo,
+            'escudo': construir_url_imagen(escudo),
             'liga': equipo.liga.id_liga if equipo.liga else None,
             'nombre': equipo.nombre,
             'ImagenJugadora': imagen_jugadora,
