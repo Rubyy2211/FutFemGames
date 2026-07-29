@@ -253,7 +253,7 @@ def jugadora_companeras(request):
         r['Nombre_Completo'] = formatear_nombre_corto(n, a)
         
         # Manejo de imagen predeterminada si no hay en trayectoria ni en jugadora
-        r['imagen'] = r['foto_jugadora'] or '/img/predeterm.jpg'
+        r['imagen'] = construir_url_imagen(r['foto_jugadora']) or '/img/predeterm.jpg'
 
     return JsonResponse(results, safe=False)
 
@@ -321,6 +321,7 @@ def jugadora_datos(request):
         "ligas": ligas_previas,
         "Nacimiento": j.Nacimiento,
         "Retiro": j.retiro,
+        "Valor": j.market_value
     }
 
     return JsonResponse({"success": data})
