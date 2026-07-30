@@ -2,7 +2,7 @@ import json  # <- Importamos json para deserializar el campo
 from django.contrib import admin
 from .models import Pista
 from django.utils.html import format_html
-from futfem.models import Jugadora, Liga, Equipo, Pais
+from futfem.models import Jugadora, Competicion, Equipo, Pais
 
 @admin.register(Pista)
 class PistaAdmin(admin.ModelAdmin):
@@ -94,13 +94,13 @@ class PistaAdmin(admin.ModelAdmin):
                 html_resultado += format_html('<div style="display:flex; flex-direction:column; gap:8px; align-items:center;">')
                 for id_l in ids:
                     try:
-                        liga = Liga.objects.get(id_liga=id_l)
+                        liga = Competicion.objects.get(id_liga=id_l)
                         img_url = liga.logo.url if hasattr(liga.logo, 'url') else f"/{liga.logo}"
                         html_resultado += format_html(
                             '<div style="text-align:center;"><img src="{}" width="40"><br><small style="font-size:9px;">{}</small></div>',
                             img_url, clave
                         )
-                    except Liga.DoesNotExist:
+                    except Competicion.DoesNotExist:
                         html_resultado += format_html('<small style="color:red;">🏆 {}?</small>', id_l)
                 html_resultado += format_html('</div>')
 
