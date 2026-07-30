@@ -26,10 +26,26 @@ class Pais(models.Model):
         return self.nombre
 
 
-class Liga(models.Model):
+class TipoCompeticion(models.Model):
+    id = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=50) # Ej: "Liga Nacional", "Copa Nacional", "Internacional de Clubes"
+    descripcion = models.TextField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'tipos_competicion'
+        verbose_name = "Tipo de Competición"
+        verbose_name_plural = "Tipos de Competiciones"
+        managed = True
+
+    def __str__(self):
+        return self.nombre
+
+
+class Competicion(models.Model):
     id_liga = models.AutoField(primary_key=True)
     nombre = models.TextField()
     logo = models.TextField(null=True, blank=True)
+    tipo = models.ForeignKey(TipoCompeticion, on_delete=models.RESTRICT, db_column='tipo_id', null=True, blank=True)
     pais = models.ForeignKey(Pais, on_delete=models.CASCADE, db_column='pais', db_index=True)  # Si tienes tabla de países, cámbiala luego a ForeignKey
 
     class Meta:
@@ -43,7 +59,7 @@ class Liga(models.Model):
 
 class Equipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
-    liga = models.ForeignKey(Liga, on_delete=models.CASCADE, db_column='liga')
+    liga = models.ForeignKey(Competicion, on_delete=models.CASCADE, db_column='liga')
     nombre = models.TextField()
     escudo = models.TextField(null=True, blank=True)
     color = models.CharField(max_length=7, null=True, blank=True)  # Color en formato hexadecimal
@@ -174,6 +190,7 @@ class Trofeo(models.Model):
     nombre = models.TextField()
     tipo = models.TextField(null=True, blank=True)
     icono = models.TextField(null=True, blank=True)
+    competicion = models.ForeignKey(Competicion, on_delete=models.CASCADE, db_column='competicion', null=True)
 
     class Meta:
         db_table = 'trofeos'

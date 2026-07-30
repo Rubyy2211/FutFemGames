@@ -8,7 +8,7 @@ from django.db import connection, IntegrityError
 from django.db.models import Q, CharField, Value
 from django.db.models.functions import Concat
 from datetime import date, datetime
-from .models import EquipoFormacion, Jugadora, JugadoraPosicion, Posicion, Trayectoria, Equipo, Pais, Liga, Trofeo, JugadoraPais
+from .models import EquipoFormacion, EquipoTrofeo, Jugadora, JugadoraPosicion, Posicion, Trayectoria, Equipo, Pais, Competicion, Trofeo, JugadoraPais
 from random import shuffle
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
@@ -985,7 +985,7 @@ def paisxnombre(request):
 def obtener_paises_con_ligas(request):
     # .values_list('pais', flat=True) obtiene solo las IDs de los países en la tabla ligas
     # .distinct() elimina duplicados a nivel de base de datos (SELECT DISTINCT)
-    ids_paises = Liga.objects.values_list('pais', flat=True).distinct()
+    ids_paises = Competicion.objects.values_list('pais', flat=True).distinct()
     
     # Si necesitas los objetos completos de Pais:
     # Filtramos la tabla Pais usando la lista de IDs que acabamos de obtener
@@ -1009,7 +1009,7 @@ def ligasxid(request):
         return JsonResponse({"error": "IDs inválidos."}, status=400)
 
     # Consulta
-    ligas = Liga.objects.filter(id_liga__in=ids)
+    ligas = Competicion.objects.filter(id_liga__in=ids)
 
     salida = []
     for l in ligas:
@@ -1047,7 +1047,7 @@ def ligasxpais(request):
 
 
     # Consulta
-    ligas = Liga.objects.filter(pais=pais_id)
+    ligas = Competicion.objects.filter(pais=pais_id)
 
     salida = []
     for l in ligas:
@@ -1194,8 +1194,9 @@ def trofeos_individuales(request):
         })
     return JsonResponse({"success": resultado})
 
+from django.http import JsonResponse
+
 def equipo_palmares(request):
-    # Ahora leemos "equipos" (ej: "59,1,6")
     equipos_raw = request.GET.get("equipos") or request.GET.get("equipo")
     temporadas_raw = request.GET.get("temporadas", "1950-act")
 
@@ -1203,39 +1204,32 @@ def equipo_palmares(request):
         return JsonResponse({"error": "IDs de equipos no proporcionados"}, status=400)
 
     try:
-        # Convertimos "59,1,6" en una lista de enteros: [59, 1, 6]
         lista_equipos = [int(x.strip()) for x in equipos_raw.split(",") if x.strip()]
-        # Convertimos "2004-2005,2011-act" en una lista de strings
         lista_temporadas = [x.strip() for x in temporadas_raw.split(",") if x.strip()]
     except ValueError:
         return JsonResponse({"error": "Datos inválidos en la petición"}, status=400)
 
-    # Si nos mandan solo una temporada para muchos equipos, rellenamos para que coincidan en tamaño
     if len(lista_temporadas) == 1 and len(lista_equipos) > 1:
         lista_temporadas = lista_temporadas * len(lista_equipos)
 
-    # 1. Consulta SQL usando "IN" para traer los trofeos de TODOS los equipos implicados
-    placeholders = ",".join(["%s"] * len(lista_equipos))
-    query = f"""
-        SELECT t.id, t.nombre, t.tipo, t.icono, ti.temporada, ti.equipo
-        FROM trofeos t
-        INNER JOIN `equipo-trofeo` ti ON t.id = ti.trofeo
-        WHERE ti.equipo IN ({placeholders});
-    """
+    # 1. ORM con JOINs optimizados (select_related) para traer Trofeo, Competición, Tipo y País de un solo golpe
+    registros_trofeos = (
+        EquipoTrofeo.objects.filter(equipo_id__in=lista_equipos)
+        .select_related(
+            'trofeo', 
+            'trofeo__competicion', 
+            'trofeo__competicion__tipo', 
+            'trofeo__competicion__pais'
+        )
+    )
 
-    with connection.cursor() as cursor:
-        cursor.execute(query, lista_equipos)
-        filas = cursor.fetchall()
+    if not registros_trofeos.exists():
+        return JsonResponse({"success": [[] for _ in lista_equipos]})
 
-    if not filas:
-        return JsonResponse({"success": [] if len(lista_equipos) > 1 else []})
-
-    # 2. Procesamos el solapamiento manteniendo el orden correspondiente a cada etapa
+    # 2. Procesamos el palmarés por cada etapa/equipo pedido
     resultado_final = []
 
-    # Iteramos sobre el orden original que nos pidió el frontend (etapa por etapa)
     for idx, id_buscado in enumerate(lista_equipos):
-        # Conseguimos el rango de tiempo de esta etapa específica de la trayectoria
         try:
             temp_filtro = lista_temporadas[idx] if idx < len(lista_temporadas) else "1950-act"
             filtro_inicio, filtro_fin = parse_temporada(temp_filtro)
@@ -1244,27 +1238,47 @@ def equipo_palmares(request):
 
         resultado_etapa = []
 
-        # Buscamos en los resultados de la BD los trofeos que pertenecen a este equipo en esta fecha
-        for fila in filas:
-            id_trofeo, nombre, tipo, icono, temporada_trofeo, equipo_id_fila = fila
-            
-            if equipo_id_fila == id_buscado:
+        # Buscamos en los registros recuperados de la BD
+        for eq_trofeo in registros_trofeos:
+            if eq_trofeo.equipo_id == id_buscado:
                 try:
-                    trofeo_inicio, trofeo_fin = parse_temporada(temporada_trofeo)
+                    trofeo_inicio, trofeo_fin = parse_temporada(eq_trofeo.temporada)
                 except ValueError:
                     continue
 
-                # Tu Regla ÚNICA de solapamiento
+                # Regla de solapamiento de fechas
                 if trofeo_inicio < filtro_fin and trofeo_fin > filtro_inicio:
+                    trofeo = eq_trofeo.trofeo
+                    competicion = trofeo.competicion if trofeo else None
+
+                    # Mapeo del País (si existe en la competición)
+                    datos_pais = None
+                    if competicion and competicion.pais:
+                        datos_pais = {
+                            "id": competicion.pais.id if hasattr(competicion.pais, 'id') else competicion.pais.pk,
+                            "nombre": competicion.pais.nombre,
+                            "iso": competicion.pais.iso.lower() if hasattr(competicion.pais, 'iso') and competicion.pais.iso else None
+                        }
+
+                    # Mapeo de la Competición (SIN el logo)
+                    datos_competicion = None
+                    if competicion:
+                        datos_competicion = {
+                            "id": competicion.id_liga,
+                            "nombre": competicion.nombre,
+                            "tipo": competicion.tipo.nombre if competicion.tipo else None,
+                            "pais": datos_pais
+                        }
+
+                    # Mapeo del Trofeo
                     resultado_etapa.append({
-                        "id": id_trofeo,
-                        "nombre": nombre,
-                        "tipo": tipo,
-                        "icono": construir_url_imagen(icono),
-                        "temporada": temporada_trofeo
+                        "id": trofeo.id,
+                        "nombre": trofeo.nombre,
+                        "icono": construir_url_imagen(trofeo.icono),
+                        "temporada": eq_trofeo.temporada,
+                        "competicion": datos_competicion  # 👈 Objeto competición con su país dentro
                     })
-        
-        # Guardamos el palmarés de este equipo (si la app original esperaba un array de arrays)
+
         resultado_final.append(resultado_etapa)
 
     return JsonResponse({"success": resultado_final})

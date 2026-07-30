@@ -11,7 +11,7 @@ from django.contrib.admin.models import LogEntry
 from django.core.files.storage import default_storage
 from .models import (
     JugadoraPosicion, Pais, Jugadora, Trayectoria, Equipo, 
-    Liga, JugadoraPais, EquipoTrofeo, Trofeo, Juego, Formacion, EquipoFormacion
+    Competicion, TipoCompeticion, JugadoraPais, EquipoTrofeo, Trofeo, Juego, Formacion, EquipoFormacion
 )
 
 from minijuegos.models import Pista 
@@ -47,7 +47,18 @@ class LigaAdminForm(forms.ModelForm):
         help_text="Selecciona una imagen para subirla directamente a la ruta indicada en el campo 'Logo'."
     )
     class Meta:
-        model = Liga
+        model = Competicion
+        fields = '__all__'
+
+class TrofeoAdminForm(forms.ModelForm):
+    subir_nuevo_icono = forms.ImageField(
+        required=False,
+        label="📁 Subir icono físico",
+        help_text="Selecciona una imagen para subirla a Cloudinary en media/ISO/trofeos."
+    )
+
+    class Meta:
+        model = Trofeo
         fields = '__all__'
 # ==========================================
 # 1. CONTROL DE LOGS Y HISTORIAL (Oculto para colaboradores)
@@ -99,7 +110,7 @@ class NacionalidadInline(admin.TabularInline):
     verbose_name_plural = "🌍 Países / Pasaportes"
     fields = ('pais', 'ver_bandera', 'es_primaria')
     readonly_fields = ('ver_bandera',)
-    autocomplete_fields = ['pais']
+    #autocomplete_fields = ['pais']
 
     def ver_bandera(self, obj):
         if obj.pais and obj.pais.iso:
@@ -144,14 +155,124 @@ class EquipoFormacionInline(admin.TabularInline):
 # ==========================================
 @admin.register(Trofeo)
 class TrofeoAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'tipo')
-    search_fields = ('nombre',)
-    list_filter = ('tipo',)
+    form = TrofeoAdminForm
+
+    list_display = ('ver_icono', 'nombre', 'tipo', 'competicion', 'ver_pais_competicion')
+    list_display_links = ('ver_icono', 'nombre')
+    search_fields = ('nombre', 'tipo')
+    list_filter = ('tipo', 'competicion__pais', 'competicion')
+
+    fieldsets = (
+        ('🏆 Información del Trofeo', {
+            'fields': (
+                ('nombre', 'tipo'),
+                'competicion',
+                ('icono', 'subir_nuevo_icono'),
+            ),
+        }),
+    )
+
+    # --- MÉTODO AUXILIAR: Obtiene el ISO del país según la competición asignada ---
+    def obtener_iso_pais_competicion(self, request, obj):
+        # 1. Si el trofeo ya tiene una competición con país en la BD
+        if obj.pk and obj.competicion and obj.competicion.pais:
+            return obj.competicion.pais.iso.upper()
+
+        # 2. Si es un trofeo nuevo o se acaba de cambiar la competición en el formulario (POST)
+        competicion_id = request.POST.get('competicion')
+        if competicion_id:
+            try:
+                competicion = Competicion.objects.select_related('pais').get(pk=competicion_id)
+                if competicion.pais:
+                    return competicion.pais.iso.upper()
+            except Competicion.DoesNotExist:
+                pass
+
+        # 3. Fallback para competiciones internacionales (sin país asignado)
+        return 'GLOBAL'
+
+    # --- EL MOTOR: Procesamos la subida a Cloudinary ---
+    def save_model(self, request, obj, form, change):
+        archivo_subido = form.cleaned_data.get('subir_nuevo_icono')
+
+        if archivo_subido:
+            ruta_destino_texto = form.cleaned_data.get('icono')
+
+            # Obtenemos el ISO dinámicamente desde la competición
+            iso_pais = self.obtener_iso_pais_competicion(request, obj)
+
+            # 1. Aplicamos la regla inteligente de rutas
+            if not ruta_destino_texto:
+                # Si el campo 'icono' está vacío -> Genera la ruta completa
+                ruta_destino_texto = f"media/{iso_pais}/trofeos/{archivo_subido.name}"
+            elif '/' not in ruta_destino_texto:
+                # Si solo escribiste el nombre (ej: "copa_reina.png") -> Construye la ruta completa
+                ruta_destino_texto = f"media/{iso_pais}/trofeos/{ruta_destino_texto}"
+
+            # 2. Aseguramos que siempre empiece por 'media/' sin barras iniciales
+            ruta_limpia = ruta_destino_texto.lstrip('/')
+            if not ruta_limpia.startswith('media/'):
+                ruta_limpia = f"media/{ruta_limpia}"
+
+            # 3. Desglosamos la ruta para Cloudinary
+            # Ej: 'media/ES/trofeos/copa_reina.png' -> folder='media/ES/trofeos', public_id='copa_reina'
+            folder_path, full_filename = os.path.split(ruta_limpia)
+            filename_without_ext, _ = os.path.splitext(full_filename)
+
+            try:
+                # 4. Subida directa a Cloudinary
+                cloudinary.uploader.upload(
+                    archivo_subido,
+                    public_id=filename_without_ext,
+                    folder=folder_path,
+                    unique_filename=False,  # Mantiene el nombre limpio sin hashes
+                    overwrite=True          # Sobrescribe si ya existe en esa carpeta
+                )
+
+                # 5. Guardamos en el campo 'icono' la ruta formateada
+                obj.icono = ruta_limpia
+
+            except Exception as e:
+                messages.error(request, f"❌ Error crítico al subir el icono a Cloudinary: {e}")
+                return  # Cancela el guardado si falla la nube
+
+        super().save_model(request, obj, form, change)
+
+    # --- VISTAS Y PREVISUALIZACIONES ---
+    def ver_icono(self, obj):
+        if obj.icono:
+            path = obj.icono if str(obj.icono).startswith('http') else f"/{str(obj.icono).lstrip('/')}"
+        else:
+            path = "/static/img/predeterm.png"
+
+        return format_html(
+            '<img src="{}" style="width: 45px; height: 45px; object-fit: contain; background: #fdfdfd; padding: 4px; border-radius: 8px; border: 1px solid #ddd;" />',
+            path
+        )
+    ver_icono.short_description = 'Icono'
+
+    def ver_pais_competicion(self, obj):
+        if obj.competicion and obj.competicion.pais:
+            iso = obj.competicion.pais.iso.lower()
+            nombre = obj.competicion.pais.nombre
+            return format_html(
+                '<div style="display: flex; align-items: center; gap: 6px;">'
+                '<span class="fi fi-{}" title="{}"></span> <span>{}</span>'
+                '</div>',
+                iso, nombre, nombre
+            )
+        return "🌍 Internacional / Global"
+    ver_pais_competicion.short_description = 'País Competición'
+
     class Media:
-        css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_jugadora.css')}
+        css = {
+            'all': (
+                'https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css',
+                '/static/futfem/css/custom_admin.css',
+                '/static/futfem/css/admin_jugadora.css'
+            )
+        }
 
-
-@admin.register(Pais)
 class PaisAdmin(admin.ModelAdmin):
     list_display = ('ver_bandera', 'nombre', 'iso')
     search_fields = ('nombre', 'iso')
@@ -490,16 +611,22 @@ class EquipoAdmin(admin.ModelAdmin):
     class Media:
         css = {'all': ('https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css', '/static/futfem/css/custom_admin.css', '/static/futfem/css/admin_equipo.css')}
 
-@admin.register(Liga)
+# 1. REGISTRO DEL MODELO AUXILIAR TIPO COMPETICIÓN
+@admin.register(TipoCompeticion)
+class TipoCompeticionAdmin(admin.ModelAdmin):
+    list_display = ('id', 'nombre', 'descripcion')
+    search_fields = ('nombre',)
+
+@admin.register(Competicion)
 class LigaAdmin(admin.ModelAdmin):
     form = LigaAdminForm
-    list_display = ('ver_logo', 'nombre', 'ver_pais')
+    list_display = ('ver_logo', 'nombre', 'tipo', 'ver_pais')
     search_fields = ('nombre',)
     list_filter = ('pais',)
 
     fieldsets = (
         ('🏆 Configuración de la Competición', {
-            'fields': ('nombre', 'pais', ('logo', 'subir_nuevo_logo'))
+            'fields': ('nombre', 'tipo', 'pais', ('logo', 'subir_nuevo_logo'))
         }),
     )
 
