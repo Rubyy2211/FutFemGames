@@ -269,7 +269,12 @@ def jugadora_datos(request):
         j = Jugadora.objects.get(id_jugadora=id_jugadora)
         nacionalidades_qs = JugadoraPais.objects.filter(jugadora=id_jugadora).select_related('pais')
         posiciones_qs = JugadoraPosicion.objects.filter(jugadora=j).select_related('posicion').order_by('-es_primaria')
+        
         jp_principal = nacionalidades_qs.filter(es_primaria=True).first()
+        # Fallback por si no hay ninguna marcada como primaria, tomar la primera registrada
+        if not jp_principal and nacionalidades_qs.exists():
+            jp_principal = nacionalidades_qs.first()
+
         todas_nacionalidades = list(nacionalidades_qs.values_list('pais_id', flat=True))
         todas_posiciones_ids = list(posiciones_qs.values_list('posicion_id', flat=True))
         posiciones_lista_obj = [posicion_to_dict(p.posicion) for p in posiciones_qs]
@@ -290,7 +295,7 @@ def jugadora_datos(request):
     liga_actual = None
 
     for t in trayectorias:
-        if t.equipo_actual:  # Asumimos que hay un campo booleano 'equipo_actual'
+        if t.equipo_actual:
             equipo_actual = t.equipo
             liga_actual = t.equipo.liga.id_liga if t.equipo.liga else 0
         else:
@@ -299,16 +304,19 @@ def jugadora_datos(request):
             if t.equipo.liga and t.equipo.liga.id_liga not in ligas_previas:
                 ligas_previas.append(t.equipo.liga.id_liga)
 
+    # Objeto país completo de la nacionalidad principal
+    pais_principal_obj = jp_principal.pais if (jp_principal and jp_principal.pais) else None
+
     data = {
         "id": j.id_jugadora,
         "nombre": f"{j.Nombre} {j.Apellidos}",
         "nombre_completo": formatear_nombre_corto(j.Nombre, j.Apellidos),
         "apodo": j.Apodo,
-        "Nacionalidad": jp_principal.pais.id_pais if jp_principal else None,
+        "nacionalidad": pais_to_dict(pais_principal_obj),  # 👈 Deplaza la id y entrega el objeto completo
         "TodasNacionalidades": todas_nacionalidades,
-        "pais_id": jp_principal.pais.id_pais if jp_principal else None,
+        "pais_id": pais_principal_obj.id_pais if pais_principal_obj else None,
         "pais_iso": todos_isos,
-        "pais": jp_principal.pais.id_pais if jp_principal else None,
+        "pais": pais_principal_obj.id_pais if pais_principal_obj else None,
         "altura": j.altura,
         "pie": j.pie_habil,
         "imagen": construir_url_imagen(j.imagen),
@@ -992,6 +1000,16 @@ def obtener_paises_con_ligas(request):
     paises = Pais.objects.filter(id_pais__in=ids_paises).values('id_pais', 'nombre', 'iso')
     
     return JsonResponse(list(paises), safe=False)
+
+def pais_to_dict(pais):
+    if not pais:
+        return None
+    return {
+        "id": pais.id_pais, # Ajusta según la PK de tu modelo Pais (ej: pais.id)
+        "nombre": pais.nombre,
+        "iso": pais.iso.lower() if pais.iso else None,
+        # Añade aquí otros campos de Pais si los necesitas
+    }
 #################################################################################################
 #########################################LIGAS###################################################
 #################################################################################################
