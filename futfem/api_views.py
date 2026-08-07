@@ -1230,7 +1230,7 @@ def equipo_palmares(request):
     if len(lista_temporadas) == 1 and len(lista_equipos) > 1:
         lista_temporadas = lista_temporadas * len(lista_equipos)
 
-    # 1. ORM con JOINs optimizados (select_related) para traer Trofeo, Competición, Tipo y País de un solo golpe
+    # 1. ORM optimizado
     registros_trofeos = (
         EquipoTrofeo.objects.filter(equipo_id__in=lista_equipos)
         .select_related(
@@ -1244,7 +1244,7 @@ def equipo_palmares(request):
     if not registros_trofeos.exists():
         return JsonResponse({"success": [[] for _ in lista_equipos]})
 
-    # 2. Procesamos el palmarés por cada etapa/equipo pedido
+    # 2. Procesamos el palmarés
     resultado_final = []
 
     for idx, id_buscado in enumerate(lista_equipos):
@@ -1256,7 +1256,6 @@ def equipo_palmares(request):
 
         resultado_etapa = []
 
-        # Buscamos en los registros recuperados de la BD
         for eq_trofeo in registros_trofeos:
             if eq_trofeo.equipo_id == id_buscado:
                 try:
@@ -1264,37 +1263,45 @@ def equipo_palmares(request):
                 except ValueError:
                     continue
 
-                # Regla de solapamiento de fechas
                 if trofeo_inicio < filtro_fin and trofeo_fin > filtro_inicio:
                     trofeo = eq_trofeo.trofeo
                     competicion = trofeo.competicion if trofeo else None
 
-                    # Mapeo del País (si existe en la competición)
+                    # Objeto País completo
                     datos_pais = None
                     if competicion and competicion.pais:
                         datos_pais = {
-                            "id": competicion.pais.id if hasattr(competicion.pais, 'id') else competicion.pais.pk,
+                            "id": getattr(competicion.pais, 'id_pais', getattr(competicion.pais, 'pk', None)),
                             "nombre": competicion.pais.nombre,
-                            "iso": competicion.pais.iso.lower() if hasattr(competicion.pais, 'iso') and competicion.pais.iso else None
+                            "iso": competicion.pais.iso.lower() if getattr(competicion.pais, 'iso', None) else None
                         }
 
-                    # Mapeo de la Competición (SIN el logo)
+                    # Objeto Tipo de Competición completo
+                    datos_tipo = None
+                    if competicion and competicion.tipo:
+                        datos_tipo = {
+                            "id": getattr(competicion.tipo, 'id', getattr(competicion.tipo, 'pk', None)),
+                            "nombre": competicion.tipo.nombre
+                        }
+
+                    # Objeto Competición Completo
                     datos_competicion = None
                     if competicion:
                         datos_competicion = {
-                            "id": competicion.id_liga,
+                            "id": getattr(competicion, 'id_liga', competicion.pk),
                             "nombre": competicion.nombre,
-                            "tipo": competicion.tipo.nombre if competicion.tipo else None,
+                            "slug": getattr(competicion, 'slug', None),
+                            "logo": construir_url_imagen(getattr(competicion, 'logo', getattr(competicion, 'imagen', None))),
+                            "tipo": datos_tipo,
                             "pais": datos_pais
                         }
 
-                    # Mapeo del Trofeo
                     resultado_etapa.append({
                         "id": trofeo.id,
                         "nombre": trofeo.nombre,
                         "icono": construir_url_imagen(trofeo.icono),
                         "temporada": eq_trofeo.temporada,
-                        "competicion": datos_competicion  # 👈 Objeto competición con su país dentro
+                        "competicion": datos_competicion  # 👈 Objeto competición completo
                     })
 
         resultado_final.append(resultado_etapa)
