@@ -273,6 +273,7 @@ class TrofeoAdmin(admin.ModelAdmin):
             )
         }
 
+@admin.register(Pais)
 class PaisAdmin(admin.ModelAdmin):
     list_display = ('ver_bandera', 'nombre', 'iso')
     search_fields = ('nombre', 'iso')
