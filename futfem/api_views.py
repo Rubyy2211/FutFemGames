@@ -8,15 +8,13 @@ from django.db import connection, IntegrityError
 from django.db.models import Q, CharField, Value
 from django.db.models.functions import Concat
 from datetime import date, datetime
-from .models import EquipoFormacion, EquipoTrofeo, Jugadora, JugadoraPosicion, Posicion, Trayectoria, Equipo, Pais, Competicion, Trofeo, JugadoraPais
+from .models import EquipoFormacion, EquipoTrofeo, EquipoCompeticion, Jugadora, JugadoraPosicion, Posicion, Trayectoria, Equipo, Pais, Competicion, Trofeo, JugadoraPais
 from random import shuffle
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 from bs4 import BeautifulSoup
 import requests, re
-from django.contrib.auth.hashers import make_password, check_password
-
 # Create your views here.
 def parse_temporada(temporada_str):
     año_actual = datetime.now().year
@@ -286,23 +284,37 @@ def jugadora_datos(request):
     hoy = date.today()
     edad = hoy.year - j.Nacimiento.year - ((hoy.month, hoy.day) < (j.Nacimiento.month, j.Nacimiento.day))
 
-    # Trayectorias de la jugadora
-    trayectorias = Trayectoria.objects.filter(jugadora=j).select_related('equipo', 'equipo__liga')
+    # 🟢 Cargar trayectorias junto con el equipo y sus competiciones asociadas
+    trayectorias = Trayectoria.objects.filter(jugadora=j)\
+        .select_related('equipo')\
+        .prefetch_related('equipo__equipocompeticion_set__competicion')
 
     equipo_actual = None
     equipos_previos = []
-    ligas_previas = []
+    ligas_previas = set()  # Usamos un conjunto para evitar IDs duplicados
     liga_actual = None
 
     for t in trayectorias:
+        eq = t.equipo
+        if not eq:
+            continue
+
+        # Obtenemos las competiciones asociadas a este equipo
+        relaciones = eq.equipocompeticion_set.all()
+        rel_principal = next((r for r in relaciones if r.es_principal), relaciones[0] if relaciones else None)
+        id_liga_principal = rel_principal.competicion.pk if (rel_principal and rel_principal.competicion) else None
+
         if t.equipo_actual:
-            equipo_actual = t.equipo
-            liga_actual = t.equipo.liga.id_liga if t.equipo.liga else 0
+            equipo_actual = eq
+            liga_actual = id_liga_principal if id_liga_principal else 0
         else:
-            if t.equipo.id_equipo not in equipos_previos:
-                equipos_previos.append(t.equipo.id_equipo)
-            if t.equipo.liga and t.equipo.liga.id_liga not in ligas_previas:
-                ligas_previas.append(t.equipo.liga.id_liga)
+            if eq.id_equipo not in equipos_previos:
+                equipos_previos.append(eq.id_equipo)
+            
+            # Agregamos todas las competiciones jugadas por este equipo previo
+            for rel in relaciones:
+                if rel.competicion:
+                    ligas_previas.add(rel.competicion.pk)
 
     # Objeto país completo de la nacionalidad principal
     pais_principal_obj = jp_principal.pais if (jp_principal and jp_principal.pais) else None
@@ -312,7 +324,7 @@ def jugadora_datos(request):
         "nombre": f"{j.Nombre} {j.Apellidos}",
         "nombre_completo": formatear_nombre_corto(j.Nombre, j.Apellidos),
         "apodo": j.Apodo,
-        "nacionalidad": pais_to_dict(pais_principal_obj),  # 👈 Deplaza la id y entrega el objeto completo
+        "nacionalidad": pais_to_dict(pais_principal_obj),
         "TodasNacionalidades": todas_nacionalidades,
         "pais_id": pais_principal_obj.id_pais if pais_principal_obj else None,
         "pais_iso": todos_isos,
@@ -326,7 +338,7 @@ def jugadora_datos(request):
         "equipo": equipo_to_dict(equipo_actual),
         "liga": liga_actual,
         "equipos": equipos_previos,
-        "ligas": ligas_previas,
+        "ligas": list(ligas_previas),  # Convertimos el conjunto a lista para la respuesta JSON
         "Nacimiento": j.Nacimiento,
         "Retiro": j.retiro,
         "Valor": j.market_value
@@ -383,19 +395,27 @@ def jugadora_trayectoria(request):
     except ValueError:
         return JsonResponse({'error': 'ID de jugadora inválido'}, status=400)
 
-    # Optimizamos trayendo equipo, jugadora y la LIGA del equipo de una sola vez
+    # Cambiamos select_related('equipo__liga') por prefetch_related de las competiciones del equipo
     trayectorias = Trayectoria.objects.filter(
         jugadora_id=id_jugadora
-    ).select_related('equipo__liga', 'jugadora').order_by('fecha_inicio')
+    ).select_related('equipo', 'jugadora') \
+     .prefetch_related('equipo__equipocompeticion_set__competicion') \
+     .order_by('fecha_inicio')
 
     data = []
     for t in trayectorias:
-        equipo = t.equipo  # Ya contiene todos los datos que antes buscabas con e = Equipo.objects.get
+        equipo = t.equipo
         jug = t.jugadora
 
-        # Evitamos evaluar campos si pueden ser nulos o dar problemas
         escudo = equipo.escudo if equipo.escudo else None
         imagen_jugadora = jug.imagen if jug.imagen else None
+
+        # 🟢 Obtenemos las competiciones del equipo cargadas en memoria
+        relaciones = equipo.equipocompeticion_set.all() if equipo else []
+        
+        # Buscamos la principal o tomamos la primera disponible
+        rel_principal = next((r for r in relaciones if r.es_principal), relaciones[0] if relaciones else None)
+        id_liga_principal = rel_principal.competicion.pk if (rel_principal and rel_principal.competicion) else None
 
         data.append({
             'trayectoria_id': t.id,
@@ -407,12 +427,13 @@ def jugadora_trayectoria(request):
             'imagen': construir_url_imagen(t.imagen),
             'equipo_actual': t.equipo_actual,
             'escudo': construir_url_imagen(escudo),
-            'liga': equipo.liga.id_liga if equipo.liga else None,
+            'liga': id_liga_principal,  # 👈 ID de la competición principal
+            'competiciones': [r.competicion.pk for r in relaciones if r.competicion],  # 🟢 Nueva lista con todos los IDs
             'nombre': equipo.nombre,
             'ImagenJugadora': imagen_jugadora,
             'club': equipo.id_equipo,
-            'lat': equipo.latitud,      # Asegúrate de que estos nombres coincidan con los de tu modelo Equipo
-            'long': equipo.longitud,    # Asegúrate de que estos nombres coincidan con los de tu modelo Equipo
+            'lat': equipo.latitud,
+            'long': equipo.longitud,
         })
 
     return JsonResponse(data, safe=False)
@@ -459,7 +480,7 @@ def jugadora_aleatoria(request):
 
     jugadoras_finales = {}
 
-    # Optimizamos la consulta base usando prefetch_related para traer el país primario sin hacer consultas extra en el bucle
+    # Optimizamos la consulta base usando prefetch_related
     base_qs = Jugadora.objects.prefetch_related('jugadorapais_set')
 
     # Función interna optimizada (SIN order_by('?'))
@@ -469,7 +490,7 @@ def jugadora_aleatoria(request):
             if campo_filtro == "jugadorapais__pais":
                 filtro["jugadorapais__es_primaria"] = True
             
-            # Traemos SOLO los objetos que coinciden (quitamos el orden aleatorio de la base de datos)
+            # Traemos SOLO los objetos que coinciden
             candidatas = list(base_qs.filter(**filtro).distinct())
             
             # Elegimos hasta 2 al azar usando Python directamente
@@ -477,7 +498,6 @@ def jugadora_aleatoria(request):
             
             for j in seleccionadas:
                 if j.id_jugadora not in jugadoras_finales:
-                    # Buscamos el país en la lista ya pre-cargada en memoria (no va a la base de datos)
                     pais_rel = next((p for p in j.jugadorapais_set.all() if p.es_primaria), None)
                     id_pais = pais_rel.pais_id if pais_rel else None
 
@@ -489,38 +509,44 @@ def jugadora_aleatoria(request):
                         "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
                     }
 
-    # 2. Asegurar cobertura (Bingo seguro) - Ahora va volando
+    # 2. Asegurar cobertura por cada lista de filtros recibida
     if nacionalidades:
         cubrir_criterios_optimizada(nacionalidades, "jugadorapais__pais")
     if equipos:
         cubrir_criterios_optimizada(equipos, "trayectoria__equipo")
     if ligas:
-        cubrir_criterios_optimizada(ligas, "trayectoria__equipo__liga")
+        # 🟢 Adaptado a la relación intermedia equipo_competicion
+        cubrir_criterios_optimizada(ligas, "trayectoria__equipo__equipocompeticion__competicion")
 
-    # 3. Rellenar hasta llegar a 20/30 (Sin order_by('?'))
+    # 3. Rellenar hasta llegar a 20/30
     if len(jugadoras_finales) < 20:
-        # Buscamos todas las posibles candidatas extras de un solo golpe
-        candidatas_extras = list(base_qs.filter(
-            Q(jugadorapais__pais__in=nacionalidades, jugadorapais__es_primaria=True) |
-            Q(trayectoria__equipo__in=equipos) |
-            Q(trayectoria__equipo__liga__in=ligas)
-        ).distinct())
+        filtros_q = Q()
+        if nacionalidades:
+            filtros_q |= Q(jugadorapais__pais__in=nacionalidades, jugadorapais__es_primaria=True)
+        if equipos:
+            filtros_q |= Q(trayectoria__equipo__in=equipos)
+        if ligas:
+            # 🟢 Adaptado a la relación intermedia equipo_competicion
+            filtros_q |= Q(trayectoria__equipo__equipocompeticion__competicion__in=ligas)
 
-        # Filtramos las que ya tenemos metidas para no duplicar esfuerzo
-        candidatas_reales = [j for j in candidatas_extras if j.id_jugadora not in jugadoras_finales]
+        if filtros_q:
+            candidatas_extras = list(base_qs.filter(filtros_q).distinct())
 
-        # Tomamos hasta 15 al azar usando Python
-        extras_seleccionadas = random.sample(candidatas_reales, min(len(candidatas_reales), 15)) if candidatas_reales else []
+            # Filtramos las que ya tenemos metidas para no duplicar esfuerzo
+            candidatas_reales = [j for j in candidatas_extras if j.id_jugadora not in jugadoras_finales]
 
-        for j in extras_seleccionadas:
-            pais_rel = next((p for p in j.jugadorapais_set.all() if p.es_primaria), None)
-            jugadoras_finales[j.id_jugadora] = {
-                "id": j.id_jugadora,
-                "nombre": formatear_nombre_corto(j.Nombre, j.Apellidos),
-                "imagen": j.imagen if j.imagen else None,
-                "pais": pais_rel.pais_id if pais_rel else None,
-                "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
-            }
+            # Tomamos hasta 15 al azar usando Python
+            extras_seleccionadas = random.sample(candidatas_reales, min(len(candidatas_reales), 15)) if candidatas_reales else []
+
+            for j in extras_seleccionadas:
+                pais_rel = next((p for p in j.jugadorapais_set.all() if p.es_primaria), None)
+                jugadoras_finales[j.id_jugadora] = {
+                    "id": j.id_jugadora,
+                    "nombre": formatear_nombre_corto(j.Nombre, j.Apellidos),
+                    "imagen": construir_url_imagen(j.imagen) if j.imagen else None,
+                    "pais": pais_rel.pais_id if pais_rel else None,
+                    "Nacimiento": j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else None,
+                }
 
     # Mezclamos el resultado final
     resultado = list(jugadoras_finales.values())
@@ -735,13 +761,10 @@ def equipoxid(request):
         return JsonResponse({"error": "ID de equipo no proporcionado."}, status=400)
 
     try:
-        # 1. Obtenemos el equipo junto con su liga (usamos select_related para optimizar la consulta SQL)
-        e = Equipo.objects.select_related('liga').get(id_equipo=id_equipo)
+        e = Equipo.objects.get(id_equipo=id_equipo)
         
-        # 2. Buscamos la formación
+        # 1. Buscamos la formación principal
         ef = EquipoFormacion.objects.filter(equipo=e).select_related('formacion').order_by('-es_principal').first()
-
-        # 3. Extraemos los datos de la formación
         datos_formacion = None
         if ef and ef.formacion:
             datos_formacion = {
@@ -750,17 +773,37 @@ def equipoxid(request):
                 "temporada": ef.temporada
             }
 
-        # 4. Extraemos los datos de la Liga
+        # 2. Obtenemos todas las relaciones con competiciones
+        relaciones = EquipoCompeticion.objects.filter(equipo=e).select_related('competicion', 'competicion__pais')
+        
+        # 3. Identificamos la competición principal (o la primera si ninguna está marcada como principal)
+        rel_principal = relaciones.filter(es_principal=True).first() or relaciones.first()
+        
         datos_liga = None
-        if hasattr(e, 'liga') and e.liga:
+        if rel_principal and rel_principal.competicion:
+            comp = rel_principal.competicion
             datos_liga = {
-                "id": e.liga.pk,  # 👈 .pk siempre obtiene la clave primaria sin importar su nombre
-                "nombre": e.liga.nombre,
-                "logo": construir_url_imagen(e.liga.logo) if hasattr(e.liga, 'logo') and e.liga.logo else None,
-                "pais": e.liga.pais.nombre if hasattr(e.liga, 'pais') and e.liga.pais else None,
+                "id": comp.pk,
+                "nombre": comp.nombre,
+                "logo": construir_url_imagen(comp.logo) if hasattr(comp, 'logo') and comp.logo else None,
+                "pais": comp.pais.nombre if hasattr(comp, 'pais') and comp.pais else None,
+                "temporada": rel_principal.temporada
             }
 
-        # 5. Construimos la salida incluyendo el objeto 'liga'
+        # 4. Construimos la lista completa con todas sus competiciones
+        todas_competiciones = []
+        for rel in relaciones:
+            comp = rel.competicion
+            todas_competiciones.append({
+                "id": comp.pk,
+                "nombre": comp.nombre,
+                "logo": construir_url_imagen(comp.logo) if hasattr(comp, 'logo') and comp.logo else None,
+                "pais": comp.pais.nombre if hasattr(comp, 'pais') and comp.pais else None,
+                "temporada": rel.temporada,
+                "es_principal": rel.es_principal
+            })
+
+        # 5. Salida con 'liga' (principal) y 'competiciones' (todas)
         salida = {
             "club": e.id_equipo,
             "nombre": e.nombre,
@@ -769,7 +812,8 @@ def equipoxid(request):
             "lat": e.latitud,
             "long": e.longitud,
             "fundacion": e.fundacion,
-            "liga": datos_liga,  # 👈 Añadido aquí
+            "liga": datos_liga,  # 👈 Mantienen la competición principal
+            "competiciones": todas_competiciones,  # 🟢 Nueva lista con todas las competiciones
             "formacion": datos_formacion,
         }
         
@@ -779,38 +823,44 @@ def equipoxid(request):
         return JsonResponse({"error": "El equipo no existe."}, status=404)
 
 def equiposxid(request):
-    ids = request.GET.getlist('id[]')  # Recupera id[]=1&id[]=2&id[]=3
+    ids = request.GET.getlist('id[]')
 
     if not ids:
         return JsonResponse({"error": "Faltan parámetros o no se encontraron resultados."}, status=400)
 
-    # Convertir a enteros
     try:
         ids = [int(i) for i in ids]
     except ValueError:
         return JsonResponse({"error": "IDs inválidos."}, status=400)
 
-    # Consulta
-    equipos = Equipo.objects.filter(id_equipo__in=ids)
+    equipos = Equipo.objects.filter(id_equipo__in=ids).prefetch_related('equipocompeticion_set__competicion')
 
     salida = []
     for e in equipos:
+        relaciones = e.equipocompeticion_set.all()
+        rel_principal = relaciones.filter(es_principal=True).first() or relaciones.first()
+        
+        id_liga_principal = rel_principal.competicion.pk if rel_principal and rel_principal.competicion else None
 
         salida.append({
             "club": e.id_equipo,
             "nombre": e.nombre,
             "escudo": construir_url_imagen(e.escudo),
-            "color": e.color
+            "color": e.color,
+            "liga": id_liga_principal,
+            "competiciones": [r.competicion.pk for r in relaciones if r.competicion]
         })
 
     return JsonResponse({"success": salida})
 
 def equiposAll(request):
+    # Consulta SQL ajustada con LEFT JOIN para obtener el id de la liga principal
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT id_equipo AS id, nombre, escudo, color, latitud, longitud, liga
-            FROM equipos 
-            ORDER BY nombre
+            SELECT e.id_equipo AS id, e.nombre, e.escudo, e.color, e.latitud, e.longitud, ec.id_competicion AS liga
+            FROM equipos e
+            LEFT JOIN equipo_competicion ec ON e.id_equipo = ec.id_equipo AND ec.es_principal = 1
+            ORDER BY e.nombre
         """)
         filas = cursor.fetchall()
 
@@ -839,12 +889,13 @@ def equiposxliga(request):
     except ValueError:
         return JsonResponse({"error": "ID de liga inválido."}, status=400)
 
+    # Consulta adaptada a la tabla intermedia equipo_competicion
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT e.id_equipo, e.nombre, e.escudo, e.color, e.latitud, e.longitud
             FROM equipos e
-            JOIN ligas l ON e.liga = l.id_liga
-            WHERE l.id_liga = %s
+            JOIN equipo_competicion ec ON e.id_equipo = ec.id_equipo
+            WHERE ec.id_competicion = %s
             ORDER BY e.nombre
         """, [id_liga])
         filas = cursor.fetchall()
@@ -866,22 +917,23 @@ def equipoxnombre(request):
     nombre = request.GET.get('nombre', '').strip()
 
     if not nombre:
-        return JsonResponse(
-            {"error": "Falta el nombre del equipo"},
-            status=400
-        )
+        return JsonResponse({"error": "Falta el nombre del equipo"}, status=400)
 
-    equipos = Equipo.objects.filter(nombre__icontains=nombre)
+    equipos = Equipo.objects.filter(nombre__icontains=nombre).prefetch_related('equipocompeticion_set__competicion')
 
     salida = []
     for e in equipos:
+        relaciones = e.equipocompeticion_set.all()
+        rel_principal = relaciones.filter(es_principal=True).first() or relaciones.first()
+        id_liga_principal = rel_principal.competicion.pk if rel_principal and rel_principal.competicion else None
 
         salida.append({
             "id_equipo": e.id_equipo,
-            "liga": e.liga.id_liga,
+            "liga": id_liga_principal,
             "nombre": e.nombre,
             "escudo": construir_url_imagen(e.escudo),
-            "color": e.color
+            "color": e.color,
+            "competiciones": [r.competicion.pk for r in relaciones if r.competicion]
         })
 
     return JsonResponse(salida, safe=False)
@@ -890,16 +942,36 @@ def equipo_to_dict(equipo):
     if not equipo:
         return None
 
+    relaciones = equipo.equipocompeticion_set.select_related('competicion').all()
+    rel_principal = relaciones.filter(es_principal=True).first() or relaciones.first()
+
+    datos_liga_principal = None
+    if rel_principal and rel_principal.competicion:
+        comp = rel_principal.competicion
+        datos_liga_principal = {
+            "id": comp.pk,
+            "nombre": comp.nombre,
+            "logo": comp.logo
+        }
+
+    todas_competiciones = []
+    for rel in relaciones:
+        if rel.competicion:
+            todas_competiciones.append({
+                "id": rel.competicion.pk,
+                "nombre": rel.competicion.nombre,
+                "logo": rel.competicion.logo,
+                "temporada": rel.temporada,
+                "es_principal": rel.es_principal
+            })
+
     return {
         "id": equipo.id_equipo,
         "nombre": equipo.nombre,
         "escudo": equipo.escudo,
         "color": equipo.color,
-        "liga": {
-            "id": equipo.liga.id_liga,
-            "nombre": equipo.liga.nombre,
-            "logo": equipo.liga.logo
-        } if equipo.liga else None
+        "liga": datos_liga_principal,        # Liga/Competición principal
+        "competiciones": todas_competiciones  # Lista completa de competiciones
     }
 
 #################################################################################################

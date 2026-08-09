@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Carpeta donde Django buscará archivos subidos
 MEDIA_ROOT = BASE_DIR / 'futfem' / 'media'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+    BASE_DIR / 'minijuegos',  # Incluye automáticamente bingo, grid, higherlower, etc.
+]
 # 2. Donde Compressor guardará sus archivos generados (normalmente lo mismo que STATIC_ROOT)
 COMPRESS_ROOT = STATIC_ROOT
 
@@ -93,7 +97,6 @@ INSTALLED_APPS = [
     'compressor',
     'minijuegos',
     'futfem',
-    'FutFemWiki',
     'usuarios'
 ]
 
@@ -129,7 +132,10 @@ ROOT_URLCONF = 'FutFemGames.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'minijuegos'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

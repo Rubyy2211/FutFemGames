@@ -11,7 +11,7 @@ from django.contrib.admin.models import LogEntry
 from django.core.files.storage import default_storage
 from .models import (
     JugadoraPosicion, Pais, Jugadora, Trayectoria, Equipo, 
-    Competicion, TipoCompeticion, JugadoraPais, EquipoTrofeo, Trofeo, Juego, Formacion, EquipoFormacion
+    Competicion, TipoCompeticion, JugadoraPais, EquipoTrofeo, EquipoCompeticion , Trofeo, Juego, Formacion, EquipoFormacion
 )
 
 from minijuegos.models import Pista 
@@ -143,6 +143,7 @@ class EquipoTrofeoInline(admin.TabularInline):
             kwargs["queryset"] = Trofeo.objects.filter(tipo='clubes')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+
 class EquipoFormacionInline(admin.TabularInline):
     model = EquipoFormacion
     extra = 1 # Muestra 1 fila vacía por defecto para añadir rápido
@@ -150,6 +151,11 @@ class EquipoFormacionInline(admin.TabularInline):
     # Si la lista de formaciones es muy larga, puedes habilitar autocomplete:
     # autocomplete_fields = ['formacion']
 
+class EquipoCompeticionInline(admin.TabularInline):
+    model = EquipoCompeticion
+    extra = 1
+    autocomplete_fields = ['competicion']
+    fields = ('competicion', 'temporada', 'es_principal')
 # ==========================================
 # 3. ENTIDADES DE FÚTBOL FEMENINO
 # ==========================================
@@ -466,15 +472,20 @@ class JugadoraAdmin(admin.ModelAdmin):
 class EquipoAdmin(admin.ModelAdmin):
     form = EquipoAdminForm
     list_display = ('ver_escudo', 'nombre', 'ver_logo_liga', 'ver_color')
-    list_filter = ('liga',)
+    
+    # Filtramos por la relación en la tabla intermedia o por país
+    list_filter = ('equipocompeticion__competicion', 'pais') 
     ordering = ('nombre',)
     search_fields = ('nombre',)
-    autocomplete_fields = ['equipo_sucesor']
-    inlines = []  # Añade tus inlines aquí: [EquipoTrofeoInline, EquipoFormacionInline]
+    autocomplete_fields = ['equipo_sucesor', 'pais']
+    
+    # Incluimos EquipoCompeticionInline junto a tus otros inlines
+    inlines = [EquipoCompeticionInline, EquipoTrofeoInline, EquipoFormacionInline]
     
     fieldsets = (
         ('🛡️ Datos del Club', {
-            'fields': (('nombre', 'liga'), ('escudo', 'subir_nuevo_escudo'), ('fundacion', 'equipo_sucesor'))
+            # Reemplazamos 'liga' por 'pais' en los campos del club
+            'fields': (('nombre', 'pais'), ('escudo', 'subir_nuevo_escudo'), ('fundacion', 'equipo_sucesor'))
         }),
         ('🎨 Identidad Visual y Mapa', {
             'fields': ('color', ('latitud', 'longitud')),
@@ -482,32 +493,20 @@ class EquipoAdmin(admin.ModelAdmin):
         }),
     )
 
-    inlines = [EquipoTrofeoInline, EquipoFormacionInline]
-
     def save_model(self, request, obj, form, change):
         archivo_subido = form.cleaned_data.get('subir_nuevo_escudo')
         
         if archivo_subido:
-            # 1. Extraemos la liga directamente del FORMULARIO (100% fiable) 🛡️
-            liga_seleccionada = form.cleaned_data.get('liga')
-            
-            # 🔍 IMPRESIONES DE CONTROL (Míralas en tu terminal o logs de Render)
-            print("\n🔍 === DEBUG DE RUTA DE EQUIPO ===")
-            print(f"Club a guardar: {obj.nombre}")
-            print(f"Liga seleccionada: {liga_seleccionada}")
-            
-            # Obtener el ISO de forma segura
-            iso_liga = 'ES'  # Valor por defecto si todo falla
-            if liga_seleccionada:
-                print(f"País de la liga: {liga_seleccionada.pais}")
-                if liga_seleccionada.pais and liga_seleccionada.pais.iso:
-                    iso_liga = liga_seleccionada.pais.iso.upper()
-                    print(f"✅ ISO Detectado correctamente: {iso_liga}")
-                else:
-                    print("⚠️ La liga seleccionada existe, pero NO tiene un país o un ISO asignado.")
+            # 🟢 1. Obtenemos el ISO del país asignado directamente al equipo o 'ES' por defecto
+            iso_liga = 'ES'
+            if hasattr(obj, 'pais') and obj.pais and obj.pais.iso:
+                iso_liga = obj.pais.iso.upper()
+                print(f"✅ ISO Detectado desde el País del equipo: {iso_liga}")
             else:
-                print("⚠️ No se ha seleccionado ninguna liga en el formulario.")
-            print("===================================\n")
+                # Si no tiene país asignado, intenta buscar el país de su primera competición
+                relacion_comp = obj.equipocompeticion_set.first()
+                if relacion_comp and relacion_comp.competicion and relacion_comp.competicion.pais:
+                    iso_liga = relacion_comp.competicion.pais.iso.upper()
 
             ruta_destino_texto = form.cleaned_data.get('escudo')
             
@@ -515,7 +514,6 @@ class EquipoAdmin(admin.ModelAdmin):
             if not ruta_destino_texto:
                 ruta_destino_texto = f"media/{iso_liga}/clubes/{archivo_subido.name}"
             elif '/' not in ruta_destino_texto:
-                # Si solo escribió el nombre (ej: "juve.webp") -> Le pega la ruta automática
                 ruta_destino_texto = f"media/{iso_liga}/clubes/{ruta_destino_texto}"
             
             # 3. Normalizamos la ruta para que siempre empiece por 'media/'
@@ -542,7 +540,7 @@ class EquipoAdmin(admin.ModelAdmin):
                 # -------------------------------------------------------------
                 # SUBIDA 2: Imagen Mini 100x100
                 # -------------------------------------------------------------
-                archivo_subido.seek(0) # Reseteamos el lector del archivo original
+                archivo_subido.seek(0)
                 
                 with PILImage.open(archivo_subido) as img:
                     formato_original = img.format if img.format else 'WEBP'
@@ -579,24 +577,29 @@ class EquipoAdmin(admin.ModelAdmin):
 
     def ver_escudo(self, obj):
         if obj.escudo:
-            # Nos aseguramos de que empiece por '/' para que la URL sea relativa a tu dominio
-            # y así tu urls.py intercepte el '/media/...' y lo redirija a Cloudinary
             ruta_url = f"/{obj.escudo.lstrip('/')}"
             return format_html('<img src="{}" width="40" height="40" style="object-fit: contain; background: #fafafa; padding: 2px; border-radius: 6px; border: 1px solid #eee;" />', ruta_url)
         return "❌ Sin Escudo"
     ver_escudo.short_description = 'Escudo'
 
+    # 🟢 Muestra el logo de la competición marcada como principal (o la primera asignada)
     def ver_logo_liga(self, obj):
-        if obj.liga and obj.liga.logo:
-            url = obj.liga.logo.url if hasattr(obj.liga.logo, 'url') else f"/{obj.liga.logo}"
-            return format_html(
-                '<div style="display:flex; align-items:center; gap:8px;">'
-                '<img src="{}" width="28" height="28" style="object-fit:contain;">'
-                '<span style="font-weight: 500;">{}</span></div>', 
-                url, obj.liga.nombre
-            )
-        return obj.liga.nombre if obj.liga else "—"
-    ver_logo_liga.short_description = 'Competición'
+        relacion = obj.equipocompeticion_set.filter(es_principal=True).first() or obj.equipocompeticion_set.first()
+        
+        if relacion and relacion.competicion:
+            comp = relacion.competicion
+            logo_url = comp.logo.url if hasattr(comp.logo, 'url') else f"/{comp.logo}" if comp.logo else None
+            
+            if logo_url:
+                return format_html(
+                    '<div style="display:flex; align-items:center; gap:8px;">'
+                    '<img src="{}" width="28" height="28" style="object-fit:contain;">'
+                    '<span style="font-weight: 500;">{}</span></div>', 
+                    logo_url, comp.nombre
+                )
+            return comp.nombre
+        return "—"
+    ver_logo_liga.short_description = 'Competición Principal'
 
     def ver_color(self, obj):
         if obj.color:
