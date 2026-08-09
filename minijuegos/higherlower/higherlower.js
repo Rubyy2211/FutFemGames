@@ -2,7 +2,7 @@ import { fetchRandomPlayer } from '/static/futfem/js/jugadora.js'
 import { animarContador, animarEntrada, animarSalida } from '/static/js/animations/higher_lower.js'
 import { getDominantColors , rgbToRgba } from '/static/js/utils/color.thief.js'
 import { updateRachaJuegoLineal } from '/static/usuarios/js/rachas.js'
-import { victory, correct } from "../sounds.js";
+import { victory, correct } from "/static/js/sounds.js";
 const player1 = document.getElementById('option1');
 const player2 = document.getElementById('option2');
 const p2 = player2.querySelector('p');

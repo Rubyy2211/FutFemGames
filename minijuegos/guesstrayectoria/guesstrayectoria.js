@@ -8,8 +8,8 @@ let popup, resultText, trayectoriaDiv, myst, jugadoraInput, boton, answer, texto
 
 // Función principal que controla el flujo de carga
 async function iniciar(dificultad) {
-    const {Ganaste} = await import("./funciones-comunes.js");
-    const {inicializarCounter, startCounter, stopCounter } = await import('../utils/counter.js');
+    const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
+    const {inicializarCounter, startCounter, stopCounter } = await import('/static/js/utils/counter.js');
     const {handleAutocompletePlayer} = await import("/static/futfem/js/jugadora.js");
     popup = document.getElementById('popup-ex');
     resultText =  document.getElementById('result');
@@ -88,7 +88,7 @@ async function play() {
     console.log('Jugadora ID asignada:', jugadoraId, ultimaRespuesta, res);
     const texto = gettext('Adivina la Jugadora de Fútbol es un juego de trivia donde debes identificar a una futbolista según los equipos en los que ha jugado. Usa las pistas, demuestra tu conocimiento y compite para ver quién acierta más.');
     const imagen = '/static/img/trayectoria.webp';
-    const {crearPopupInicialJuego} = await import("./funciones-comunes.js");
+    const {crearPopupInicialJuego} = await import("/static/js/games/funciones-comunes.js");
     if(ultimaRespuesta && ultimaRespuesta === jugadoraId){       
         await iniciar('');
     }else if(res !== jugadoraId || !res){
@@ -214,10 +214,10 @@ function displayTrayectoria(data, acertaste) {
 async function checkAnswer() {
     const nombreCompleto = jugadoraInput.value.trim();
     const idJugadora = jugadoraInput.getAttribute('data-id');
-    const {wrong, victory} = await import("../sounds.js");
+    const {wrong, victory} = await import("/static/js/sounds.js");
     const {updateRacha} = await import("/static/usuarios/js/rachas.js");
-    const {Ganaste} = await import("./funciones-comunes.js");
-    const {stopCounter} = await import('../utils/counter.js');
+    const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
+    const {stopCounter} = await import('/static/js/utils/counter.js');
 
     if (!idJugadora) {
         console.warn('No se encontró data-id en el input.');

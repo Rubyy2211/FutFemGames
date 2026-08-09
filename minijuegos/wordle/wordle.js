@@ -1,6 +1,6 @@
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
-import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
-import { victory } from "../sounds.js";
+import { Ganaste, crearPopupInicialJuego } from "/static/js/games/funciones-comunes.js";
+import { victory } from "/static/js/sounds.js";
 
 let answer = "";
 let currentRow = 0;

@@ -1,4 +1,4 @@
-import { wrong, correct } from "../sounds.js";
+import { wrong, correct } from "/static/js/sounds.js";
 
 // ----------------------------------------------------- 
 // Declaracion de variables
@@ -52,13 +52,13 @@ async function iniciar(dificultad) {
     // ----------------------------------------------------- 
     // 4. Configurar tiempo según dificultad 
     // -----------------------------------------------------
-    const { inicializarCounter, startCounter, stopCounter } = await import('../utils/counter.js');
+    const { inicializarCounter, startCounter, stopCounter } = await import('/static/js/utils/counter.js');
     let segundos = inicializarCounter(18000000000000000000000000000000000000000, 120, 60, 'grid', dificultad);
 
     // ----------------------------------------------------- 
     // 5. Colocar clubes y países en la tabla 
     // -----------------------------------------------------
-    const {ponerClubes} = await import("./funciones-comunes.js");
+    const {ponerClubes} = await import("/static/js/games/funciones-comunes.js");
     await Promise.all([ponerClubes(columnas, ["Equipo4", "Equipo5", "Equipo6"]), ponerClubes(filas, ["Equipo1", "Equipo2", "Equipo3"])]);
 
     // ----------------------------------------------------- 
@@ -91,7 +91,7 @@ async function iniciar(dificultad) {
     if (isAnswerTrue && celdas) {
         console.log("Deteniendo contador..."); // Verificar si llega aquí
         stopCounter("grid");  // ⬅️ Detenemos el temporizador si el usuario gana
-        const {Ganaste} = await import("./funciones-comunes.js");
+        const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
         Ganaste('grid');
     } else {
         if (!userRes || userRes.trim() === '') {
@@ -120,7 +120,7 @@ export async function play() {
     let ultimaArray = JSON.parse(ultimaRespuesta);
     let jugadora = await fetchData(4);
     const {handleAutocompletePlayer} = await import("/static/futfem/js/jugadora.js");
-    const {crearPopupInicialJuego} = await import("./funciones-comunes.js");
+    const {crearPopupInicialJuego} = await import("/static/js/games/funciones-comunes.js");
     input = document.getElementById('jugadoraInput');
     boton = document.getElementById('botonVerificar');
     resultDiv = document.getElementById('resultado');
@@ -406,7 +406,7 @@ const columnaContadores = {
         const idCelda = `c${equipo}${columna}`;
         const td = document.getElementById(idCelda);
         let res = comprobarFotosEnCeldas();
-        const {Ganaste} = await import("./funciones-comunes.js");
+        const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
 
         if (td) {
             if(res===true){
@@ -446,8 +446,8 @@ const columnaContadores = {
         // Asegurarse de que retrievedGrid es un array
         let retrievedGrid = grid ? JSON.parse(grid) : [];
         const celdas = comprobarFotosEnCeldas();
-        const {stopCounter} = await import('../utils/counter.js');
-        const {Ganaste} = await import("./funciones-comunes.js");
+        const {stopCounter} = await import('/static/js/utils/counter.js');
+        const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
         if(celdas){
             stopCounter('grid');
             Ganaste('grid');
@@ -472,10 +472,10 @@ const columnaContadores = {
     // Al validar una jugadora, comprueba si con ella se ha llenado la tabla(se gana)
     // ---------------------------------------------------------
     async function comprobarVictoriaGrid() {
-        const {victory} = await import("../sounds.js");
-        const {stopCounter} = await import('../utils/counter.js');
+        const {victory} = await import("/static/js/sounds.js");
+        const {stopCounter} = await import('/static/js/utils/counter.js');
         const {updateRacha} = await import("/static/usuarios/js/rachas.js");
-        const {Ganaste} = await import("./funciones-comunes.js");
+        const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
         if (comprobarFotosEnCeldas()) {
             victory.play()
             await updateRacha(4,1,localStorage.getItem('Attr4'))

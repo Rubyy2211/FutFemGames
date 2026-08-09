@@ -19,13 +19,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" media="print" onload="this.media='all'">
 
     <link rel="preload" href="/api/juegoxid?id_juego=4" as="fetch" crossorigin="anonymous">
-    <link rel="modulepreload" href="/static/js/games/grid.js">
+    <link rel="modulepreload" href="/static/grid/grid.js">
     <link rel="modulepreload" href="/static/js/games/funciones-comunes.js">
     <link rel="modulepreload" href="/static/futfem/js/jugadora.js">
 
     {% compress css inline %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
-    <link rel="stylesheet" href="{% static 'css/grid.css' %}">
+    <link rel="stylesheet" href="{% static 'grid/grid.css' %}">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/combo.css' %}">
     {% endcompress %}
@@ -81,9 +81,9 @@
 <script src="{% static 'js/admin.js' %}" defer></script>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
-<script type="module" src="{% static 'js/games/grid.js' %}"></script>
+<script type="module" src="{% static 'grid/grid.js' %}"></script>
 <script type="module">
-    import { play } from "{% static 'js/games/grid.js' %}";
+    import { play } from "/static/grid/grid.js";
 
     async function start() {
         // Esperamos a que el catálogo de Django cargue de verdad

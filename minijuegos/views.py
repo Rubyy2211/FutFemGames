@@ -29,52 +29,52 @@ def nosotros(request):
 @never_cache
 @login_required
 def futfemTrajectory(request):
-        return render(request, 'minijuegos/trayectoria.html')
+        return render(request, 'guesstrayectoria/trayectoria.html')
 
 
 @never_cache
 @login_required
 def futfemGrid(request):
-        return render(request, 'minijuegos/grid.html')
+        return render(request, 'grid/grid.html')
 
 
 @never_cache
 @login_required
 def futfemBingo(request):
-        return render(request, 'minijuegos/bingo.html')
+        return render(request, 'bingo/bingo.html')
 
 
 @never_cache
 @login_required
 def futfemWordle(request):
-        return render(request, 'minijuegos/wordle.html')
+        return render(request, 'wordle/wordle.html')
 
 
 @never_cache
 @login_required
 def futfemMates(request):
-        return render(request, 'minijuegos/companyeras.html')
+        return render(request, 'companyeras/companyeras.html')
 
 
 @never_cache
 @login_required
 def futfemGuess(request):
-        return render(request, 'minijuegos/adivina2.html')
+        return render(request, 'guess/adivina2.html')
 
 @never_cache
 @login_required
 def futfemGuess2(request):
-        return render(request, 'minijuegos/adivina2.html')
+        return render(request, 'guess/adivina2.html')
 
 @never_cache
 @login_required
 def futfemHigherLower(request):
-        return render(request, 'minijuegos/higher-lower.html')
+        return render(request, 'higherlower/higher-lower.html')
 
 @never_cache
 @login_required
 def futfemXIClubs(request):
-        return render(request, 'minijuegos/XI_Clubs.html')
+        return render(request, 'XI_Clubs.html')
 
 
 @never_cache

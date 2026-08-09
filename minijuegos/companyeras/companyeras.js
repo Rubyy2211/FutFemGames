@@ -1,7 +1,7 @@
 import { fetchJugadoraCompanyerasById, handleAutocompletePlayer, fetchJugadoraById } from "/static/futfem/js/jugadora.js";
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
-import { inicializarCounter, startCounter, stopCounter } from '../utils/counter.js'; 
-import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
+import { inicializarCounter, startCounter, stopCounter } from '/static/js/utils/counter.js'; 
+import { Ganaste, crearPopupInicialJuego } from "/static/js/games/funciones-comunes.js";
 import { cambiarImagenConFlip } from "/static/js/animations/generales.js";
 
 

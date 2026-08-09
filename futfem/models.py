@@ -59,21 +59,33 @@ class Competicion(models.Model):
 
 class Equipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
-    liga = models.ForeignKey(Competicion, on_delete=models.CASCADE, db_column='liga')
     nombre = models.TextField()
     escudo = models.TextField(null=True, blank=True)
-    color = models.CharField(max_length=7, null=True, blank=True)  # Color en formato hexadecimal
+    pais = models.ForeignKey('Pais', on_delete=models.SET_NULL, null=True, blank=True, db_column='id_pais') # País sede del equipo
+    color = models.CharField(max_length=7, null=True, blank=True)
     latitud = models.FloatField(null=True, blank=True)
     longitud = models.FloatField(null=True, blank=True)
-    equipo_sucesor = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='equipo_sucesor', related_name='versiones_antiguas',verbose_name="Convertido en / Sucesor de")
+    equipo_sucesor = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, db_column='equipo_sucesor', related_name='versiones_antiguas', verbose_name="Convertido en / Sucesor de")
     fundacion = models.IntegerField(null=True, blank=True)
 
     class Meta:
         db_table = 'equipos'
-        managed = False  # Si la tabla ya existe y no quieres que Django la reescriba
+        managed = False
 
     def __str__(self):
         return self.nombre
+
+class EquipoCompeticion(models.Model):
+    id = models.AutoField(primary_key=True)
+    equipo = models.ForeignKey(Equipo, on_delete=models.CASCADE, db_column='id_equipo')
+    competicion = models.ForeignKey('Competicion', on_delete=models.CASCADE, db_column='id_competicion')
+    temporada = models.CharField(max_length=9, null=True, blank=True)
+    es_principal = models.BooleanField(default=False) # 🟢 True si es su liga regular de esa temporada
+
+    class Meta:
+        db_table = 'equipo_competicion'
+        managed = False
+        unique_together = ('equipo', 'competicion', 'temporada')
 
 class EquipoFormacion(models.Model):
     id = models.AutoField(primary_key=True)

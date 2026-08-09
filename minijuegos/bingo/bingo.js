@@ -1,5 +1,5 @@
-import { victory, wrong, correct } from "../sounds.js";
-import { Ganaste, calcularEdad } from "./funciones-comunes.js";
+import { victory, wrong, correct } from "/static/js/sounds.js";
+import { Ganaste, calcularEdad } from "/static/js/games/funciones-comunes.js";
 
 let idres, currentPlayerData, paises, equipos, ligas, trofeos, lastPlayer, jugadora, jugadoraAnterior, ultimaRespuesta;
 const skipButton = document.querySelector('.skip-button');
@@ -7,7 +7,7 @@ const skipButton = document.querySelector('.skip-button');
 async function iniciar(dificultad) {
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     const btn = document.getElementsByClassName('skip-button')[0];
-    const {ponerBanderas, ponerLigas, ponerClubes, ponerTrofeos, ponerEdades} = await import('./funciones-comunes.js');
+    const {ponerBanderas, ponerLigas, ponerClubes, ponerTrofeos, ponerEdades} = await import('/static/js/games/funciones-comunes.js');
     lastPlayer = localStorage.getItem('last-player-bingo');
 
     if (btn) {
@@ -39,7 +39,7 @@ async function iniciar(dificultad) {
         skipPlayer(paises, equipos, ligas, trofeos);
     }
     // Definir los segundos según la dificultad
-    const { inicializarCounter, startCounter, stopCounter } = await import('../utils/counter.js'); 
+    const { inicializarCounter, startCounter, stopCounter } = await import('/static/js/utils/counter.js'); 
     window.stopCounter = stopCounter; // Hacer stopCounter global para poder usarlo en Ganaste()
 
     let segundos = inicializarCounter(180000000000000000000000000000000000000000000000000000000000, 120 , 60, 'bingo', dificultad);
@@ -108,7 +108,7 @@ async function play() {
     const res = localStorage.getItem('res6');
     const texto = gettext('¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria. Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero. Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!');
     const imagen = '/static/img/Bingo.webp';
-    const {crearPopupInicialJuego} = await import('./funciones-comunes.js');
+    const {crearPopupInicialJuego} = await import('/static/js/games/funciones-comunes.js');
     if(ultimaArray && ultimaArray[ultimaArray.length - 1].answer === idres){
         skipButton.style.display = 'none';
         await iniciar('');
@@ -436,7 +436,7 @@ function gestionarAciertos(celda, foto) {
 
 async function colocarAciertos() {
     let grid = localStorage.getItem('Attr6');
-    const {stopCounter} = await import('../utils/counter.js');
+    const {stopCounter} = await import('/static/js/utils/counter.js');
 
     // Asegurarse de que retrievedGrid es un array
     let retrievedGrid = grid ? JSON.parse(grid) : [];

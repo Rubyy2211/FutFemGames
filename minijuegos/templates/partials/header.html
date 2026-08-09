@@ -6,37 +6,6 @@
     <!-- Logo de vSports -->
     <div id="header-izquierda"> 
           <a href="/#juegos" class="navbar-brand1"><img src="{% static 'img/logo.webp' %}" alt="logo futfem" fetchpriority="high" height="75" width="75"></a>
-      <!--<nav id="main-nav">
-        <ul>
-          <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">{% trans "Inicio" %}</a></li>
-          <li class="dropdown">
-            <a href="#" class="{% if request.path|slice:":5" == "/wiki" %}active{% endif %}">
-                {% trans "Wiki" %} <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-down" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708"/>
-                                    </svg>
-            </a>
-            <ul class="submenu">
-                <li>
-                    <a href="{% url 'equipos' %}" class="{% if request.resolver_match.url_name == 'equipos' %}active{% endif %}">
-                        {% trans "Equipos" %}
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'players' %}" class="{% if request.resolver_match.url_name == 'players' %}active{% endif %}" data-active-section="{{ seccion }}">
-                        {% trans "Jugadoras" %}
-                    </a>
-                </li>
-                <li>
-                    <a href="{% url 'mapa' %}" class="{% if request.resolver_match.url_name == 'mapa' %}active{% endif %}">
-                        {% trans "Mapa" %}
-                    </a>
-                </li>
-            </ul>
-        </li>
-        <li><a href="{% url 'rankings' %}" class="{% if request.resolver_match.url_name == 'rankings' %}active{% endif %}">{% trans "Rankings" %}</a></li>
-        <li><a href="{% url 'nosotros' %}" class="{% if request.resolver_match.url_name == 'nosotros' %}active{% endif %}">{% trans "Nosotros" %}</a></li>
-        </ul>
-      </nav>-->
     </div>
     <!-- Barra de navegación -->
     <a href="{% url 'index' %}" class="navbar-brand"><img src="{% static 'img/logo_1.webp' %}" alt="logo futfem" fetchpriority="high" style="height: 40px; width: 80px;"></a>
@@ -77,23 +46,6 @@
                 <a href="#" class="{% if request.resolver_match.url_name in 'wiki,equipos,players,mapa' %}active{% endif %}">
                     {% trans "Wiki" %}
                 </a>
-                <ul class="submenu">
-                    <li>
-                        <a href="{% url 'equipos' %}" class="{% if request.resolver_match.url_name == 'equipos' %}active{% endif %}">
-                            {% trans "Equipos" %}
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'players' %}" class="{% if request.resolver_match.url_name == 'players' %}active{% endif %}" data-active-section="{{ seccion }}">
-                            {% trans "Jugadoras" %}
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'mapa' %}" class="{% if request.resolver_match.url_name == 'mapa' %}active{% endif %}">
-                            {% trans "Mapa" %}
-                        </a>
-                    </li>
-                </ul>
             </li>
             <li><a href="{% url 'rankings' %}" class="{% if request.resolver_match.url_name == 'rankings' %}active{% endif %}">{% trans "Rankings" %}</a></li>
             <li><a href="{% url 'nosotros' %}" class="{% if request.resolver_match.url_name == 'nosotros' %}active{% endif %}">{% trans "Nosotros" %}</a></li>

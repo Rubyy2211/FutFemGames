@@ -1,7 +1,7 @@
 import { updateRacha, obtenerUltimaRespuesta } from "/static/usuarios/js/rachas.js";
 import { handleAutocompletePlayer, cargarJugadoraDatos } from "/static/futfem/js/jugadora.js";
-import { Ganaste, crearPopupInicialJuego } from "./funciones-comunes.js";
-import { victory } from "../sounds.js";
+import { Ganaste, crearPopupInicialJuego } from "/static/js/games/funciones-comunes.js";
+import { victory } from "/static/js/sounds.js";
 
 const texto = 'Guess Player" es un juego de trivia en el que los jugadores deben adivinar el nombre de una jugadora de fútbol basándose en los equipos en los que ha jugado a lo largo de su carrera. El juego presenta una serie de pistas sobre los clubes y selecciones nacionales en los que la jugadora ha jugado, y el objetivo es identificar correctamente a la jugadora lo más rápido posible. A medida que avanzas, las pistas se hacen más desafiantes y los jugadores deben demostrar su conocimiento sobre el fútbol femenino y sus estrellas. ¡Pon a prueba tus conocimientos y compite para ver quién adivina más jugadoras correctamente!';
 const imagen = '/static/img/ComingSoon.webp';
@@ -189,7 +189,7 @@ async function verificar(){
         const iso = jugadora.nacionalidad?.iso || jugadora.pais_iso;
         if (iso) {
             const flagEl = clone.querySelector(".fi") || clone.querySelector(".flag");
-            if (flagEl) flagEl.classList.add(`fi-${iso[0].toLowerCase()}`);
+            if (flagEl) flagEl.classList.add(`fi-${iso.toLowerCase()}`);
         }
 
         // SI estamos cargando una sola (jugada actual)

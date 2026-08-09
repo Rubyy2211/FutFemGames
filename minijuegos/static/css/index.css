@@ -196,7 +196,7 @@ section{
     display: block; /* o flex, grid, etc. */
 }
 section{
-    height: 70%;
+    height: 100%;
 }
 section .container {
     position: relative;
@@ -320,6 +320,7 @@ section .container .web-button{
     overflow: hidden;
     border-radius: 20px;
     box-shadow: 0 5px 15px color-mix(in srgb, black 30%, transparent 70%);
+    border: 2px solid color-mix(in srgb, var(--color-secundario) 50%, white 50%);
 }
 
 /* El patrón estilo FIFA en la esquina */
@@ -357,9 +358,9 @@ section .container .web-button:hover:after{
 
 section .container .web-button:hover{
     background: var(--color-primario);
-    color: var(--color-texto);
     /*transform: scale(1.01);*/
     cursor: pointer;
+    border: 2px solid color-mix(in srgb, var(--color-primario) 50%, white 50%);
 }
 
 section .container .web-button:focus{
@@ -729,6 +730,26 @@ section .container .web-button .web-button-text{
     }
 }
 
+@media (max-width: 1024px) and (orientation: portrait) {
+    .menu-seleccion {
+        flex-direction: column; /* Cambia a vertical */
+    }
+
+    section .container{
+        flex-direction: column;
+    }
+
+    section .container .column{
+        width: 100%;
+        flex-direction: row;
+    }
+
+    section .container .web-button.type-2 img{
+        max-width: 100%;
+        height: auto;
+    }
+}
+
 /* Media queries para pantallas de menos de 992px */
 @media (max-width: 992px) {
     .container{
@@ -737,7 +758,12 @@ section .container .web-button .web-button-text{
         align-items: center;
     }
 
-    section .container .web-button img, section .container .web-button svg{
+    section .container .web-button img{
+        height: 90%;
+        right: 0;
+    }
+
+    section .container .web-button svg{
         height: 80%;
         width: auto;
         left: 50%;
@@ -748,10 +774,6 @@ section .container .web-button .web-button-text{
         /*min-height: fit-content !important;*/
         overflow-x: auto !important;
         overflow-y: hidden !important;
-    }
-    section .container .web-button img{
-        left: 50%;
-        transform: translateX(-50%);
     }
     .row{
         overflow-x: auto;
@@ -807,6 +829,11 @@ section .container .web-button .web-button-text{
         height: 50%;
     }
 
+    section .container .web-button.type-2 img{
+        max-width: 100%;
+        height: 75%;
+    }
+
     .menu-seleccion{
         flex-direction: column;
     }
@@ -820,6 +847,7 @@ section .container .web-button .web-button-text{
     section .container .column{
         width: 100%;
         min-height: 50%;
+        flex-direction: column;
     }
     #daily-games, #regular-games{
         max-height: unset !important;
