@@ -35,7 +35,7 @@ class TipoCompeticion(models.Model):
         db_table = 'tipos_competicion'
         verbose_name = "Tipo de Competición"
         verbose_name_plural = "Tipos de Competiciones"
-        managed = True
+        managed = False
 
     def __str__(self):
         return self.nombre
