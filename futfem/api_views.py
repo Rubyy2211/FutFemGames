@@ -430,7 +430,7 @@ def jugadora_trayectoria(request):
             'liga': id_liga_principal,  # 👈 ID de la competición principal
             'competiciones': [r.competicion.pk for r in relaciones if r.competicion],  # 🟢 Nueva lista con todos los IDs
             'nombre': equipo.nombre,
-            'ImagenJugadora': imagen_jugadora,
+            'ImagenJugadora': construir_url_imagen(imagen_jugadora),
             'club': equipo.id_equipo,
             'lat': equipo.latitud,
             'long': equipo.longitud,
@@ -1145,7 +1145,8 @@ def ligasxpais(request):
         salida.append({
             "liga": l.id_liga,
             "nombre": l.nombre,
-            "logo": construir_url_imagen(l.logo)
+            "logo": construir_url_imagen(l.logo),
+            "tipo": l.tipo_id
         })
 
     return JsonResponse({"success": salida})
@@ -1308,7 +1309,7 @@ def equipo_palmares(request):
         .select_related(
             'trofeo', 
             'trofeo__competicion', 
-            'trofeo__competicion__tipo', 
+            'trofeo__competicion__tipo_id', 
             'trofeo__competicion__pais'
         )
     )
