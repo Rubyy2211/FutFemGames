@@ -1309,7 +1309,7 @@ def equipo_palmares(request):
         .select_related(
             'trofeo', 
             'trofeo__competicion', 
-            'trofeo__competicion__tipo_id', 
+            'trofeo__competicion__tipo', 
             'trofeo__competicion__pais'
         )
     )
