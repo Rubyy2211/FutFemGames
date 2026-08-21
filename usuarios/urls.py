@@ -14,9 +14,10 @@ urlpatterns = [
     path('accounts/racha/', views.obtener_rachas, name='racha'),
     path('accounts/juego_racha/', views.juego_racha, name='juego_racha'),
     path('accounts/ultima_respuesta/', views.obtener_ultima_respuesta, name='ultima_respuesta'),
-    path('ranking/', views.ranking_view, name='rankings'),
+    #path('ranking/', views.ranking_view, name='rankings'),
+    path('online/', views.online, name='online'),
     path('api/rankings/', views.api_rankings, name='api_rankings'),
-    path('accounts/findusers/', views.find_user_view, name='find_user'),
+    #path('accounts/findusers/', views.find_user_view, name='find_user'),
 
     path('accounts/jugadora_favorita/', views.actualizar_jugadora_favorita, name='actualizar_jugadora_favorita'),
     path('accounts/actualizar_perfil/', views.actualizar_perfil, name='actualizar_perfil'),

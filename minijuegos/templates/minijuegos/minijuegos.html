@@ -51,6 +51,7 @@
     {% compress css inline %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'css/minijuegos.css' %}">
     <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
     <link rel="stylesheet" href="{% static 'css/combo.css' %}">
     <link rel="stylesheet" href="{% static 'css/glow-border.css' %}">
@@ -65,13 +66,12 @@
     {% include 'partials/header.html' %}
     {% include 'partials/fondo.html' %}
 
+    <!--<div id="dynamic-bg"></div>-->
+
     <div id="container-index" class="container">
-        <!--<div id="dynamic-bg"></div>-->
-        <div id="selector" role="main">
-            <a data-bg="/static/img/games.webp" href="/minigames"><p>Juegos</p></a>
-            <a data-bg="/static/img/wiki.jpg" href="https://fut-fem-wiki.vercel.app/"><p>Wiki</p></a>
-            <a data-bg="/static/img/ranking.webp"  href="/online"><p>Online</p></a>
-            <a data-bg="/static/img/nosotros.webp"  href="#nosotros"><p>Nosotros</p></a>
+        <div id="selector" role="main" style="z-index: 50;">
+            <a data-bg="" href="#diarios"><p>Diarios</p></a>
+            <a data-bg="" href="#regulares"><p>Regulares</p></a>
         </div>
 
 
@@ -80,95 +80,13 @@
                 <img src="/static/img/logo.webp" alt="futfemgames logo">
                 <p>¡Bienvenid@ a FutFem Games!</p>
             </div>
-            <div id="juegos" class="panel-info">
-                <img src="/static/img/logo2.webp" alt="futfemgames logo">
-                <p>¡Disfruta y aprende con nuestros retos sobre fútbol femenino!</p>
-            </div>
-            <div id="wiki" class="panel-info">
-                <img src="/static/img/logo-wiki.webp" alt="futfemwiki logo">
-                <p>Descubre, analiza y explora nuestra base de datos del fútbol femenino.</p>
-            </div>
-            <div id="online" class="panel-info">
-                <img src="/static/img/logo2.webp" alt="futfemgames logo">
-                <p>¡Mira tus rachas y compite por ver quién sabe más!</p>
-            </div>
-            <div id="nosotros" class="panel-info">
-                <img src="/static/img/logo.webp" alt="futfemgames logo">
-                <p>Descubre quienes somos y nuestros objetivos</p>
-            </div>
-        </div>
-
-
-
-
-
-    <!--  ESTILO ANTIGUO  -->
-        <section class="juegos content-section" id="juegos">
-
-            <!--<h1>
-                {% with id=usuario_sesion.equipo_favorito.id_equipo user=usuario_sesion.username %}
-                    {% if id == 2 %}
-                        ¡Matxo {{ user }}!
-                    {% elif id == 11 %}
-                        ¡Amunt, {{ user }}!
-                    {% elif id == 27 %}
-                        ¡Endavant, {{ user }}!
-                    {% else %}
-                        ¡Hola, {{ user }}!
-                    {% endif %}
-                {% endwith %}
-            </h1>-->
-            <div class="container mt-5 sibling-fade" style="flex-direction: row;">
-                <div id="menu-juegos" class="menu-seleccion">
-                    <a class="web-button" onclick="activarSeccion('daily-games', this)">
-                        <div class="web-button-text">
-                            <h2>Diarios</h2>
-                            <p>Entra cada día y mantén tu racha</p>
-                        </div>
-                        <picture>
-                            <source media="(max-width: 768px)" srcset="/static/img/fondos-botones/mini/diarios.webp" height="500" width="500">
-                            
-                            <img src="/static/img/fondos-botones/diarios.webp" 
-                                alt="likita" 
-                                fetchpriority="high"
-                                loading="eager" decoding="sync"
-                                height="1000"
-                                width="1000">
-                        </picture>
-                    </a>
-                    <div class="column">
-                        <a class="web-button" onclick="activarSeccion('regular-games', this)">
-                            <div class="web-button-text">
-                                <h2>Regulares</h2>
-                                <p>Entra y descubre hasta donde puedes llegar</p>
-                            </div>
-                            <picture>
-                                <source media="(max-width: 768px)" srcset="/static/img/fondos-botones/mini/regular.webp" height="500" width="500">
-                                
-                                <img src="/static/img/fondos-botones/regular.webp" 
-                                    alt="likita" 
-                                    fetchpriority="high"
-                                    loading="eager" decoding="sync"
-                                    height="1000"
-                                    width="1000">
-                            </picture>
-                        </a>
-                    </div>
-                </div>
-
-                <div id="juego-expo" style="display: none;">
-                    <div>
-                        <img id="juego-imagen" src="{% static 'img/grid-logo.webp' %}" alt="Game Image" style="align-self: center;">
-                        <h2 id="juego-titulo">Game_Title</h2>
-                        <p id="juego-parrafo">Game Description</p>
-                    </div>
-                </div>
-                        
-                <div id="daily-games" style="display: none;">
+            <div id="diarios" class="panel-info">
+                <div id="daily-games">
+                    <h2>{% trans "Juegos Diarios" %}</h2>
                     <div class="row sibling-fade d-flex justify-content-center">
-                        {% include 'partials/game_card.html' with racha_id="racha-1" destino_js="career" imagen="img/grid-logo.webp" titulo=_("Futfem Career") descripcion=_("Descubre una jugadora por su trayectoria") %}
-                        {% include 'partials/game_card.html' with racha_id="racha-4" destino_js="grid" imagen="img/grid-logo.webp" imagen_hover="img/grid1.webp" titulo=_("Futfem Grid") descripcion=_("Completa el grid de Futfem") %}
-                        {% include 'partials/game_card.html' with racha_id="racha-6" destino_js="bingo" imagen="img/bingo-logo.webp" imagen_hover="img/Bingo.webp" titulo=_("Futfem Bingo") descripcion=_("Juega el bingo de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-1" destino_js="/minigames/career" imagen="img/grid-logo.webp" titulo=_("Futfem Career") descripcion=_("Descubre una jugadora por su trayectoria") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-4" destino_js="/minigames/grid" imagen="img/grid-logo.webp" imagen_hover="img/grid1.webp" titulo=_("Futfem Grid") descripcion=_("Completa el grid de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-6" destino_js="/minigames/bingo" imagen="img/bingo-logo.webp" imagen_hover="img/Bingo.webp" titulo=_("Futfem Bingo") descripcion=_("Juega el bingo de Futfem") %}
                         <div class="col-md-4" style="display: none;">
                             <div class="game-button glow" onclick="redireccionarA('XI_Clubs')">
                                 <img src="{% static 'img/ComingSoon.png' %}" alt="Game 3">
@@ -178,102 +96,46 @@
                         </div>
                     </div>
                     <div class="row sibling-fade d-flex justify-content-center">
-                        {% include 'partials/game_card.html' with racha_id="racha-2" destino_js="wordle" imagen="img/wordle-logo.webp" imagen_hover="img/wordle.webp" titulo=_("Futfem Wordle") descripcion=_("Adivina la palabra de Futfem") %}
-                        {% include 'partials/game_card.html' with racha_id="racha-3" destino_js="guess" imagen="img/bingo-logo.webp" titulo=_("Futfem Guess") descripcion=_("Adivina el jugador de Futfem") %}
-                        {% include 'partials/game_card.html' with racha_id="racha-5" destino_js="mates" imagen="img/bingo-logo.webp" titulo=_("Futfem Mates") descripcion=_("Descubre la jugadora por sus compañeras") %}        
+                        {% include 'partials/game_card.html' with racha_id="racha-2" destino_js="/minigames/wordle" imagen="img/wordle-logo.webp" imagen_hover="img/wordle.webp" titulo=_("Futfem Wordle") descripcion=_("Adivina la palabra de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-3" destino_js="/minigames/guess" imagen="img/bingo-logo.webp" titulo=_("Futfem Guess") descripcion=_("Adivina el jugador de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-5" destino_js="/minigames/mates" imagen="img/bingo-logo.webp" titulo=_("Futfem Mates") descripcion=_("Descubre la jugadora por sus compañeras") %}        
                     </div>
-                    <button class="btn-volver" onclick="volverAlMenu('daily-games', 'menu-juegos')">← Volver</button>
                 </div>
-
-                <div id="regular-games" style="display: none;">
-                    <!--<h2>{% trans "Juegos Regulares" %}</h2>-->
+            </div>
+            <div id="regulares" class="panel-info">
+                <div id="regular-games">
+                    <h2>{% trans "Juegos Regulares" %}</h2>
 
                     <div class="row sibling-fade d-flex justify-content-center">
-                        {% include 'partials/game_card.html' with racha_id="racha-7" destino_js="higher_lower" imagen="img/higher_lower1.webp" titulo=_("Higher or Lower") descripcion=_("Descubre que jugadora vale más") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-7" destino_js="/minigames/higher_lower" imagen="img/higher_lower1.webp" titulo=_("Higher or Lower") descripcion=_("Descubre que jugadora vale más") %}
                     </div>
 
-                    <button class="btn-volver" onclick="volverAlMenu('regular-games', 'menu-juegos')">← Volver</button>
                 </div>
             </div>
-        </section>
-        <section id="wiki" class="content-section">
-            <div class="container">
-                <a class="web-button" href="https://fut-fem-wiki.vercel.app/">
-                    <div class="web-button-text">
-                        <h2>FutFem Wiki</h2>
-                        <p>Descubre información sobre jugadoras, equipos, competiciones...</p>
-                    </div>
-                    <picture>
-                        <source media="(max-width: 768px)" srcset="/static/img/fondos-botones/mini/likita.webp" height="500" width="500">
-                        
-                        <img src="/static/img/fondos-botones/likita.webp" 
-                            alt="likita" 
-                            fetchpriority="high"
-                            loading="eager" decoding="sync"
-                            height="1000"
-                            width="1000">
-                    </picture>
-                </a>
-            </div>
-        </section>
-        <section id="online" class="content-section">
-            <div class="container">
-                <a class="web-button" href="/ranking/">
-                    <div class="web-button-text">
-                        <h2>Rankings</h2>
-                        <p>Compite por la cima</p>
-                    </div>
-                    <picture>
-                        <source media="(max-width: 768px)" srcset="/static/img/fondos-botones/mini/ranking.webp" height="300" width="300">
-                        <img src="/static/img/fondos-botones/ranking.webp" alt="ranking" fetchpriority="high" loading="eager">
-                    </picture>
-                </a>
-
-                <div class="column">
-                    <a class="web-button" href="javascript:void(0)" onclick="abrirBuscador()">
-                        <div class="web-button-text">
-                            <h2>Buscar Usuarios</h2>
-                            <p>Encuentra a tus amigos</p>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                        </svg>
-                    </a>   
-                </div>
-            </div>
-
-            <div id="search-overlay" class="search-overlay">
-                <div class="search-modal-content">
-                    <button class="close-overlay" onclick="cerrarBuscador()">✕</button>
-                    <div class="container">
-                        <h1 class="modal-title">{% trans "Buscar Usuarios" %}</h1>
-                        <div class="autocomplete-container">
-                            <input type="text" id="usuarioInput" placeholder="{% trans 'Buscar por usuario...' %}" autocomplete="off">
-                            <div id="sugerencias-container">
-                                <ul id="sugerencias"></ul>
-                            </div>
-                        </div>
-                        <div id="usuario-details"></div>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
 
 
 
-</div>
+    </div>
 <script src="{% static 'js/redireccion.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
-<script src="{% static 'js/animations/index.js' %}" defer></script>
+<script src="{% static 'js/animations/minijuegos.js' %}" defer></script>
 <script type="module" src="{% static 'usuarios/js/rachas.js' %}" defer></script>
 <script src="{% static 'js/utils/selector.js' %}" defer></script>
 <script src="{% static 'js/fondo_old.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" defer></script>
 <script defer>
-    //const expoContainer = document.getElementById('juego-expo');
+    const expoContainer = document.getElementById('dynamic-bg');
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#selector a').forEach(anchor => {
+            anchor.addEventListener('click', (e) => {
+                e.preventDefault(); // Evita que se modifique la URL con el #hash
+            });
+        });
+    });
     // --- Lógica de actualización compartida ---
-    /*function actualizarExpo(card) {
+    function actualizarExpo(card) {
         if (!card) return; // Seguridad por si no hay botones
 
         const { bg, titulo, descripcion, img } = card.dataset;
@@ -295,9 +157,9 @@
             ease: "power2.out"
         });
     }
-    */
+    
     // --- Modificación de activarSeccion ---
-    /*function activarSeccion(idDestino, elemento) {
+    function activarSeccion(idDestino, elemento) {
         // 1. Buscamos el menú principal y la sección destino
         const menuPrincipal = elemento.closest('.menu-seleccion')
         const activeSection = document.getElementById(idDestino);
@@ -335,7 +197,7 @@
             }
         }
     }
-    */
+    
     // --- Actualizar tus Event Listeners existentes ---
     /*buttons.forEach(card => {
         card.addEventListener('mouseenter', () => {
@@ -426,14 +288,29 @@
             cerrarBuscador();
         }
     });*/
+</script>
+<script type="module">
+    import { obtenerRacha, displayRacha } from '{% static "usuarios/js/rachas.js" %}';
+    import { handleAutocompleteUser } from "{% static 'usuarios/js/users.js' %}";
+    /*document.getElementById("usuarioInput").addEventListener("input", handleAutocompleteUser);*/
 
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('#selector a').forEach(anchor => {
-            anchor.addEventListener('click', (e) => {
-                e.preventDefault(); // Evita que se modifique la URL con el #hash
-            });
-        });
-    });
+    const  [racha1, racha2, racha3, racha4, racha5, racha6, racha7] = await Promise.all([
+        obtenerRacha(1),
+        obtenerRacha(2),
+        obtenerRacha(3),
+        obtenerRacha(4),
+        obtenerRacha(5),
+        obtenerRacha(6),
+        obtenerRacha(7)
+    ]);
+    
+    displayRacha(racha1[0].racha_actual, racha1[0].juego.id);
+    displayRacha(racha2[0].racha_actual, racha2[0].juego.id);
+    displayRacha(racha3[0].racha_actual, racha3[0].juego.id);
+    displayRacha(racha4[0].racha_actual, racha4[0].juego.id);
+    displayRacha(racha5[0].racha_actual, racha5[0].juego.id);
+    displayRacha(racha6[0].racha_actual, racha6[0].juego.id);
+    displayRacha(racha7[0].mejor_racha, racha7[0].juego.id);
 </script>
 </body>
 </html>

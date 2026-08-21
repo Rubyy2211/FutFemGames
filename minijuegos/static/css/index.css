@@ -8,6 +8,17 @@
     justify-content: center;
     align-items: center;
 }
+#dynamic-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  z-index: -1; /* Para quedar detrás del contenido */
+  pointer-events: none;
+}
 .col-md-4{
     max-width: max-content;
     display: grid;
@@ -46,7 +57,7 @@ body::before {
 #bg-dynamic {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 1;
 
   background-size: cover;
   background-position: center;
@@ -61,8 +72,10 @@ body::before {
 #selector{
     display: flex;
     flex-direction: row;
-    background: var(--color-secundario);
     width: 40%;
+    position: absolute;
+    bottom: 5%;
+    order: 2;
 }
 
 #selector a{
@@ -70,11 +83,70 @@ body::before {
     text-align: center;
 }
 
+/* 1. Base para los enlaces de #selector */
+#selector a {
+    position: relative;
+    padding: 8px 16px;
+    text-decoration: none;
+    display: inline-block;
+
+    /* Cambia este color por el neón de tu tema */
+
+    /* Variables de partida */
+    --arrowOpacity: 0;
+    --arrowScale: 1.5;
+    --arrowYTop: -25px;
+    --arrowYBottom: 25px;
+}
+
+/* 2. Pseudo-elementos base de las esquinas */
+#selector a::before,
+#selector a::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: calc(100% - 10px);
+    height: 15px; 
+    background-repeat: no-repeat;
+    background-size: 10px 10px;
+    pointer-events: none;
+    opacity: var(--arrowOpacity);
+    transform: translateX(-50%) translateY(var(--arrowYTop)) scale(var(--arrowScale));
+    filter: drop-shadow(0 0 2px var(--color-primario)) 
+            drop-shadow(0 0 8px var(--color-primario));
+}
+
+/* 3. Esquinas superiores */
+#selector a::before {
+    top: 0;
+    background-image: 
+        linear-gradient(to right, var(--color-primario) 2px, transparent 2px),
+        linear-gradient(to bottom, var(--color-primario) 2px, transparent 2px),
+        linear-gradient(to left, var(--color-primario) 2px, transparent 2px),
+        linear-gradient(to bottom, var(--color-primario) 2px, transparent 2px);
+    background-position: 0 0, 0 0, 100% 0, 100% 0;
+}
+
+/* 4. Esquinas inferiores */
+#selector a::after {
+    bottom: 0;
+    transform: translateX(-50%) translateY(var(--arrowYBottom)) scale(var(--arrowScale));
+    background-image: 
+        linear-gradient(to right, var(--color-primario) 2px, transparent 2px),
+        linear-gradient(to top, var(--color-primario) 2px, transparent 2px),
+        linear-gradient(to left, var(--color-primario) 2px, transparent 2px),
+        linear-gradient(to top, var(--color-primario) 2px, transparent 2px);
+    background-position: 0 100%, 0 100%, 100% 100%, 100% 100%;
+}
+
+#selector a:hover p{
+    color: var(--color-primario) !important;
+}
+
 @media (max-width: 768px) {
     #selector{
         width: 100%;
         position: absolute;
-        bottom: 0;
     }
 
     #selector a{
@@ -82,9 +154,6 @@ body::before {
         text-align: center;
     }
 
-    #selector a p{
-        display: none;
-    }
     /*header .botones{
         display: none !important;
     }*/
@@ -171,12 +240,103 @@ body::before {
     font-size: large;
 }
 
+#selector a p{
+    color: var(--color-detalles);
+    font-family: 'Oswald', sans-serif;
+}
 
 
-#selector a.active, #selector a:hover{
+
+#selector a.active p, #selector a:hover p{
     text-decoration: none;
-    background: var(--color-primario);
-    color: var(--color-detalles) !important;
+    /*background: var(--color-primario);*/
+    color: var(--color-primario) !important;
+    filter: drop-shadow(0 0 2px var(--color-primario)) 
+            drop-shadow(0 0 8px var(--color-primario));
+}
+
+#container-index section{
+    display: none;
+}
+
+/* Contenedor apilador */
+.panels-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    position: relative;
+    justify-items: center;
+    width: 100%;
+}
+
+/* Todos los paneles comparten la misma celda de la rejilla */
+.panel-info {
+    grid-area: 1 / 1;
+    width: 100%;
+    /* Mantiene tus propiedades de maquetación cuando están visibles */
+    flex-direction: column; 
+    align-items: center;
+    border-radius: 20px;
+}
+
+.glass-card{
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 0 20px 10px rgba(255, 255, 255, 1);
+
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.8),
+    transparent,
+    rgba(255, 255, 255, 0.3)
+  );
+}
+
+.panel-info{
+    min-height: 100%;
+    max-height: 100%;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-info img{
+    max-height: 150px;
+    max-width: 150px;
 }
 
 section{
@@ -275,9 +435,9 @@ section#juegos .container{
     justify-content: flex-start;
 }
 
-section#juegos .container #daily-games{
-    max-height: 50dvh;
-    width: 100%;
+#daily-games{
+    display: flex;
+    flex-direction: column;
 }
 
 section .container{
@@ -313,7 +473,8 @@ section .container .web-button{
     color: var(--color-detalles);
     height: 100%;
     width: 100%;
-    display: flex;
+    /*display: flex;*/
+    display: none;
     text-decoration: none;
     flex-direction: row;
     position: relative;
@@ -415,7 +576,8 @@ section .container .web-button .web-button-text{
     border-radius: 15px; /* Bordes redondeados */
     text-align: center; /* Centrar el contenido dentro del botón */
     /*padding: 10px; /* Espaciado interior */
-    background: color-mix(in srgb, var(--color-primario) 50%, transparent 50%); /* Color de fondo primario */
+    background: color-mix(in srgb, black 70%, var(--color-secundario) 30%); /* Color de fondo primario */
+    /*background: color-mix(in srgb, color-mix(in srgb, #1e1e24 50%, var(--color-primario) 50%) 50%, transparent 50%);
     color: white; /* Color del texto */
     margin-bottom: 5px; /* Espaciado inferior entre botones */
     transition: transform 0.2s; /* Suavizar el efecto de transformación */
@@ -426,9 +588,10 @@ section .container .web-button .web-button-text{
     /*backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);*/
     pointer-events: auto;
-    min-width: 98px;
     overflow: hidden;
-    border: 1px solid var(--color-primario);
+    border: 2px solid var(--color-primario);
+    height: 220px;
+    width: 150px;
 }
 .game-button {
     transform-style: preserve-3d;
@@ -466,7 +629,6 @@ section .container .web-button .web-button-text{
     left: 0; 
     backface-visibility: hidden; 
     margin: 0 !important;
-    padding: 0 !important;
     transform-style: preserve-3d; 
     backface-visibility: hidden;
     gap: 10px;
@@ -570,7 +732,8 @@ section .container .web-button .web-button-text{
 }
 
 .game-button #game-title-container{
-    background: color-mix(in srgb, var(--color-primario) 100%, transparent 0%); /* Color de fondo primario */
+    /*background: color-mix(in srgb, var(--color-primario) 100%, transparent 0%); /* Color de fondo primario */
+    background: color-mix(in srgb, #1e1e24 40%, var(--color-primario) 60%);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -614,16 +777,35 @@ section .container .web-button .web-button-text{
     margin-bottom: 0 !important; /* Eliminar el margen inferior */
     text-wrap: nowrap;
     height: 100%; /* El título ocupa el espacio restante debajo de la imagen */
-    width: 100% !important;
+    width: fit-content !important;
+    color: var(--color-texto);
     /*font-family: 'Oswald', sans-serif !important; /* Fuente personalizada para el título */
-    background: color-mix(in srgb, var(--color-primario) 100%, transparent 0%); /* Color de fondo primario */
+    /*background: color-mix(in srgb, var(--color-primario) 100%, transparent 0%); /* Color de fondo primario */
 }
 
 .game-button:hover {
-    color: var(--color-texto); /* Cambiar el color del texto en hover */
-    /*background: var(--color-primario); /* Cambiar el fondo en hover */
-    background: color-mix(in srgb, var(--color-primario) 30%, transparent 70%); /* Color de fondo primario */
-    transition: scale 0.5s, background-color 0.2s, color 0.2s; /* Suavizar las transiciones */
+    /*background: color-mix(in srgb, var(--color-primario) 30%, transparent 70%);*/
+    border-color: var(--color-primario);
+    transform: scale(1);
+    color: #ffffff; /* O var(--color-primario) para texto encendido */
+
+    /* EFECTO NEÓN (Resplandor externo + resplandor interno + texto) */
+    box-shadow: 
+        0 0 5px var(--color-primario),
+        0 0 15px var(--color-primario),
+        0 0 30px color-mix(in srgb, var(--color-primario) 60%, transparent 40%),
+        inset 0 0 10px color-mix(in srgb, var(--color-primario) 40%, transparent 60%);
+        
+    text-shadow: 
+        0 0 5px #fff,
+        0 0 10px var(--color-detalles);
+
+    /* Transiciones suaves para todas las propiedades (incluyendo sombras) */
+    transition: all 0.3s ease;
+}
+
+.game-button:hover h2{
+    color: var(--color-detalles); /* Cambiar el color del texto en hover */
 }
 
 @media (min-width: 768px){
@@ -677,8 +859,10 @@ section .container .web-button .web-button-text{
 
     #container-index #daily-games, #container-index #regular-games{
         display: flex;
-        flex-direction: row;
-        min-height: fit-content;
+        flex-direction: column;
+        min-height: 100%;
+        align-items: center;
+        justify-content: center;
         gap: 10px;
     }
 
@@ -690,18 +874,20 @@ section .container .web-button .web-button-text{
 
     .col-md-4{
         width: fit-content;
+        padding: 10px;
     }
 
     .game-button{
         display: flex;
-        flex-direction: row-reverse;
+        flex-direction: column;
+        align-items: center;
         height: 100%;
         width: 150px;
     }
 
     .game-button img{
-        position: absolute;
-        min-height: 30%;
+        /*position: absolute;*/
+        min-height: 60%;
         min-width: auto;
         max-width: auto;
         max-height: 40%;
@@ -709,10 +895,11 @@ section .container .web-button .web-button-text{
     }
 
     .game-button #game-title-container{
-        flex-direction: column-reverse;
+        flex-direction: column;
         width: 100%;
-        justify-content: flex-start;
-        align-items: flex-start;
+        justify-content: space-between;
+        align-items: center;
+        height: 40%;
         padding: 5px;
     }
 
@@ -720,6 +907,8 @@ section .container .web-button .web-button-text{
         text-align: left;
         padding-top: 0;
         height: fit-content;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 ;
     }
 }
 
@@ -801,11 +990,14 @@ section .container .web-button .web-button-text{
 /* Media queries para pantallas de menos de 768px */
 @media (max-width: 768px) {
     .col-md-4{
-        max-width: 85px !important;
+        max-width: 30% !important;
+        width: 30%;
         padding-inline: 0 !important;
+        padding: 10px;
     }
     #selector{
         order: 2;
+        max-width: 90%;
     }
     #juego-expo{
         display: none !important;
@@ -814,7 +1006,9 @@ section .container .web-button .web-button-text{
         display: flex;
         max-width: 500px;
         padding-bottom: 0;
-        justify-content: start;
+    }
+    .panel-info{
+        text-align: center;
     }
     section{
         min-height: 75dvh;
@@ -884,17 +1078,25 @@ section .container .web-button .web-button-text{
     }
     .game-button {
         max-width: 100% !important; /* Botones ocupan todo el ancho en pantallas pequeñas */
-        min-width: 85px;
         max-width: 152px;
         max-height: 100%;
+        width: auto;
+        height: auto;
+        margin-bottom: 0;
     }
     .game-button img {
-        max-width: 75px; /* La imagen ocupa el ancho total disponible */
-        min-height: 45px; /* Asegura que la imagen tenga al menos 100px de alto */
+        /*max-width: 75px; /* La imagen ocupa el ancho total disponible */
+        min-height: 60%; /* Asegura que la imagen tenga al menos 100px de alto */
         min-width: 45px; /* Asegura que la imagen tenga al menos 100px de ancho */
-        height: 75px; /* Establece una altura fija para las imágenes */
+        height: 60%; /* Establece una altura fija para las imágenes */
         width: stretch; /* Ajusta el ancho automáticamente para mantener la proporción */
     }
+
+    .game-button #game-title-container{
+        height: 40%;
+    }
+
+
     .game-button h2 {
         font-size: 10px; /* Reducir el tamaño de la fuente en pantallas pequeñas */
         width: max-content;

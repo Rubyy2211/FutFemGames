@@ -42,13 +42,12 @@ async function renderPlayer(container, data, hideValue) {
     p.textContent = hideValue ? '' : data.market_value.toLocaleString() + " €";
     p.style.visibility = hideValue ? "hidden" : "visible";
 
-    console.log(img)
-
-    colors = await getDominantColors(img, 4)
-    console.log(data.imagen)
-    container.style.backgroundImage = `url("${data.imagen}")`
+    //colors = await getDominantColors(img, 4)
+    /*container.style.backgroundImage = `url("${data.imagen}")`
     container.style.backgroundRepeat = 'no-repeat'
-    container.style.backgroundSize = 'cover';
+    container.style.backgroundSize = 'cover';*/
+
+    container.style.setProperty('--bg-image', `url("${data.imagen}")`);
 }
 
 async function verificar(event){

@@ -1,4 +1,4 @@
-window.addEventListener('DOMContentLoaded', () => {
+/*window.addEventListener('DOMContentLoaded', () => {
     const links = document.querySelectorAll('#selector a[href^="#"]');
     const sections = document.querySelectorAll('.content-section');
 
@@ -46,4 +46,4 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // Ejecución inicial
     requestAnimationFrame(mostrarSeccionDesdeHash);
-});
+});*/

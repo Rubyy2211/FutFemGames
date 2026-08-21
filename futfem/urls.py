@@ -36,6 +36,7 @@ urlpatterns = [
 
 
     path("jugadora-valor-mercado/", api.obtener_valor_mercado, name="valor_mercado"),
+    path('reporte-valores/', api_views.reporte_valores_mercado, name='reporte_valores'),
     path("club_players/", api.api_club_players, name="club_players"),
     path("update_mkvalue/", api.actualizar_valores_jugadoras, name="update_mkvalue"),
     path("actualizar_soccerdonna_url/", api.actualizar_soccerdonna_url, name="actualizar_soccerdonna_url"),

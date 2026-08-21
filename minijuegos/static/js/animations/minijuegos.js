@@ -1,9 +1,9 @@
-/*const buttons = document.querySelectorAll('.game-button');
-const expo = document.getElementById('juego-expo');
+const buttons = document.querySelectorAll('.game-button');
+const expo = document.getElementById('dynamic-bg');
 const expoTitulo = document.getElementById('juego-titulo');
 const expoParrafo = document.getElementById('juego-parrafo');
 const expoImagen = document.getElementById('juego-imagen');
-const webButtons = document.querySelectorAll('.web-button');*/
+//const webButtons = document.querySelectorAll('.web-button');
 const hoverSound = new Audio('/static/sounds/hover2.mp3');
 
 /*webButtons.forEach(card => {
@@ -34,7 +34,7 @@ const hoverSound = new Audio('/static/sounds/hover2.mp3');
       });
     }
   });
-});
+});*/
 
 buttons.forEach(card => {
   card.addEventListener('mouseenter', () => {
@@ -42,9 +42,9 @@ buttons.forEach(card => {
     const { bg, titulo, descripcion, img } = card.dataset;
 
     // 2. Actualizar contenido de la expo
-    expoTitulo.textContent = titulo;
-    expoParrafo.textContent = descripcion;
-    expoImagen.src = img;
+    //expoTitulo.textContent = titulo;
+    //expoParrafo.textContent = descripcion;
+    expo.style.backgroundImage = img;
 
     // 3. Cambiar fondo y mostrar contenedor con GSAP
     gsap.to(expo, {
@@ -68,17 +68,17 @@ buttons.forEach(card => {
   card.addEventListener('mouseleave', () => {
     // Opcional: Ocultar la expo al salir del botón o dejar la última seleccionada
     // Si quieres que desaparezca:
-    /*
+    
     gsap.to(expoContainer, { autoAlpha: 0, duration: 0.3 });
-    */
+    
 
     // Restaurar botones
-    //gsap.to(card, { scale: 1, duration: 0.3 });
-    //buttons.forEach(other => {
-    //  gsap.to(other, { opacity: 1, duration: 0.3 });
-    //});
-  //});
-//});
+    gsap.to(card, { scale: 1, duration: 0.3 });
+    buttons.forEach(other => {
+      gsap.to(other, { opacity: 1, duration: 0.3 });
+    });
+  });
+});
 
 
 
@@ -87,7 +87,7 @@ buttons.forEach(card => {
 const selectorLinks = document.querySelectorAll('#selector a');
 const dynamicBg = document.getElementById('dynamic-bg');
 const defaultSection = document.getElementById('default');
-const hoverSections = document.querySelectorAll('#juegos, #wiki, #online, #nosotros');
+const hoverSections = document.querySelectorAll('#diarios, #regulares');
 
 // Variables para rastrear el estado activo
 let currentActiveSection = defaultSection;

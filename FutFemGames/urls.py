@@ -35,7 +35,7 @@ urlpatterns = [
     path('', include('minijuegos.urls')),
     path('api/', include('futfem.urls')),
     path('', include('usuarios.urls')),
-    path('', include('FutFemWiki.urls')),
+    #path('', include('FutFemWiki.urls')),
     path('i18n/setlang/', csrf_exempt(set_language), name='set_language'),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='javascript-catalog'),
 ]

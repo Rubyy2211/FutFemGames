@@ -1,7 +1,8 @@
-import requests
+import requests, time
 from bs4 import BeautifulSoup
 from django.utils import timezone
 from futfem.models import Jugadora
+from futfem.utils import construir_url_imagen, formatear_valor_mercado
 
 BASE_URL = "https://www.soccerdonna.de"
 HEADERS = {
@@ -195,20 +196,72 @@ def obtener_altura_y_pie_desde_url(url):
         "pie_habil": pie_habil   # ej: "rechts", "links" o "right"/"left"
     }
 
-def actualizar_market_values():
-    jugadoras = Jugadora.objects.exclude(soccerdonna_url__isnull=True)
+def actualizar_market_values(delay_segundos=1):
+    """
+    Recorre las jugadoras con URL de Soccerdonna, actualiza su valor de mercado
+    y devuelve el resumen global junto con el detalle individual de cada jugadora.
+    """
+    jugadoras = Jugadora.objects.exclude(soccerdonna_url__isnull=True).exclude(soccerdonna_url__exact="")
+    
+    actualizadas = 0
+    errores = 0
+    detalle_jugadoras = []
 
     for j in jugadoras:
+        valor_anterior = j.market_value  # Guardamos el valor previo
+        
         try:
-            response = requests.get(j.soccerdonna_url, headers=HEADERS)
+            response = requests.get(j.soccerdonna_url, headers=HEADERS, timeout=10)
             response.raise_for_status()
 
             soup = BeautifulSoup(response.text, "html.parser")
-            mv = _parse_market_value_from_soup(soup)
+            nuevo_valor = _parse_market_value_from_soup(soup)
 
-            j.market_value = mv
+            # Actualizamos el modelo
+            j.market_value = nuevo_valor
             j.soccerdonna_last_updated = timezone.now()
             j.save()
+            
+            actualizadas += 1
+
+            # Calcular diferencia
+            diferencia = None
+            if valor_anterior is not None and nuevo_valor is not None:
+                diferencia = nuevo_valor - valor_anterior
+
+            detalle_jugadoras.append({
+                "id": j.id_jugadora,
+                "nombre_completo": f"{j.Nombre} {j.Apellidos}",
+                "apodo": j.Apodo,
+                "imagen": construir_url_imagen(j.imagen),
+                "valor_anterior": formatear_valor_mercado(valor_anterior),
+                "valor_nuevo": formatear_valor_mercado(nuevo_valor),
+                "diferencia": formatear_valor_mercado(diferencia),  # Positivo si subió, negativo si bajó, 0 si igual
+                "estado": "ok",
+                "error": None
+            })
+
+            time.sleep(delay_segundos)
 
         except Exception as e:
-            print(f"Error actualizando {j.Nombre}: {e}")
+            errores += 1
+            print(f"Error actualizando a {j.Nombre} {j.Apellidos}: {e}")
+            
+            detalle_jugadoras.append({
+                "id": j.id_jugadora,
+                "nombre_completo": f"{j.Nombre} {j.Apellidos}",
+                "apodo": j.Apodo,
+                "imagen": construir_url_imagen(j.imagen),
+                "valor_anterior": formatear_valor_mercado(valor_anterior),
+                "valor_nuevo": formatear_valor_mercado(valor_anterior),  # Mantiene el anterior
+                "diferencia": 0,
+                "estado": "error",
+                "error": str(e)
+            })
+
+    return {
+        "total_procesadas": len(jugadoras),
+        "actualizadas": actualizadas,
+        "errores": errores,
+        "jugadoras": detalle_jugadoras  # Lista con el detalle de cada jugadora
+    }

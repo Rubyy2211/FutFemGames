@@ -3,6 +3,9 @@ body{
     max-height: 100vh;
     overflow-y: hidden !important;
 }
+h1{
+    margin-bottom: 0%;
+}
 /* width */
 ::-webkit-scrollbar {
   width: 7px;
@@ -24,9 +27,7 @@ body{
 }
 
 .menor, .mayor, .cercano{
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-warning) 60%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 40%, transparent)) !important;
+    background: color-mix(in srgb, black 70%, var(--color-warning) 30%) !important;
     border: 1px solid var(--color-warning);
     flex-direction: row !important;
 }
@@ -44,16 +45,12 @@ body{
 }
 
 .igual, .correct{
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-success) 60%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 40%, transparent)) !important;
+    background: color-mix(in srgb, black 70%, var(--color-success) 30%) !important;
     border: 1px solid var(--color-success);
 }
 
 .incorrecto{
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-gray-dark) 60%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 40%, transparent)) !important;
+    background: color-mix(in srgb, black 70%, var(--color-gray-dark) 30%) !important;
     border: 1px solid var(--color-gray-dark);
 }
 
@@ -68,6 +65,7 @@ body{
     height: 100%;
     max-width: 420px;
     overflow: hidden;
+    margin-top: 5dvh;
 }
 
 #game #game-results{
@@ -85,12 +83,18 @@ body{
     display: flex;
     flex-direction: row;
     align-items: center;
+    gap: 5px;
+}
+
+input{
+    max-width: 90% !important;
+    width: 90% !important;
 }
 
 #game #game-results .jugadora-item{
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
 #game #game-results>.jugadora-item:last-child{
@@ -113,11 +117,7 @@ body{
     border-radius: 50%;
     width: 100px;
     height: 100px;
-    background: linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--color-primario) 30%, transparent),
-        color-mix(in srgb, var(--color-secundario) 50%, transparent)
-    );
+    background: color-mix(in srgb, black 70%, var(--color-secundario) 30%);
 
     color: white; /* Color del texto */
     transition: transform 0.2s; /* Suavizar el efecto de transformación */
@@ -129,7 +129,7 @@ body{
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 1fr);
-    gap: 20px;
+    gap: 10px;
 }
 
 #game #game-results .jugadora-item .jugadora-data > * {

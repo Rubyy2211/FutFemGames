@@ -19,28 +19,46 @@
     padding-bottom: 20px;
     padding-block: 40px;
     background-image: none !important; /* Quitamos el fondo del padre */
-    background: var(--color-secundario);
+    background: none;
+    backdrop-filter: none;
+    box-shadow: none;
     border: none !important;
     overflow-y: hidden;
-    max-width: 700px;
-    max-height: 90%;
+    max-width: 800px;
+    width: 100%;
+    max-height: 100%;
 }
 
-.container-perfil::before {
+#resto-info{
+    padding-right: 0;
+}
+
+hr {
+    border: none; /* Quitamos el borde gris por defecto */
+    height: 1.5px;  /* Le damos el grosor mínimo */
+    width: 100%;
+    
+    /* Usamos color-mix para que sea una línea sutil que no rompa el diseño */
+    background-color: color-mix(in srgb, var(--color-detalles) 80%, transparent); 
+    
+    margin: 0 0; /* Espaciado arriba y abajo para separar los bloques */
+}
+
+/*.container-perfil::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 20%; /* Aquí controlas el alto exacto */
-    background-image: url("/static/img/estadio.jpg");
+    /*background-image: url("/static/img/estadio.jpg");
     background-size: cover;
     /* Mueve el fondo 50% (centro) + 14px hacia la derecha */
-    background-position: center calc(50% - 50px);
+    /*background-position: center calc(50% - 50px);
     z-index: -1; /* Se va al fondo */
-    opacity: 0.8; /* Opcional: para que no distraiga tanto */
-    border-radius: 20px 20px 0 0;
-}
+    /*opacity: 0.8; /* Opcional: para que no distraiga tanto */
+    /*border-radius: 20px 20px 0 0;
+}*/
 .container-perfil#equipo-2::before{
     background-image: url("/static/img/estadio-bunyol.jpg");
     background-position: center calc(50% - 60px);
@@ -65,7 +83,39 @@
 .container-perfil #datos-personales{
     display: flex;
     flex-direction: column;
+    gap: 10px;
+    align-items: start;
+    padding-block: 10px;
+}
+
+.container-perfil #datos-personales #bio{
+    text-align: start;
+}
+
+.container-perfil #datos-personales #resto-info{
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    justify-content: center
+}
+
+.container-perfil #datos-personales .row{
+    display: flex;
+    flex-direction: row;
+    margin-inline: 0;
+}
+
+.container-perfil #datos-personales #resto-info>.row .field-container{
+    display: flex;
+    flex-direction: row;
     align-items: center;
+}
+
+.container-perfil #datos-personales #nombre-usuario{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: baseline;
 }
 
 .text-success, .text-danger{
@@ -80,6 +130,7 @@
 
 .container-perfil #datos-personales h2{
     font-size: large;
+    height: fit-content;
     margin-bottom: 0;
 }
 
@@ -241,21 +292,6 @@
     box-shadow: 0 0 8px var(--color-primario);
 }
 
-
-
-
-@media (max-width: 1200px) {
-    .container-perfil{
-        padding-inline: 25px;
-    }
-}
-
-@media (max-width: 1030px) {
-    .container-perfil{
-        padding-inline: 0px;
-    }
-}
-
 @media (max-width: 768px) {
     h1{
         font-size: medium;
@@ -293,6 +329,23 @@
     .container-perfil #datos-personales{
         height: fit-content;
         padding-top: 30px;
+        align-items: baseline;
+    }
+
+    .container-perfil #datos-personales h1{
+        font-size: x-large;
+    }
+
+    .container-perfil #datos-personales span{
+        font-size: small;
+    }
+
+    .container-perfil .field-container img{
+        max-height: 25px;
+    }
+
+    .container-perfil #datos-personales #bio{
+        font-size: small;
     }
 
     .container-perfil .right{

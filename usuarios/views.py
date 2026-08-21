@@ -18,6 +18,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth.models import update_last_login # Importa esto
 from django.views.decorators.csrf import csrf_exempt
+from futfem.utils import construir_url_imagen
 
 # Create your views here.
 def login_view(request):
@@ -187,11 +188,14 @@ def registro_view(request):
 
     return render(request, 'registro.html')
 
-def ranking_view(request):
-    return render(request, 'ranking.html')
+def online(request):
+    return render(request, 'online.html')
 
-def find_user_view(request):
-    return render(request, 'findusers.html')
+#def ranking_view(request):
+#    return render(request, 'ranking.html')
+
+#def find_user_view(request):
+#    return render(request, 'findusers.html')
 
 def api_rankings(request):
     juego_id = request.GET.get('juego', 'all')
@@ -247,8 +251,8 @@ def usuarioxnombre(request):
 
 def perfil_view(request, username=None):
     # 1. Seguridad de roles
-    if request.session.get('rol_id') not in [1, 2]:
-        return redirect('/')
+    if not request.user.is_authenticated:
+        return redirect('login') # Cambia por tu URL de login
 
     # 2. Lógica de búsqueda
     if username:

@@ -67,13 +67,13 @@ export async function ponerClubes(ids, posiciones) {
             const colorSecundario = club.colorSecundario || 'transparent'; // fallback
             th.style.background = `
                 linear-gradient(
-                    to bottom,
-                    color-mix(in srgb, ${colorPrimario} 100%, transparent 0%),
-                    color-mix(in srgb, var(--color-secundario) 100%, transparent 0%)
+                    135deg,
+                    color-mix(in srgb, black 70%, var(--color-secundario) 30%) 60%,
+                    ${colorPrimario} 100%
                 )
-                `;
+            `;
             
-            th.style.border = `1px solid color-mix(in srgb, ${colorPrimario} 50%, transparent)`;
+            th.style.border = `2px solid color-mix(in srgb, ${colorPrimario} 50%, transparent)`;
 
             // Añadir imagen y texto al elemento th
             th.appendChild(img);
@@ -183,6 +183,7 @@ export async function Ganaste(modo) {
     const result = document.getElementById('resultado');
     const reloj = document.getElementById('reloj');
     const vidas = document.getElementById('vidas');
+    const fondo = document.getElementById('fondo-web');
     const { cambiarImagenConFlip } = await import("/static/js/animations/generales.js");
     if(button){
         button.disabled=true;
@@ -192,6 +193,9 @@ export async function Ganaste(modo) {
         input.disabled = true;
         input.style.pointerEvents = 'none';
     });
+
+    fondo.classList.add('tick-win');
+
     // Llamar a la función que cambia la imagen con flip
     if(modo==='grid'){
         result.textContent = gettext('¡Has Ganado!');

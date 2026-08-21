@@ -1,0 +1,247 @@
+{% load static %}
+{% load compress %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutFemGames Ranking</title>
+    <link rel="icon" href="{% static 'img/logo.png' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Montserrat:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@100..900&family=Oswald:wght@200..700&family=Plus+Jakarta+Sans:wght@200..800&family=Russo+One&display=swap" 
+      media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />    
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    {% compress css inline %}
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+    <link rel="stylesheet" href="{% static 'css/estilos.css' %}">
+    <link rel="stylesheet" href="{% static 'css/combo.css' %}">
+    <link rel="stylesheet" href="{% static 'usuarios/css/ranking.css' %}">
+    {% endcompress %}
+
+    <style>
+        p{
+            margin-bottom: 0;
+        }
+    </style>
+
+</head>
+<body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
+    {% include 'partials/header.html' %}
+    {% include 'partials/fondo.html' %}
+
+    <div class="container-ranking mt-5">
+        <div id="selector" role="main" style="z-index: 50;">
+            <a data-bg="" href="#ranking"><p>Ranking</p></a>
+            <a data-bg="" href="#search"><p>Buscar Usuarios</p></a>
+        </div>
+
+        <div class="panels-stack">
+            <div id="default" class="panel-info" style="display: flex;">
+                <img src="/static/img/logo.webp" alt="futfemgames logo">
+                <p>¡Bienvenid@ a FutFem Games!</p>
+            </div>
+            <div id="ranking" class="panel-info container-ranking mt-5" style="display: none;">
+                <div class="glass p-4">
+                    <h2>{% trans "Clasificación Global" %}</h2>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-4 filtros">
+                        <div class="d-flex flex-column align-items-start">
+                        <label for="filtro-juego" class="form-label mb-0">{% trans "Filtrar por juego:" %}</label>
+                        <select id="filtro-juego" class="form-select bg-dark text-white border-0 shadow-sm" style="width: 250px;">
+                            <option value="1">{% trans "Futfem Career" %}</option>
+                            <option value="2">{% trans "Futfem Wordle" %}</option>
+                            <option value="3">{% trans "Futfem Guess" %}</option>
+                            <option value="4">{% trans "Futfem Grid" %}</option>
+                            <option value="5">{% trans "Futfem Mates" %}</option>
+                            <option value="6">{% trans "Futfem Bingo" %}</option>
+                            <option value="7">{% trans "Higher or Lower" %}</option>
+                        </select>
+                        </div>
+                        
+                        <!--<span class="badge bg-primary">{% trans "Top 10 Jugadores" %}</span>-->
+                    </div>
+
+                    <div id="tabla-ranking-container">
+                        <table class="table-hover custom-table-glass" style="border-collapse: collapse;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">#</th>
+                                    <th>{% trans "Usuario" %}</th>
+                                    <th>{% trans "Juego" %}</th>
+                                    <th class="text-center">{% trans "Racha" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ranking-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="search" class="panel-info" style="display: none;">
+                <div class="autocomplete-container">
+                    <input type="text" id="usuarioInput" placeholder="{% trans 'Buscar por usuario...' %}" autocomplete="off">
+                    <div id="sugerencias-container">
+                        <ul id="sugerencias"></ul>
+                    </div>
+                </div>
+                <div id="usuario-details"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% url 'javascript-catalog' %}"></script>
+    <script src="{% static 'js/fondo_old.js' %}" defer></script>
+    <script src="{% static 'js/animations/index.js' %}" defer></script>
+    <script type="module">
+        import { cargarRanking } from '{% static "usuarios/js/rachas.js" %}';
+        import { handleAutocompleteUser } from "{% static 'usuarios/js/users.js' %}";
+        document.getElementById("usuarioInput").addEventListener("input", handleAutocompleteUser);
+
+        // 1. Función para orquestar la carga y el dibujado
+        async function actualizarRanking(juegoId) {
+            const tbody = document.getElementById('ranking-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center">{% trans "Cargando..." %}</td></tr>';
+            
+            try {
+                const data = await cargarRanking(juegoId);
+                displayRanking(data);
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">{% trans "Error al cargar los datos" %}</td></tr>';
+            }
+        }
+
+        // 2. Evento Change (ahora es async)
+        document.getElementById('filtro-juego').addEventListener('change', async function() {
+            await actualizarRanking(this.value);
+        });
+
+        // 3. Función para pintar (limpia de lógica de carga)
+        function displayRanking(datos) {
+            const tbody = document.getElementById('ranking-body');
+            tbody.innerHTML = ''; 
+
+            if (datos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center">{% trans "No hay puntuaciones para este juego" %}</td></tr>';
+                return;
+            }
+
+            datos.forEach((fila, index) => {
+                const tr = document.createElement('tr');
+                const medalClass = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : index + 1;
+                let iconosrc = '';
+                if (fila.es_jugadora) {
+                    iconosrc = '/static/img/verified.png';
+                }
+                if (fila.miembro) {
+                    iconosrc = '/static/img/logo.png';
+                }
+                
+                tr.innerHTML = `
+                    <td class="text-center fw-bold align-middle">${medalClass}</td>
+                    <td class="align-middle">
+                        <div class="d-flex align-items-center">
+                            <a href="/accounts/perfil/${fila.username}/" class="text-decoration-none text-info fw-bold" id="usuario-${fila.username}">
+                                <img src="${fila.foto_perfil}" 
+                                class="avatar" 
+                                style="width: 60px; height: 60px; object-fit: cover;">
+                                ${fila.username}
+                                ${iconosrc ? `<img src="${iconosrc}" class="ms-2" style="width: 20px; height: 20px;" title="{% trans 'Miembro del equipo' %}">` : ''}
+                            </a>
+                        </div>
+                    </td>
+                    <td class="align-middle">${fila.nombre_juego}</td>
+                    <td class="text-center racha-num align-middle">${fila.mejor_racha}</td>
+                `;
+                tr.classList.add('glass');
+                tbody.appendChild(tr);
+            });
+        }
+
+        // 4. Carga inicial (Top-level await permitido en type="module")
+        await actualizarRanking(1);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+    <script defer>
+    const expoContainer = document.getElementById('dynamic-bg');
+    // --- Lógica de actualización compartida ---
+    /*function actualizarExpo(card) {
+        if (!card) return; // Seguridad por si no hay botones
+
+        const { bg, titulo, descripcion, img } = card.dataset;
+        const expoTitulo = document.getElementById('juego-titulo');
+        const expoParrafo = document.getElementById('juego-parrafo');
+        const expoImagen = document.getElementById('juego-imagen');
+
+        // Actualizar textos e imagen
+        expoTitulo.textContent = titulo;
+        expoParrafo.textContent = descripcion;
+        expoImagen.src = img;
+
+        // Animación con GSAP para el contenedor
+        gsap.to(expoContainer, {
+            duration: 0.5,
+            autoAlpha: 1,
+            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${bg})`,
+            display: 'flex',
+            ease: "power2.out"
+        });
+    }*/
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#selector a').forEach(anchor => {
+            anchor.addEventListener('click', (e) => {
+                e.preventDefault(); // Evita que se modifique la URL con el #hash
+            });
+        });
+    });
+    
+    // --- Modificación de activarSeccion ---
+    function activarSeccion(idDestino, elemento) {
+        // 1. Buscamos el menú principal y la sección destino
+        const menuPrincipal = elemento.closest('.menu-seleccion')
+        const activeSection = document.getElementById(idDestino);
+
+        if (!activeSection) return; // Seguridad por si el ID no existe
+
+        // 2. Ocultamos el menú principal
+        menuPrincipal.style.display = 'none';
+
+        // 3. Lógica de visualización
+        // Si la sección es de juegos (daily o regular), solemos usar flex
+        const esSeccionJuego = ['ranking', 'search'].includes(idDestino);
+        activeSection.style.display = esSeccionJuego ? 'flex' : 'block';
+
+        // 4. COMPORTAMIENTO DINÁMICO (El "Modo Juego")
+        const firstButton = activeSection.querySelector('.game-button');
+
+        if (firstButton) {
+            // Si hay botones de juego, activamos la Expo y las animaciones
+            expoContainer.style.display = 'flex';
+            actualizarExpo(firstButton);
+
+            // Animación GSAP para el primer botón
+            gsap.to(firstButton, { scale: 1.05, duration: 1, opacity: 1 });
+
+            // Apagamos el resto de botones para centrar la vista
+            const otherButtons = activeSection.querySelectorAll('.game-button');
+            otherButtons.forEach(btn => {
+                if (btn !== firstButton) gsap.to(btn, { opacity: 1, duration: 0.3, scale: 1 });
+            });
+        } else {
+            // Si no hay botones (ej: Perfil), ocultamos la expo
+            if (typeof expoContainer !== 'undefined') {
+                expoContainer.style.display = 'none';
+            }
+        }
+    }
+</script>
+</body>
+</html>

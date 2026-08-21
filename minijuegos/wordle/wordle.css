@@ -16,6 +16,7 @@
     max-height: 100%;
     max-width: 1000px;
     overflow: hidden;
+        margin-top: 15dvh;
 }
 
 .container-wordle h1{

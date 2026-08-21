@@ -1,4 +1,4 @@
-const navLinks = document.querySelectorAll('li a');
+const navLinks = document.querySelectorAll('header li a');
 let persistentLink = null; // Guardará el enlace del dropdown activo
 
 // 1. Modificamos las funciones para que acepten un "el" (elemento)

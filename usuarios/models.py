@@ -41,6 +41,8 @@ class Usuario(AbstractUser):
 
     es_jugadora = models.IntegerField(default=None, blank=True, null=True)  # Nuevo campo para indicar si el usuario es jugadora
 
+    bio = models.TextField(default=None, blank=True, max_length=300, null=True)
+
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

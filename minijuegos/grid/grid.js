@@ -448,21 +448,27 @@ const columnaContadores = {
         const celdas = comprobarFotosEnCeldas();
         const {stopCounter} = await import('/static/js/utils/counter.js');
         const {Ganaste} = await import("/static/js/games/funciones-comunes.js");
+
         if(celdas){
             stopCounter('grid');
             Ganaste('grid');
         }
 
-        // Verificar si retrievedGrid es un array (puede haber errores en la conversión)
+        // Verificar si retrievedGrid es un array
         if (!Array.isArray(retrievedGrid)) {
-            retrievedGrid = []; // Reiniciar como array vacío si no es un array válido
+            retrievedGrid = [];
             localStorage.setItem('Attr4', JSON.stringify(retrievedGrid));
         } else {
             for (let i = 0; i < retrievedGrid.length; i++) {
-                let celda = retrievedGrid[i].celda;
-                let equipo = celda.replace("c", "").split("")[0];
-                let pais = celda.replace("c", "").split("")[1];
-                await colocarImagenEnTabla(equipo, pais, retrievedGrid[i].foto);
+                let item = retrievedGrid[i];
+                
+                // Validar que el elemento existe y tiene la propiedad 'celda'
+                if (item && item.celda) {
+                    let celda = item.celda;
+                    let equipo = celda.replace("c", "").split("")[0];
+                    let pais = celda.replace("c", "").split("")[1];
+                    await colocarImagenEnTabla(equipo, pais, item.foto);
+                }
             }
         }
     }

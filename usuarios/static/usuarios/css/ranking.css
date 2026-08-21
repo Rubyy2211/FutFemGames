@@ -10,21 +10,61 @@
     /*align-items: center;*/
     justify-content: center;
     margin-top: 0 !important;
+        height: 100%;
+}
+
+h2{
+    margin-bottom: 0 !important;
+}
+
+#tabla-ranking-container{
+    height: 100%;
+}
+
+table{
+    width: 100%;
+    /*height: 100%;*/
+}
+
+.panel-info{
+    min-height: 100%;
+    max-height: 100%;
+    max-width: 100dvw;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.panel-info#ranking{
+    justify-content: start !important;
 }
 
 .container-ranking .p-4{
     width: 700px;
+    height: 80%;
     cursor: default;
-    border: 0.5px solid var(--color-secundario) !important;
+    /*border: 0.5px solid var(--color-secundario) !important;*/
+    background: none;
+    backdrop-filter: none;
+    border: none !important;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
 }
 
 tbody{
     border: none;
+    height: 100%;
 }
 
 tbody tr{
     border-radius: 20px;
     border: none !important;
+    height: 10%;
+    max-height: 10%;
 }
 
 tbody tr:nth-child(1){
@@ -114,6 +154,8 @@ table tr td:last-child{
     }
     .container-ranking .p-4 .filtros div select{
         max-width: 100%;
+        padding: 2px;
+        text-align: center;
     }
     table td, table th{
         font-size: xx-small;

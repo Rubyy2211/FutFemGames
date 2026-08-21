@@ -116,8 +116,9 @@ async function verificar(){
     displayRespuesta(jugadoraAnswer)
     if(nombreJugadora === jugadoraId){
         victory.play()
-        gestionarAciertos(nombreJugadora)
+        gestionarAciertos(nombreJugadora);
         updateRacha(3, 1, localStorage.getItem('Attr3'))
+        Ganaste('Guess Player');
     }else{
         vidas--;
         gestionarAciertos(nombreJugadora)

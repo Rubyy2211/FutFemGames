@@ -42,6 +42,7 @@ img {
     justify-content: center;
     /*margin-top: 50px;*/
     z-index: 2;
+    margin-top: 2dvh;
 }
 
 #cabecera-bingo{
@@ -50,6 +51,7 @@ img {
     align-items: center;      /* Centra verticalmente */
     gap: 1rem;                /* Espacio entre el player y el botón */
     padding: 0.5rem;
+    padding-bottom: 0;
     position: relative;
     width: 100%;
     z-index: 2;
@@ -71,13 +73,13 @@ img {
 }
 
 .player {
-    margin-bottom: 10px;
+    margin-bottom: 0px;
 }
 
 .player img {
     border-radius: 50%;
-    width: 125px;
-    height: 125px;
+    width: 100px;
+    height: 100px;
     background: linear-gradient(
         to bottom,
         color-mix(in srgb, var(--color-primario) 30%, transparent),
@@ -103,7 +105,7 @@ img {
 }
 
 table {
-    margin: 10px 0;
+    /*margin: 10px 0;*/
     width: auto;
     table-layout: fixed;
     border-spacing: 10px;
@@ -127,9 +129,8 @@ th, td {
 
 td {
     position: relative;
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-primario) 30%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
+    background: color-mix(in srgb, black 70%, var(--color-secundario) 30%) !important;
+    border: 1px solid var(--color-primario) !important;
 }
 td * {
     pointer-events: none;
@@ -141,9 +142,9 @@ td:hover{
     color-mix(in srgb, var(--gradient-primary) 50%, transparent),
     color-mix(in srgb, var(--gradient-secondary) 100%, transparent));*/
     background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-primario) 10%, transparent), 
+    color-mix(in srgb, var(--color-primario) 20%, transparent), 
     color-mix(in srgb, var(--color-secundario) 80%, transparent)) !important;
-    border: 1px solid var(--color-primario) !important;
+    border: 1px solid var(--color-detalles) !important;
 }
 
 /* Estilo temporal al hacer clic */
@@ -233,21 +234,21 @@ td.selected {
 td.tremble {
     animation: shake 0.5s ease;
     /*background-color: red; /* Color de fondo rojo durante el temblor */
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-danger) 50%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
+    background: color-mix(in srgb, black 70%, var(--color-danger) 30%) !important;
     border: 1px solid var(--color-danger) !important;
 }
 
 td.blocked {
     /*background-color: red; /* Color de fondo rojo durante el temblor */
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-success) 50%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
+    background: color-mix(in srgb, black 70%, var(--color-success) 30%) !important;
     border: 1px solid var(--color-success) !important;
 }
 
 @media (max-width: 450px){
+
+    .contenedor{
+        margin-top: 5dvh;
+    }
 
     th, td {
         width: 70px;

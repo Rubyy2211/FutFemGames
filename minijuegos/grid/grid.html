@@ -36,52 +36,56 @@
 </head>
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
     {% include 'partials/header.html' %}
-<h1>{% trans "Futfem Grid" %}</h1>
-<!--<img src="{% static 'img/grid-logo.webp' %}" alt="Futfem Grid Logo" class="logo-game" style="height: 75px; width: 75px;" fetchpriority="high">-->
-<table id="grid">
-    <thead>
-    <tr id="columnas">
-        <th class=""><div id="reloj">Tiempo</div></th>
-        <th id="Equipo4">Pais A</th>
-        <th id="Equipo5">Pais B</th>
-        <th id="Equipo6">Pais C</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr id="club1">
-        <th id="Equipo1">Equipo 1</th>
-        <td data-answer="jugadora1" id="c11"></td>
-        <td data-answer="jugadora2" id="c12"></td>
-        <td data-answer="jugadora3" id="c13"></td>
-    </tr>
-    <tr id="club2">
-        <th id="Equipo2">Equipo 2</th>
-        <td data-answer="jugadora4" id="c21"></td>
-        <td data-answer="jugadora5" id="c22"></td>
-        <td data-answer="jugadora6" id="c23"></td>
-    </tr>
-    <tr id="club3">
-        <th id="Equipo3">Equipo 3</th>
-        <td data-answer="jugadora7" id="c31"></td>
-        <td data-answer="jugadora8" id="c32"></td>
-        <td data-answer="jugadora9" id="c33"></td>
-    </tr>
-    </tbody>
-</table>
-<div class="cont">
-<label for="jugadoraInput">
-    <input type="search" id="jugadoraInput" placeholder="{% trans 'Escribe el nombre de la jugadora' %}">
-    <div id="sugerencias-container">
-        <ul id="sugerencias"></ul>
+    {% include 'partials/fondo.html' %}
+    <div id="grid-container">
+        <h1>{% trans "Futfem Grid" %}</h1>
+        <!--<img src="{% static 'img/grid-logo.webp' %}" alt="Futfem Grid Logo" class="logo-game" style="height: 75px; width: 75px;" fetchpriority="high">-->
+        <table id="grid">
+            <thead>
+            <tr id="columnas">
+                <th class=""><div id="reloj">Tiempo</div></th>
+                <th id="Equipo4">Pais A</th>
+                <th id="Equipo5">Pais B</th>
+                <th id="Equipo6">Pais C</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr id="club1">
+                <th id="Equipo1">Equipo 1</th>
+                <td data-answer="jugadora1" id="c11"></td>
+                <td data-answer="jugadora2" id="c12"></td>
+                <td data-answer="jugadora3" id="c13"></td>
+            </tr>
+            <tr id="club2">
+                <th id="Equipo2">Equipo 2</th>
+                <td data-answer="jugadora4" id="c21"></td>
+                <td data-answer="jugadora5" id="c22"></td>
+                <td data-answer="jugadora6" id="c23"></td>
+            </tr>
+            <tr id="club3">
+                <th id="Equipo3">Equipo 3</th>
+                <td data-answer="jugadora7" id="c31"></td>
+                <td data-answer="jugadora8" id="c32"></td>
+                <td data-answer="jugadora9" id="c33"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="cont">
+        <label for="jugadoraInput">
+            <input type="search" id="jugadoraInput" placeholder="{% trans 'Escribe el nombre de la jugadora' %}">
+            <div id="sugerencias-container">
+                <ul id="sugerencias"></ul>
+            </div>
+        </label>
+        <button id="botonVerificar">{% trans 'Verificar' %}</button>
+        </div>
+        <div id="resultado"></div>
     </div>
-</label>
-<button id="botonVerificar">{% trans 'Verificar' %}</button>
-</div>
-<div id="resultado"></div>
 <script src="{% static 'js/admin.js' %}" defer></script>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
 <script type="module" src="{% static 'grid/grid.js' %}"></script>
+<script type="module" src="{% static 'js/fondo_old.js' %}"></script>
 <script type="module">
     import { play } from "/static/grid/grid.js";
 

@@ -13,6 +13,9 @@ from .models import Pista  # Asegúrate de tener el modelo Pista
 def index(request):
     return render(request, 'minijuegos/index.html')
 
+def minijuegos(request):
+    return render(request, 'minijuegos/minijuegos.html')
+
 @login_required
 def loading(request):
     # Obtiene el parámetro ?url= que le pasas desde redirect.js

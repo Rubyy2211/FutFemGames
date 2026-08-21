@@ -113,21 +113,24 @@ export async function loadJugadoraById(id, ganaste) {
 }
 
 function displayTrayectoria(data, acertaste) {
-    trayectoriaDiv.setAttribute('Attr1', data[0].jugadora)
+    // Filtrar equipos válidos (excluyendo equipo 83) para calcular correctamente los índices
+    const equiposValidos = data.filter(item => item.equipo !== 83);
+
+    trayectoriaDiv.setAttribute('Attr1', data[0]?.jugadora || '');
+    trayectoriaDiv.style.setProperty('--num-equipos', equiposValidos.length);
     trayectoriaDiv.innerHTML = ''; // Limpiar contenido previo
 
     const maxPerRow = 5;
     let currentRow;
 
-    data.forEach((item, index) => {
+    equiposValidos.forEach((item, index) => {
+        const isFirst = index === 0;
+        const isLast = index === equiposValidos.length - 1;
+
         if (index % maxPerRow === 0) {
             currentRow = document.createElement('div');
             currentRow.classList.add('trayectoria-row');
             trayectoriaDiv.appendChild(currentRow);
-        }
-
-        if(item.equipo === 83){
-            return
         }
 
         const flipContainer = document.createElement('div');
@@ -144,7 +147,7 @@ function displayTrayectoria(data, acertaste) {
             const escudoImg = document.createElement('img');
             escudoImg.src = item.escudo;
             escudoImg.alt = item.nombre;
-            escudoImg.classList.add('glass')
+            escudoImg.classList.add('glass');
             escudoImg.style.background = `
                 linear-gradient(
                     to bottom,
@@ -155,15 +158,14 @@ function displayTrayectoria(data, acertaste) {
             escudoImg.style.borderColor = item.color;
             front.appendChild(escudoImg);
 
-            const anyos = document.createElement('p');
-            anyos.textContent = item.fecha_inicio ? (item.fecha_inicio.substring(0, 4) + (item.fecha_fin ? ' - ' + item.fecha_fin.substring(0, 4) : ' - Act.')) : null;
-            anyos.style.textAlign = 'center';
-            front.appendChild(anyos);
-        }else{
+            // Se pasan isFirst e isLast a la función de fechas
+            const fechasDiv = crearContenedorFechas(item.fecha_inicio, item.fecha_fin, isFirst, isLast);
+            if (fechasDiv) front.appendChild(fechasDiv);
+        } else {
             const escudoImg = document.createElement('img');
-            //escudoImg.src = "/static/img/predeterm.jpg";
             escudoImg.alt = item.nombre;
-            front.appendChild(escudoImg);}
+            front.appendChild(escudoImg);
+        }
 
         flipper.appendChild(front);
 
@@ -175,40 +177,70 @@ function displayTrayectoria(data, acertaste) {
             const back = document.createElement('div');
             back.classList.add('back');
 
-            if (item.imagen) {
-                const jugadoraImg = document.createElement('img');
-                jugadoraImg.src = item.imagen;
-                jugadoraImg.alt = 'Imagen de la Jugadora';
-                jugadoraImg.className = 'glass';
-                jugadoraImg.style.borderColor = item.color;
-                back.appendChild(jugadoraImg);
+            const jugadoraImg = document.createElement('img');
+            jugadoraImg.src = item.imagen ? item.imagen : data[0].ImagenJugadora;
+            jugadoraImg.alt = 'Imagen de la Jugadora';
+            jugadoraImg.className = 'glass';
+            jugadoraImg.style.borderColor = item.color;
+            back.appendChild(jugadoraImg);
 
-                const anyos = document.createElement('p');
-                anyos.textContent = item.fecha_inicio ? (item.fecha_inicio.substring(0, 4) + (item.fecha_fin ? ' - ' + item.fecha_fin.substring(0, 4) : ' - Act.')) : null;
-                anyos.style.textAlign = 'center';
-                back.appendChild(anyos);
+            // Se pasan isFirst e isLast también en la parte trasera
+            const fechasDiv = crearContenedorFechas(item.fecha_inicio, item.fecha_fin, isFirst, isLast);
+            if (fechasDiv) back.appendChild(fechasDiv);
 
-                flipper.appendChild(back);
-            }else{
-                const jugadoraImg = document.createElement('img');
-                jugadoraImg.src = data[0].ImagenJugadora;
-                jugadoraImg.alt = 'Imagen de la Jugadora';
-                jugadoraImg.className = 'glass';
-                jugadoraImg.style.borderColor = item.color;
-                back.appendChild(jugadoraImg);
-
-                const anyos = document.createElement('p');
-                anyos.textContent = item.fecha_inicio ? (item.fecha_inicio.substring(0, 4) + (item.fecha_fin ? ' - ' + item.fecha_fin.substring(0, 4) : ' - Act.')) : null;
-                anyos.style.textAlign = 'center';
-                back.appendChild(anyos);
-
-                flipper.appendChild(back);
-            }
+            flipper.appendChild(back);
         }
 
         flipContainer.appendChild(flipper);
         currentRow.appendChild(flipContainer);
     });
+}
+
+function crearContenedorFechas(fechaInicio, fechaFin, isFirst, isLast) {
+    // Si no es ni el primero ni el último, no mostramos nada
+    if (!isFirst && !isLast) return null;
+
+    const contenedor = document.createElement('div');
+    contenedor.classList.add('fechas-container');
+
+    // 1. Caso: Único equipo en la trayectoria (es primero Y último)
+    if (isFirst && isLast) {
+        const spanInicio = document.createElement('span');
+        spanInicio.classList.add('fecha-inicio');
+        spanInicio.textContent = fechaInicio ? fechaInicio.substring(0, 4) : '';
+
+        const spanGuion = document.createElement('span');
+        spanGuion.classList.add('fecha-guion');
+        spanGuion.textContent = '-';
+
+        const spanFin = document.createElement('span');
+        spanFin.classList.add('fecha-fin');
+        spanFin.textContent = fechaFin ? fechaFin.substring(0, 4) : 'Act.';
+
+        contenedor.appendChild(spanInicio);
+        contenedor.appendChild(spanGuion);
+        contenedor.appendChild(spanFin);
+
+        return contenedor;
+    }
+
+    // 2. Caso: Primer equipo -> Solo fecha de inicio
+    if (isFirst && fechaInicio) {
+        const spanInicio = document.createElement('span');
+        spanInicio.classList.add('fecha-inicio');
+        spanInicio.textContent = fechaInicio.substring(0, 4);
+        contenedor.appendChild(spanInicio);
+    }
+
+    // 3. Caso: Último equipo -> Solo fecha de fin (o 'Act.')
+    if (isLast) {
+        const spanFin = document.createElement('span');
+        spanFin.classList.add('fecha-fin');
+        spanFin.textContent = fechaFin ? fechaFin.substring(0, 4) : 'Act.';
+        contenedor.appendChild(spanFin);
+    }
+
+    return contenedor;
 }
 
 async function checkAnswer() {

@@ -1,5 +1,6 @@
 let intervalos = {}; // Objeto para almacenar los intervalos
 import { countdown } from '../sounds.js'; // Asegúrate de que el nombre coincida
+
 export function inicializarCounter(facil, medio, dificil, juego , dificultad){
         // Definir los segundos según la dificultad
     let segundos;
@@ -33,12 +34,20 @@ export function startCounter(segundos, juego, onFinish) {
         reloj.textContent = segundos;
 
         // --- LÓGICA DEL SONIDO ---
-        if (segundos > 0 && segundos<=30) {
-            countdown.currentTime = 0; // Reinicia el audio para que suene en cada segundo
+        if (segundos > 0 && segundos <= 30) {
+            // 1. Sonido
+            countdown.currentTime = 0;
             countdown.play().catch(e => console.log("El usuario aún no ha interactuado con la web"));
-            reloj.classList.remove('countdown-tick'); // Quitamos la clase del segundo anterior
-            void reloj.offsetWidth;                    // fuerza al navegador a "renderizar"
-            reloj.classList.add('countdown-tick');    // La volvemos a poner
+
+            // 2. Animación en el reloj
+            if (reloj) {
+                reloj.classList.remove('countdown-tick');
+                void reloj.offsetWidth;
+                reloj.classList.add('countdown-tick');
+            }
+
+            // 3. Destello rojo en el fondo #fondo-web
+            ejecutarTikFondo();
         }
 
         if (segundos <= 0) {
@@ -62,4 +71,17 @@ export function stopCounter(juego) {
     } else {
         console.log(`No hay un contador en ejecución para ${juego}`);
     }
+}
+
+function ejecutarTikFondo() {
+    const root = document.documentElement; // Aplica la clase a :root para afectar a toda la web
+    if (!root) return;
+
+    root.classList.remove('tick-red');
+    void root.offsetWidth; // Fuerza el reflow para aplicar el cambio instantáneamente
+    root.classList.add('tick-red');
+
+    setTimeout(() => {
+        root.classList.remove('tick-red');
+    }, 150);
 }

@@ -1,6 +1,6 @@
 :root {
     /* Colores principales */
-    --color-primario: #920092;
+    --color-primario: #bd01bd;
     --color-secundario: #480048;
     --color-terciario: #009e79;
 
@@ -33,6 +33,32 @@
     --glass-border: rgba(255, 255, 255, 0.1);
     --footer-bg: rgba(0, 83, 156, 0.9); /* El azul de tu diseño pero con transparencia */
 }
+
+:root.tick-red,
+body.tick-red {
+    --color-primario: #ff2a2a; /* O el tono rojo neón que prefieras */
+}
+
+:root.tick-red #fondo-web span::before,
+body.tick-red #fondo-web span::before {
+    transition: 0s !important;
+}
+
+#fondo-web.tick-win span::before{
+    background: var(--color-success);
+    transform: scale(0.1);
+    box-shadow: 0 0 10px var(--color-success),
+                0 0 20px var(--color-success),
+                0 0 40px var(--color-success),
+                0 0 60px var(--color-success),
+                0 0 80px var(--color-success),
+                0 0 100px var(--color-success);
+    
+    border-radius: 50%;
+    pointer-events: none;
+    transition: 2s;
+}
+
 /* Filtro Grises */
 .grayscale {
     filter: grayscale(100%);
@@ -79,6 +105,7 @@ body {
     background-repeat: no-repeat !important;
     background-position: center !important;
     background-image: url("../img/estadio1.webp") !important;
+    /*background: black !important;*/
     min-height: 100dvh;
     max-width: 100vw;
         transform: scale(var(--bg-scale));
@@ -93,7 +120,7 @@ body {
 
 /* --- TEMA LEVANTE UD (ID: 2) --- */
 [data-team="2"] {
-    --color-primario: #7a0019;/* Azul Granota */
+    --color-primario: #96001e;/* Azul Granota */
     --color-secundario: #003f7e; /* Grana */
     --color-texto: #dca43e;
     --bg-overlay-body: rgba(0, 45, 90, 0.8);
@@ -120,6 +147,7 @@ body {
     --bg-overlay-body: rgba(20, 20, 20, 0.85);
     --bg-overlay-before: rgba(255, 115, 0, 0.3);
     --gradient: linear-gradient(135deg, #ff7300, #000000);
+    background-image: url("/static/img/estadio-paterna.jpg") !important;
 }
 
 [data-team="11"]::before{
@@ -127,25 +155,24 @@ body {
     position: fixed;
     inset: 0;
     z-index: -1;
-    background-image: url("/static/img/estadio-paterna.jpg") !important;
     background-blend-mode: luminosity !important; /* Modo de mezcla */
-    background-color: rgba(52, 33, 0, 0.5) !important; /* Color negro con transparencia */
+    /*background-color: rgba(52, 33, 0, 0.5) !important; /* Color negro con transparencia */
 }
 
 /* --- TEMA VILLARREAL CF (ID: 27) --- */
 [data-team="27"] {
     --color-primario: #003366; /* Amarillo Groguet */
     --color-secundario: #f1ef00; /* Azul Submarino */
-    --color-texto: white;
+    --color-texto: white !important;
     --bg-overlay-body: rgba(241, 239, 0, 0.15);
     --bg-overlay-before: rgba(0, 51, 102, 0.7);
     --blend-mode-before: normal;
     --gradient: linear-gradient(135deg, #f1ef00, #003366);
+    background-image: url("/static/img/estadio-vilareal.png") !important;
 }
 
 [data-team="27"]::before{
-    background-image: url("/static/img/estadio-vilareal.png") !important;
-    background-color: rgba(52, 49, 0, 0.5) !important; /* Color negro con transparencia */
+    /*background-color: rgba(52, 49, 0, 0.5) !important; /* Color negro con transparencia */
 }
 
 [data-team="27"] .game-button, [data-team="27"] .dropdown-toggle, [data-team="27"] .dropdown-item{
@@ -158,7 +185,7 @@ body::before {
     inset: 0;
     z-index: -1;
     
-    background: color-mix(in srgb, var(--color-secundario) 100%, transparent 80%);
+    background: color-mix(in srgb, color-mix(in srgb, black 70%, var(--color-secundario) 30%) 80%, transparent 20%) !important;
     /*background-color: rgba(48, 0, 48, 0.5) !important; /* Color negro con transparencia */
     /*background-blend-mode: luminosity !important; /* Modo de mezcla */
     
@@ -208,6 +235,53 @@ body>div.cont label{
 h1,p{
     color: white;
 }
+
+#fondo-web {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 110vw;
+    height: 110vh;
+    /*background: color-mix(in srgb, color-mix(in srgb, black 70%, var(--color-secundario) 60%), transparent 40%);*/
+    display: flex;
+    flex-wrap: wrap;
+    overflow: hidden;
+    z-index: -1; /* Mantiene el fondo detrás de tu contenido */
+}
+
+#fondo-web span{
+    position: relative;
+    height: 40px;
+    width: 40px;
+    display: block;
+}
+
+#fondo-web span::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--color-primario);
+    transform: scale(0.1);
+    box-shadow: 0 0 10px var(--color-primario),
+                0 0 20px var(--color-primario),
+                0 0 40px var(--color-primario),
+                0 0 60px var(--color-primario),
+                0 0 80px var(--color-primario),
+                0 0 100px var(--color-primario);
+    
+    border-radius: 50%;
+    pointer-events: none;
+    transition: 2s;
+}
+
+/*#fondo-web span.activo::before{
+    transform: scale(0.75);
+    transition: 0s;
+}*/
+
 p{
     font-family: var(--font-cuerpo);
 }
@@ -698,12 +772,15 @@ header{
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 1px solid var(--color-primario) !important;
+    background: color-mix(in srgb, var(--color-secundario) 50%, black 50%);
     color: white;
     font-family: 'Oswald', sans-serif;
     font-weight: 600;
     font-style: normal;
     padding: unset !important;
     width: 100%;
+    z-index: 500;
 }
 
 header .container{
@@ -1025,8 +1102,13 @@ header .container .iniciar-sesion-button {
 }
 
 header .container .logout-button{
-    font-size: x-large;
     transition: all 0.3s ease-in-out;
+    color: var(--color-primario);
+}
+
+header .container .logout-button svg{
+    height: 30px;
+    width: 30px;
 }
 
 header .container .logout-button:hover{

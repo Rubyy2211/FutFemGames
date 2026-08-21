@@ -1,25 +1,103 @@
+body {
+    max-height: 100dvh;
+    overflow-y: hidden !important;
+}
 
-table {
-    border-collapse: separate; /* ¡Obligatorio para ver redondeo! */
-    margin-bottom: 20px;
-    border-radius: 20px;
-}
-tbody{
-    border-radius: 20px;
-}
-#sugerencias{
-    max-height: 125px;
-    overflow-y: scroll;
-}
-#sugerencias::-webkit-scrollbar{
-    color: var(--color-primario);
-}
-div.cont{
+#grid-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    max-width: 100%;
+    margin-top: 2dvh;
 }
+
+/* TABLA PRINCIPAL: Define la proporción 1:1 global */
+table {
+    table-layout: fixed; /* Fuerza a que todas las columnas midan exactamente lo mismo */
+    width: 100%;
+    max-width: 420px; /* Ajusta este valor al tamaño máximo que desees */
+    aspect-ratio: 1 / 1; /* La tabla completa es un cuadrado 4x4 perfecto */
+    border-collapse: separate;
+    border-spacing: 6px; /* Espaciado uniforme entre celdas */
+    margin-bottom: 20px;
+}
+
+thead, tbody {
+    width: 100%;
+}
+
+thead{
+    height: 25%;
+    max-height: 25%;
+}
+
+tbody{
+    height: 75%;
+    max-height: 75%;
+}
+
+tbody tr{
+    max-height: 33.333%;
+    height: 33.333%;
+    min-height: 33.333%;
+}
+
+/* Distribución equitativa del 25% para 4 filas y 4 columnas */
+tr {
+    height: 25%;
+}
+
+th, td {
+    width: 25%;
+    height: 25%;
+    padding: 4px;
+    text-align: center;
+    vertical-align: middle;
+    position: relative;
+    border-radius: 16px;
+    box-sizing: border-box;
+}
+
+/* ESTILOS DE CABECERAS Y CELDAS */
+th {
+    background: linear-gradient(135deg, color-mix(in srgb, black 70%, var(--color-secundario) 30%) 60%, var(--color-primario) 100%);
+    border: 2px solid color-mix(in srgb, var(--color-primario) 50%, transparent);
+}
+
+td {
+    background: color-mix(in srgb, black 70%, var(--color-secundario) 30%) !important;
+    border: 2px solid var(--color-secundario);
+}
+
+/* ESCUDOS EN CABECERAS (mantiene margen y ajuste centrado) */
+th img {
+    max-width: 85%;
+    max-height: 85%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+    border-radius: 0;
+}
+
+/* CELDA CON IMAGEN: Elimina padding y recorta los bordes */
+td:has(img) {
+    padding: 0;
+    overflow: hidden; /* Asegura que la foto respete el border-radius de la celda */
+    border: 2px solid var(--color-success);
+}
+
+/* FOTO EN TD: Ocupa todo el contenido */
+td img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Rellena todo el td manteniendo las proporciones de la cara/foto */
+    display: block;
+    border-radius: inherit; /* Hereda los 16px de borde de la celda */
+    background: color-mix(in srgb, black 70%, var(--color-success) 30%) !important;
+}
+
 .resaltado {
     background: linear-gradient(to bottom, 
     color-mix(in srgb, var(--color-warning) 60%, transparent), 
@@ -27,86 +105,39 @@ div.cont{
     transition: background-color 0.3s ease;
 }
 
-.oculto{
+.oculto {
     border: none;
     background: none;
 }
-th{
-    background: linear-gradient(to bottom,color-mix(in srgb, var(--color-primario) 100%, transparent 0%),color-mix(in srgb, var(--color-secundario) 100%, transparent 0%));
-    border: 1px solid color-mix(in srgb, var(--color-primario) 50%, transparent);
-}
-th, td {
-    border: 1px solid color-mix(in srgb, var(--color-primario) 50%, transparent);
-    padding: 0;
-    text-align: center;
-    width: 100px;
-    height: 100px;
-    position: relative;
-    border-radius: 20px;
-}
-td{
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-primario) 0%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 30%, transparent)) !important;
-    border: 1px solid var(--color-secundario);
-}
-td:has(img){
-    border: 1px solid var(--color-success);
-}
-td img{
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-success) 60%, transparent), 
-    color-mix(in srgb, var(--color-secundario) 50%, transparent)) !important;
-    border-radius: 20px;
-}
-th[id*="Equipo"] {
-  background-size: 200% 200%; /* permite movimiento suave */
-  background-repeat: no-repeat;
+
+div.cont {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
 }
 
+input {
+    width: 90% !important;
+}
 
-/*img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}*/
-#c11 img {
-    display: block;
-}
-#c12 img {
-    display: block;
-}
-#c13 img {
-    display: block;
-}
-#c21 img {
-    display: block;
-}
-#c22 img {
-    display: block;
-}
-#c23 img {
-    display: block;
-}
-#c31 img {
-    display: block;
-}
-#c32 img {
-    display: block;
-}
-#c33 img {
-    display: block;
-}
-#sugerencias{
+#sugerencias {
     max-height: 125px;
     overflow-y: scroll;
 }
-#sugerencias::-webkit-scrollbar{
+
+#sugerencias::-webkit-scrollbar {
     color: var(--color-primario);
 }
-@media (max-width: 450px) {
-    td, th{
-        width: 80px;
-        height: 80px;
+
+@media(max-width: 480px) {
+    #grid-container {
+        padding-inline: 10px;
+        margin-top: 5dvh;
+    }
+    table {
+        max-width: 95vw;
+        border-spacing: 4px;
     }
 }

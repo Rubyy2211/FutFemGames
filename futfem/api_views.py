@@ -1,8 +1,10 @@
 from webbrowser import get
 from django.core.cache import cache
+from django.db.models import Sum, Avg, Max
+from .services.soccerdonna_service import actualizar_market_values
 import json, random, pycountry
 from django.utils import timezone
-from .utils import construir_url_imagen
+from .utils import construir_url_imagen, formatear_valor_mercado
 from django.http import JsonResponse
 from django.db import connection, IntegrityError
 from django.db.models import Q, CharField, Value
@@ -746,10 +748,43 @@ def api_random_player(request):
 
     return JsonResponse({
         "id": jugadora.id_jugadora,
-        "nombre": f"{jugadora.Nombre} {jugadora.Apellidos}",
+        "nombre": formatear_nombre_corto(jugadora.Nombre, jugadora.Apellidos),
         "market_value": jugadora.market_value,
         "imagen": construir_url_imagen(jugadora.imagen) if jugadora.imagen else None
     })
+
+def reporte_valores_mercado(view_request):
+    actualizado = False
+    resumen_update = None
+    
+    if view_request.GET.get('update') == 'true':
+        resumen_update = actualizar_market_values(delay_segundos=1)
+        actualizado = True
+
+    # Obtenemos la lista general de BD convirtiéndola a lista para mutar los objetos en memoria
+    jugadoras = list(Jugadora.objects.exclude(market_value__isnull=True).order_by('-market_value'))
+    
+    # Inyectamos la URL procesada en cada objeto de jugadora sin tocar el modelo
+    for j in jugadoras:
+        j.imagen_url = construir_url_imagen(j.imagen)
+        j.market_value = formatear_valor_mercado(j.market_value)
+        # PRINT DE CONTROL (Revisa la terminal de Django)
+        print(f"DEBUG -> RAW DB: '{j.imagen}' (Tipo: {type(j.imagen)}) | GENERADA: '{j.imagen_url}'")
+    
+    stats = Jugadora.objects.aggregate(
+        valor_total=Sum('market_value'),
+        valor_medio=Avg('market_value'),
+        valor_maximo=Max('market_value'),
+    )
+
+    context = {
+        'jugadoras': jugadoras,
+        'stats': stats,
+        'actualizado': actualizado,
+        'resumen_update': resumen_update,
+    }
+    
+    return render(view_request, 'futfem/reporte_valores.html', context)
 #################################################################################################
 ########################################EQUIPOS##################################################
 #################################################################################################
@@ -951,7 +986,7 @@ def equipo_to_dict(equipo):
         datos_liga_principal = {
             "id": comp.pk,
             "nombre": comp.nombre,
-            "logo": comp.logo
+            "logo": construir_url_imagen(comp.logo)
         }
 
     todas_competiciones = []
@@ -960,7 +995,7 @@ def equipo_to_dict(equipo):
             todas_competiciones.append({
                 "id": rel.competicion.pk,
                 "nombre": rel.competicion.nombre,
-                "logo": rel.competicion.logo,
+                "logo": construir_url_imagen(rel.competicion.logo),
                 "temporada": rel.temporada,
                 "es_principal": rel.es_principal
             })
@@ -968,7 +1003,7 @@ def equipo_to_dict(equipo):
     return {
         "id": equipo.id_equipo,
         "nombre": equipo.nombre,
-        "escudo": equipo.escudo,
+        "escudo": construir_url_imagen(equipo.escudo),
         "color": equipo.color,
         "liga": datos_liga_principal,        # Liga/Competición principal
         "competiciones": todas_competiciones  # Lista completa de competiciones
@@ -1284,8 +1319,6 @@ def trofeos_individuales(request):
             "icono": construir_url_imagen(fila[3]),
         })
     return JsonResponse({"success": resultado})
-
-from django.http import JsonResponse
 
 def equipo_palmares(request):
     equipos_raw = request.GET.get("equipos") or request.GET.get("equipo")
