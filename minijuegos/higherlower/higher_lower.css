@@ -51,6 +51,16 @@ body{
     z-index: -1;
 }
 
+#game div h3{
+    font-family: 'Oswald', sans-serif;
+    margin-bottom: 0;
+}
+
+#game div p{
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: x-large;
+}
+
 #game div > * {
     position: relative;
     z-index: 1; /* el contenido queda encima del blur */

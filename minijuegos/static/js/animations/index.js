@@ -80,7 +80,48 @@ buttons.forEach(card => {
   //});
 //});
 
+// 1. ANIMACIÓN DE ENTRADA (Zoom Out de llegada)
+// Función para ejecutar la animación de entrada (Zoom Out)
+function animateIn() {
+  gsap.fromTo('#container-index', 
+    { scale: 1.3, opacity: 0 }, // Estado inicial
+    { scale: 1, opacity: 1, duration: 0.5, ease: 'power2.out' } // Estado final
+  );
+}
 
+// 1. ANIMACIÓN DE ENTRADA (Carga inicial y Navegación Atrás/Adelante)
+window.addEventListener('pageshow', (event) => {
+  // event.persisted es true si la página se recuperó desde el BFCache (botón Atrás)
+  if (event.persisted) {
+    animateIn();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  animateIn();
+});
+
+// 2. ANIMACIÓN DE SALIDA (Zoom In al hacer clic)
+document.querySelectorAll('a').forEach(link => {
+  link.addEventListener('click', (e) => {
+    const href = link.getAttribute('href');
+
+    // Ignorar anclas (#), enlaces externos en pestaña nueva y javascript:
+    if (href && !href.startsWith('#') && !href.startsWith('javascript:') && link.target !== '_blank') {
+      e.preventDefault();
+
+      gsap.to('#container-index', {
+        scale: 1.5,
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power2.in',
+        onComplete: () => {
+          window.location.href = href;
+        }
+      });
+    }
+  });
+});
 
 
 // ANIMACION MENÚ PRINCIPAL
@@ -133,12 +174,15 @@ selectorLinks.forEach(link => {
       hoverSound.play();
     }
 
-    // 🟢 1. GESTIÓN ROBUSTA DE ESQUINAS NEÓN (Limpia todos los estados pendientes)
+    // 🟢 1. GESTIÓN DE CLASE ACTIVE Y ESQUINAS NEÓN
     selectorLinks.forEach(otherLink => {
       gsap.killTweensOf(otherLink); // Detiene animaciones en curso
 
       if (otherLink === link) {
-        // Encender únicamente el botón activo
+        // Añadir clase active al botón actual
+        otherLink.classList.add('active');
+
+        // Encender únicamente el botón activo con GSAP
         gsap.to(otherLink, {
           "--arrowOpacity": 1,
           "--arrowScale": 1,
@@ -148,6 +192,9 @@ selectorLinks.forEach(link => {
           ease: "back.out(1.7)"
         });
       } else {
+        // Quitar clase active a los demás
+        otherLink.classList.remove('active');
+
         // Apagar todos los demás
         gsap.to(otherLink, {
           "--arrowOpacity": 0,

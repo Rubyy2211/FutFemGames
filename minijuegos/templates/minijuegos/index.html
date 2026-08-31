@@ -62,16 +62,31 @@
 </head>
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
 
+    <div id="video-bg-container">
+        <canvas id="canvas" width="500" height="500" class="canvas-bg"></canvas>
+        <div id="particles-js" class="absolute inset-0 z-0 pointer-events-none"></div>
+        <div class="video-overlay"></div>
+
+        <video class="bg-video-item active" autoplay muted loop playsinline preload="auto">
+            <source src="" type="video/mp4">
+        </video>
+        <!-- Vídeos dedicados y precargados -->
+        <!--<video id="video-games" class="bg-video-item" autoplay muted loop playsinline preload="auto">
+            <source src="{% static 'videos/games.mp4' %}" type="video/mp4">
+        </video>-->
+        <video id="video-globe" class="bg-video-item" autoplay muted loop playsinline preload="auto">
+            <source src="{% static 'videos/globe.mp4' %}" type="video/mp4">
+        </video>
+    </div>
     {% include 'partials/header.html' %}
-    {% include 'partials/fondo.html' %}
 
     <div id="container-index" class="container">
         <!--<div id="dynamic-bg"></div>-->
         <div id="selector" role="main">
-            <a data-bg="/static/img/games.webp" href="/minigames"><p>Juegos</p></a>
-            <a data-bg="/static/img/wiki.jpg" href="https://fut-fem-wiki.vercel.app/"><p>Wiki</p></a>
-            <a data-bg="/static/img/ranking.webp"  href="/online"><p>Online</p></a>
-            <a data-bg="/static/img/nosotros.webp"  href="#nosotros"><p>Nosotros</p></a>
+            <a data-video-id="video-games" href="/minigames"><p>Juegos</p></a>
+            <a href="https://fut-fem-wiki.vercel.app/" id="wiki-link"><p>Wiki</p></a>
+            <a data-video-id="video-globe" href="/online"><p>Online</p></a>
+            <a href="#nosotros" id="nosotros-link"><p>Nosotros</p></a>
         </div>
 
 
@@ -81,19 +96,23 @@
                 <p>¡Bienvenid@ a FutFem Games!</p>
             </div>
             <div id="juegos" class="panel-info">
-                <img src="/static/img/logo2.webp" alt="futfemgames logo">
+                <!--<img src="/static/img/logo2.webp" alt="futfemgames logo">-->
+                <h2>JUEGOS</h2>
                 <p>¡Disfruta y aprende con nuestros retos sobre fútbol femenino!</p>
             </div>
             <div id="wiki" class="panel-info">
-                <img src="/static/img/logo-wiki.webp" alt="futfemwiki logo">
+                <!--<img src="/static/img/logo-wiki.webp" alt="futfemwiki logo">-->
+                <h2>FUTFEM<span>·</span>WIKI</h2>
                 <p>Descubre, analiza y explora nuestra base de datos del fútbol femenino.</p>
             </div>
             <div id="online" class="panel-info">
-                <img src="/static/img/logo2.webp" alt="futfemgames logo">
+                <!--<img src="/static/img/logo2.webp" alt="futfemgames logo">-->
+                <h2>ONLINE</h2>
                 <p>¡Mira tus rachas y compite por ver quién sabe más!</p>
             </div>
             <div id="nosotros" class="panel-info">
-                <img src="/static/img/logo.webp" alt="futfemgames logo">
+                <!--<img src="/static/img/logo.webp" alt="futfemgames logo">-->
+                <h2>NOSOTROS</h2>
                 <p>Descubre quienes somos y nuestros objetivos</p>
             </div>
         </div>
@@ -268,170 +287,50 @@
 <script src="{% static 'js/animations/index.js' %}" defer></script>
 <script type="module" src="{% static 'usuarios/js/rachas.js' %}" defer></script>
 <script src="{% static 'js/utils/selector.js' %}" defer></script>
-<script src="{% static 'js/fondo_old.js' %}" defer></script>
+<script type="module" src="{% static 'js/utils/wiki-bg.js' %}" defer></script>
+<script is:inline src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+<script is:inline src="{% static 'js/utils/particle.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" defer></script>
-<script defer>
-    //const expoContainer = document.getElementById('juego-expo');
-    // --- Lógica de actualización compartida ---
-    /*function actualizarExpo(card) {
-        if (!card) return; // Seguridad por si no hay botones
+<script type="module" defer>
+    import { CanvasBackground } from '/static/js/utils/wiki-bg.js';
 
-        const { bg, titulo, descripcion, img } = card.dataset;
-        const expoTitulo = document.getElementById('juego-titulo');
-        const expoParrafo = document.getElementById('juego-parrafo');
-        const expoImagen = document.getElementById('juego-imagen');
+    // Inicializar Canvas
+    const heroCanvas = new CanvasBackground('canvas', {
+        colors: ["#210936", "#836FFF", "#FF007A"]
+    }); 
 
-        // Actualizar textos e imagen
-        expoTitulo.textContent = titulo;
-        expoParrafo.textContent = descripcion;
-        expoImagen.src = img;
+    const bgContainer = document.getElementById('video-bg-container');
+    const bgVideos = document.querySelectorAll('.bg-video-item');
+    const selectorLinks = document.querySelectorAll('#selector a');
 
-        // Animación con GSAP para el contenedor
-        gsap.to(expoContainer, {
-            duration: 0.5,
-            autoAlpha: 1,
-            backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url(${bg})`,
-            display: 'flex',
-            ease: "power2.out"
-        });
+    // Función para limpiar todos los fondos activos
+    function ocultarTodosLosFondos() {
+        bgContainer.classList.remove('mode-canvas', 'mode-particles');
+        bgVideos.forEach(v => v.classList.remove('active'));
     }
-    */
-    // --- Modificación de activarSeccion ---
-    /*function activarSeccion(idDestino, elemento) {
-        // 1. Buscamos el menú principal y la sección destino
-        const menuPrincipal = elemento.closest('.menu-seleccion')
-        const activeSection = document.getElementById(idDestino);
 
-        if (!activeSection) return; // Seguridad por si el ID no existe
+    selectorLinks.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+            const id = link.getAttribute('id');
+            const href = link.getAttribute('href');
+            const videoId = link.dataset.videoId;
 
-        // 2. Ocultamos el menú principal
-        menuPrincipal.style.display = 'none';
+            const esWiki = (id && id.includes('wiki')) || (href && href.includes('wiki'));
+            const esNosotros = (id && id.includes('nosotros')) || (href && href.includes('nosotros'));
 
-        // 3. Lógica de visualización
-        // Si la sección es de juegos (daily o regular), solemos usar flex
-        const esSeccionJuego = ['daily-games', 'regular-games'].includes(idDestino);
-        activeSection.style.display = esSeccionJuego ? 'flex' : 'block';
+            ocultarTodosLosFondos();
 
-        // 4. COMPORTAMIENTO DINÁMICO (El "Modo Juego")
-        const firstButton = activeSection.querySelector('.game-button');
-
-        if (firstButton) {
-            // Si hay botones de juego, activamos la Expo y las animaciones
-            expoContainer.style.display = 'flex';
-            actualizarExpo(firstButton);
-
-            // Animación GSAP para el primer botón
-            gsap.to(firstButton, { scale: 1.05, duration: 1, opacity: 1 });
-
-            // Apagamos el resto de botones para centrar la vista
-            const otherButtons = activeSection.querySelectorAll('.game-button');
-            otherButtons.forEach(btn => {
-                if (btn !== firstButton) gsap.to(btn, { opacity: 1, duration: 0.3, scale: 1 });
-            });
-        } else {
-            // Si no hay botones (ej: Perfil), ocultamos la expo
-            if (typeof expoContainer !== 'undefined') {
-                expoContainer.style.display = 'none';
+            if (esWiki) {
+                bgContainer.classList.add('mode-canvas');
+            } else if (esNosotros) {
+                bgContainer.classList.add('mode-particles');
+            } else if (videoId) {
+                const videoTarget = document.getElementById(videoId);
+                if (videoTarget) {
+                    videoTarget.classList.add('active');
+                    videoTarget.play().catch(() => {});
+                }
             }
-        }
-    }
-    */
-    // --- Actualizar tus Event Listeners existentes ---
-    /*buttons.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            actualizarExpo(card); // Usamos la misma función aquí
-            
-            hoverSound.currentTime = 0;
-            hoverSound.play();
-
-            // Lógica de opacidad para el resto
-            buttons.forEach(other => {
-                if (other !== card) gsap.to(other, { opacity: 1, duration: 0.3 });
-            });
-            gsap.to(card, { scale: 1.05, duration: 0.3 });
-        });
-
-        card.addEventListener('mouseleave', () => {
-            gsap.to(card, { scale: 1, duration: 0.3 });
-            buttons.forEach(other => {
-                gsap.to(other, { opacity: 1, duration: 0.3 });
-            });
-        });
-    });*/
-
-    /*function volverAlMenu(idSeccionActual, idMenuAmostrar) {
-        // 1. Ocultamos la sección en la que estamos (ej: 'daily-games' o 'perfil-usuario')
-        const seccion = document.getElementById(idSeccionActual);
-        if (seccion) {
-            seccion.style.display = 'none';
-        }
-
-        // 2. Ocultamos la expo (solo si existe)
-        if (typeof expoContainer !== 'undefined') {
-            expoContainer.style.display = 'none';
-        }
-
-        // 3. Volvemos a mostrar EL menú específico que nos interese
-        const menuDestino = document.getElementById(idMenuAmostrar);
-        if (menuDestino) {
-            menuDestino.style.display = 'flex';
-            
-            // OPCIONAL: Si quieres que al volver los botones del menú 
-            // recuperen su escala original por si se quedaron "grandes"
-            gsap.to(menuDestino.querySelectorAll('.web-button'), { scale: 1, opacity: 1, duration: 0.3 });
-        }
-    }
-    */
-    /*function abrirBuscador() {
-        const modal = document.getElementById('search-overlay');
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Evita que la página de fondo se mueva
-
-        // Foco automático en el input
-        setTimeout(() => {
-            document.getElementById('usuarioInput').focus();
-        }, 100);
-    }
-
-    function cerrarBuscador() {
-        const modal = document.getElementById('search-overlay');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Devuelve el scroll
-        
-        // Limpiar campos al salir
-        document.getElementById('usuarioInput').value = '';
-        document.getElementById('sugerencias').innerHTML = '';
-    }
-
-    // Cerrar también si se pulsa la tecla ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === "Escape") cerrarBuscador();
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-        // Comprobar si el estado del historial dice que el buscador debe estar abierto
-        if (history.state && history.state.searchOpen) {
-            abrirBuscador();
-            
-            // Opcional: Limpiar el estado para que si recarga la página manualmente
-            // no se abra solo otra vez
-            history.replaceState(null, "");
-        }
-    });
-
-    // También detectamos si el usuario navega hacia atrás/adelante sin recargar (Popstate)
-    window.addEventListener('popstate', (event) => {
-        if (event.state && event.state.searchOpen) {
-            abrirBuscador();
-        } else {
-            cerrarBuscador();
-        }
-    });*/
-
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('#selector a').forEach(anchor => {
-            anchor.addEventListener('click', (e) => {
-                e.preventDefault(); // Evita que se modifique la URL con el #hash
-            });
         });
     });
 </script>

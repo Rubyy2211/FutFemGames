@@ -38,7 +38,6 @@
 </head>
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
     {% include 'partials/header.html' %}
-    {% include 'partials/fondo.html' %}
     <div class="mates-container">
     <h1 style="margin-bottom: unset;">{% trans "Futfem Mates" %}</h1>
     <div id="reloj">Tiempo</div>
@@ -79,7 +78,6 @@
 <script src="{% static 'js/animations/header.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
 <script src="{% static 'js/admin.js' %}" defer></script>
-<script src="{% static 'js/fondo_old.js' %}" defer></script>
 <script type="module" src="{% static 'companyeras/companyeras.js' %}"></script>
 </body>
 </html>

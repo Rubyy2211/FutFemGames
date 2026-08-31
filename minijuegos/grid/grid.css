@@ -8,7 +8,9 @@ body {
     flex-direction: column;
     align-items: center;
     max-width: 100%;
-    margin-top: 2dvh;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* TABLA PRINCIPAL: Define la proporción 1:1 global */
@@ -81,6 +83,10 @@ th img {
     border-radius: 0;
 }
 
+#reloj{
+    font-family: 'Oswald', sans-serif;
+}
+
 /* CELDA CON IMAGEN: Elimina padding y recorta los bordes */
 td:has(img) {
     padding: 0;
@@ -134,7 +140,6 @@ input {
 @media(max-width: 480px) {
     #grid-container {
         padding-inline: 10px;
-        margin-top: 5dvh;
     }
     table {
         max-width: 95vw;

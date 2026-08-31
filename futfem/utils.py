@@ -1,5 +1,8 @@
 # futfem/utils.py
-import cloudinary.utils
+import cloudinary.utils, random
+from .models import Jugadora, Equipo, Trayectoria
+from django.http import JsonResponse
+
 
 def construir_url_imagen(raw_path):
     """
@@ -58,3 +61,24 @@ def formatear_valor_mercado(valor):
         return f"{val:.0f}k €" if num % 1_000 == 0 else f"{val:.1f}k €"
     
     return f"{int(num)} €" if num.is_integer() else f"{num} €"
+
+def formatear_nombre_corto(nombre_str, apellidos_str):
+    # 1. Procesar Nombre (siempre la primera palabra)
+    nombre = nombre_str.split()[0] if nombre_str else ""
+    
+    # 2. Procesar Apellidos con lógica de partículas (van, de, la, etc.)
+    if not apellidos_str:
+        return nombre.strip()
+        
+    palabras = apellidos_str.split()
+    resultado_apellido = []
+    
+    for i, palabra in enumerate(palabras):
+        resultado_apellido.append(palabra)
+        # Si la palabra actual empieza con Mayúscula, paramos ahí.
+        # Esto capturará "van der" (minúsculas) y se detendrá en "Gragt" (mayúscula).
+        if palabra[0].isupper():
+            break
+            
+    apellido_final = " ".join(resultado_apellido)
+    return f"{nombre} {apellido_final}".strip()

@@ -178,6 +178,7 @@ async function sacarJugadora(id) {
 }
 
 export async function Ganaste(modo) {
+    const body = document.documentElement;
     const input = document.querySelectorAll('input');
     const button = document.getElementById('botonVerificar');
     const result = document.getElementById('resultado');
@@ -194,7 +195,7 @@ export async function Ganaste(modo) {
         input.style.pointerEvents = 'none';
     });
 
-    fondo.classList.add('tick-win');
+    body.classList.add('win');
 
     // Llamar a la función que cambia la imagen con flip
     if(modo==='grid'){

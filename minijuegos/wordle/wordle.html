@@ -34,7 +34,6 @@
 </head>
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
   {% include 'partials/header.html' %}
-  {% include 'partials/fondo.html' %}
 <div class="container-wordle">
   <h1>{% trans "Wordle Game" %}</h1>
   <!--<img src="{% static 'img/wordle-logo.webp' %}" alt="Futfem Wordle Logo" class="logo-wordle logo-game" fetchpriority="high" style="height: 50px; width: 160.256px;">-->
@@ -47,7 +46,6 @@
 <script src="{% url 'javascript-catalog' %}" defer></script>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
 <script type="module" src="{% static 'wordle/wordle.js' %}" defer></script>
-<script src="{% static 'js/fondo_old.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" defer></script>
 </body>

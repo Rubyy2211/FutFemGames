@@ -119,14 +119,13 @@ function displayCompanyeras(data) {
         back.classList.add('back');
         const jugadoraImg = document.createElement('img');
         const jugadoraMystery = document.createElement('img');
-        jugadoraMystery.src = '/static/img/mystery.jpg';
-        if (item.imagen) {
-            
-                jugadoraImg.src = item.imagen;            
-                jugadoraImg.alt = 'Imagen de la Jugadora';
+        jugadoraMystery.src = '/static/img/predeterm.png';
+        if (item.imagen && item.imagen!='/img/predeterm.jpg') {
+            jugadoraImg.src = item.imagen;            
+            jugadoraImg.alt = 'Imagen de la Jugadora';
                 
         }else{
-           jugadoraImg.src = '/static/img/predeterm.jpg';
+           jugadoraImg.src = '/static/img/predeterm.png';
         }
         back.appendChild(jugadoraImg);
         front.appendChild(jugadoraMystery);

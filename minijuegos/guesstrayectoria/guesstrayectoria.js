@@ -87,7 +87,7 @@ async function play() {
     const res = localStorage.getItem('res1');
     console.log('Jugadora ID asignada:', jugadoraId, ultimaRespuesta, res);
     const texto = gettext('Adivina la Jugadora de Fútbol es un juego de trivia donde debes identificar a una futbolista según los equipos en los que ha jugado. Usa las pistas, demuestra tu conocimiento y compite para ver quién acierta más.');
-    const imagen = '/static/img/trayectoria.webp';
+    const imagen = '/static/img/trayectoria.png';
     const {crearPopupInicialJuego} = await import("/static/js/games/funciones-comunes.js");
     if(ultimaRespuesta && ultimaRespuesta === jugadoraId){       
         await iniciar('');
@@ -172,13 +172,13 @@ function displayTrayectoria(data, acertaste) {
         // Solo mostrar la parte trasera si el usuario ha ganado
         if (acertaste) {
             if (data.length > 0) {
-                myst.src = data[0].ImagenJugadora; // Asignar imagen de jugadora
+                myst.src = data[0].ImagenJugadora || '/static/img/predeterm.png'; // Asignar imagen de jugadora
             }
             const back = document.createElement('div');
             back.classList.add('back');
 
             const jugadoraImg = document.createElement('img');
-            jugadoraImg.src = item.imagen ? item.imagen : data[0].ImagenJugadora;
+            jugadoraImg.src = item.imagen ? item.imagen : item.escudo;
             jugadoraImg.alt = 'Imagen de la Jugadora';
             jugadoraImg.className = 'glass';
             jugadoraImg.style.borderColor = item.color;
@@ -226,17 +226,31 @@ function crearContenedorFechas(fechaInicio, fechaFin, isFirst, isLast) {
 
     // 2. Caso: Primer equipo -> Solo fecha de inicio
     if (isFirst && fechaInicio) {
+        const spanGuion = document.createElement('span');
         const spanInicio = document.createElement('span');
         spanInicio.classList.add('fecha-inicio');
         spanInicio.textContent = fechaInicio.substring(0, 4);
+        spanGuion.textContent = "-"
+        const spanFin = document.createElement('span');
+        spanFin.classList.add('fecha-fin');
+        spanFin.textContent = fechaFin ? fechaFin.substring(0, 4) : 'Act.';
         contenedor.appendChild(spanInicio);
+        contenedor.appendChild(spanGuion);
+        contenedor.appendChild(spanFin);
     }
 
     // 3. Caso: Último equipo -> Solo fecha de fin (o 'Act.')
     if (isLast) {
+        const spanGuion = document.createElement('span');
+        const spanInicio = document.createElement('span');
+        spanInicio.classList.add('fecha-inicio');
+        spanInicio.textContent = fechaInicio.substring(0, 4);
+        spanGuion.textContent = "-"
         const spanFin = document.createElement('span');
         spanFin.classList.add('fecha-fin');
         spanFin.textContent = fechaFin ? fechaFin.substring(0, 4) : 'Act.';
+        contenedor.appendChild(spanInicio);
+        contenedor.appendChild(spanGuion);
         contenedor.appendChild(spanFin);
     }
 

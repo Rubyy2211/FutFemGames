@@ -64,7 +64,7 @@
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
 
     {% include 'partials/header.html' %}
-    {% include 'partials/fondo.html' %}
+    <!--{% include 'partials/fondo.html' %}-->
 
     <!--<div id="dynamic-bg"></div>-->
 
@@ -76,17 +76,16 @@
 
 
         <div class="panels-stack">
-            <div id="default" class="panel-info">
-                <img src="/static/img/logo.webp" alt="futfemgames logo">
-                <p>¡Bienvenid@ a FutFem Games!</p>
-            </div>
             <div id="diarios" class="panel-info">
                 <div id="daily-games">
-                    <h2>{% trans "Juegos Diarios" %}</h2>
+                    <h2>{% trans "Diarios" %}</h2>
                     <div class="row sibling-fade d-flex justify-content-center">
-                        {% include 'partials/game_card.html' with racha_id="racha-1" destino_js="/minigames/career" imagen="img/grid-logo.webp" titulo=_("Futfem Career") descripcion=_("Descubre una jugadora por su trayectoria") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-1" destino_js="/minigames/career" imagen="img/career-logo.webp" titulo=_("Futfem Career") descripcion=_("Descubre una jugadora por su trayectoria") %}
                         {% include 'partials/game_card.html' with racha_id="racha-4" destino_js="/minigames/grid" imagen="img/grid-logo.webp" imagen_hover="img/grid1.webp" titulo=_("Futfem Grid") descripcion=_("Completa el grid de Futfem") %}
                         {% include 'partials/game_card.html' with racha_id="racha-6" destino_js="/minigames/bingo" imagen="img/bingo-logo.webp" imagen_hover="img/Bingo.webp" titulo=_("Futfem Bingo") descripcion=_("Juega el bingo de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-2" destino_js="/minigames/wordle" imagen="img/wordle-logo.webp" imagen_hover="img/wordle.webp" titulo=_("Futfem Wordle") descripcion=_("Adivina la palabra de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-3" destino_js="/minigames/guess" imagen="img/guess-logo.webp" titulo=_("Futfem Guess") descripcion=_("Adivina el jugador de Futfem") %}
+                        {% include 'partials/game_card.html' with racha_id="racha-5" destino_js="/minigames/mates" imagen="img/bingo-logo.webp" titulo=_("Futfem Mates") descripcion=_("Descubre la jugadora por sus compañeras") %}        
                         <div class="col-md-4" style="display: none;">
                             <div class="game-button glow" onclick="redireccionarA('XI_Clubs')">
                                 <img src="{% static 'img/ComingSoon.png' %}" alt="Game 3">
@@ -95,16 +94,11 @@
                             </div>
                         </div>
                     </div>
-                    <div class="row sibling-fade d-flex justify-content-center">
-                        {% include 'partials/game_card.html' with racha_id="racha-2" destino_js="/minigames/wordle" imagen="img/wordle-logo.webp" imagen_hover="img/wordle.webp" titulo=_("Futfem Wordle") descripcion=_("Adivina la palabra de Futfem") %}
-                        {% include 'partials/game_card.html' with racha_id="racha-3" destino_js="/minigames/guess" imagen="img/bingo-logo.webp" titulo=_("Futfem Guess") descripcion=_("Adivina el jugador de Futfem") %}
-                        {% include 'partials/game_card.html' with racha_id="racha-5" destino_js="/minigames/mates" imagen="img/bingo-logo.webp" titulo=_("Futfem Mates") descripcion=_("Descubre la jugadora por sus compañeras") %}        
-                    </div>
                 </div>
             </div>
             <div id="regulares" class="panel-info">
                 <div id="regular-games">
-                    <h2>{% trans "Juegos Regulares" %}</h2>
+                    <h2>{% trans "Regulares" %}</h2>
 
                     <div class="row sibling-fade d-flex justify-content-center">
                         {% include 'partials/game_card.html' with racha_id="racha-7" destino_js="/minigames/higher_lower" imagen="img/higher_lower1.webp" titulo=_("Higher or Lower") descripcion=_("Descubre que jugadora vale más") %}
@@ -119,11 +113,12 @@
     </div>
 <script src="{% static 'js/redireccion.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.1/dist/gsap.min.js" defer></script>
+<script src="{% static 'js/slider-movil.js' %}" defer></script>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
 <script src="{% static 'js/animations/minijuegos.js' %}" defer></script>
 <script type="module" src="{% static 'usuarios/js/rachas.js' %}" defer></script>
 <script src="{% static 'js/utils/selector.js' %}" defer></script>
-<script src="{% static 'js/fondo_old.js' %}" defer></script>
+<!--<script src="{% static 'js/fondo_old.js' %}" defer></script>-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous" defer></script>
 <script defer>
     const expoContainer = document.getElementById('dynamic-bg');
@@ -198,96 +193,6 @@
         }
     }
     
-    // --- Actualizar tus Event Listeners existentes ---
-    /*buttons.forEach(card => {
-        card.addEventListener('mouseenter', () => {
-            actualizarExpo(card); // Usamos la misma función aquí
-            
-            hoverSound.currentTime = 0;
-            hoverSound.play();
-
-            // Lógica de opacidad para el resto
-            buttons.forEach(other => {
-                if (other !== card) gsap.to(other, { opacity: 1, duration: 0.3 });
-            });
-            gsap.to(card, { scale: 1.05, duration: 0.3 });
-        });
-
-        card.addEventListener('mouseleave', () => {
-            gsap.to(card, { scale: 1, duration: 0.3 });
-            buttons.forEach(other => {
-                gsap.to(other, { opacity: 1, duration: 0.3 });
-            });
-        });
-    });*/
-
-    /*function volverAlMenu(idSeccionActual, idMenuAmostrar) {
-        // 1. Ocultamos la sección en la que estamos (ej: 'daily-games' o 'perfil-usuario')
-        const seccion = document.getElementById(idSeccionActual);
-        if (seccion) {
-            seccion.style.display = 'none';
-        }
-
-        // 2. Ocultamos la expo (solo si existe)
-        if (typeof expoContainer !== 'undefined') {
-            expoContainer.style.display = 'none';
-        }
-
-        // 3. Volvemos a mostrar EL menú específico que nos interese
-        const menuDestino = document.getElementById(idMenuAmostrar);
-        if (menuDestino) {
-            menuDestino.style.display = 'flex';
-            
-            // OPCIONAL: Si quieres que al volver los botones del menú 
-            // recuperen su escala original por si se quedaron "grandes"
-            gsap.to(menuDestino.querySelectorAll('.web-button'), { scale: 1, opacity: 1, duration: 0.3 });
-        }
-    }
-    */
-    /*function abrirBuscador() {
-        const modal = document.getElementById('search-overlay');
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden'; // Evita que la página de fondo se mueva
-
-        // Foco automático en el input
-        setTimeout(() => {
-            document.getElementById('usuarioInput').focus();
-        }, 100);
-    }
-
-    function cerrarBuscador() {
-        const modal = document.getElementById('search-overlay');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto'; // Devuelve el scroll
-        
-        // Limpiar campos al salir
-        document.getElementById('usuarioInput').value = '';
-        document.getElementById('sugerencias').innerHTML = '';
-    }
-
-    // Cerrar también si se pulsa la tecla ESC
-    document.addEventListener('keydown', (e) => {
-        if (e.key === "Escape") cerrarBuscador();
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-        // Comprobar si el estado del historial dice que el buscador debe estar abierto
-        if (history.state && history.state.searchOpen) {
-            abrirBuscador();
-            
-            // Opcional: Limpiar el estado para que si recarga la página manualmente
-            // no se abra solo otra vez
-            history.replaceState(null, "");
-        }
-    });
-
-    // También detectamos si el usuario navega hacia atrás/adelante sin recargar (Popstate)
-    window.addEventListener('popstate', (event) => {
-        if (event.state && event.state.searchOpen) {
-            abrirBuscador();
-        } else {
-            cerrarBuscador();
-        }
-    });*/
 </script>
 <script type="module">
     import { obtenerRacha, displayRacha } from '{% static "usuarios/js/rachas.js" %}';

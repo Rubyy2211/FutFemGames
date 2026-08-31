@@ -4,6 +4,7 @@ body {
     color: white;
     text-align: center;
     background: none;
+    overflow: hidden !important;
 }
 header{
     z-index: 100;
@@ -42,7 +43,9 @@ img {
     justify-content: center;
     /*margin-top: 50px;*/
     z-index: 2;
-    margin-top: 2dvh;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 #cabecera-bingo{
@@ -102,6 +105,11 @@ img {
 .player-name {
     font-size: 24px;
     margin-top: 10px;
+    font-family: 'Oswald', sans-serif;
+}
+
+#reloj{
+    font-family: 'Oswald', sans-serif;
 }
 
 table {
@@ -245,10 +253,6 @@ td.blocked {
 }
 
 @media (max-width: 450px){
-
-    .contenedor{
-        margin-top: 5dvh;
-    }
 
     th, td {
         width: 70px;

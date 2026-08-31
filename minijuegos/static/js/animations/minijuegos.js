@@ -1,120 +1,157 @@
 const buttons = document.querySelectorAll('.game-button');
 const expo = document.getElementById('dynamic-bg');
-const expoTitulo = document.getElementById('juego-titulo');
-const expoParrafo = document.getElementById('juego-parrafo');
-const expoImagen = document.getElementById('juego-imagen');
-//const webButtons = document.querySelectorAll('.web-button');
 const hoverSound = new Audio('/static/sounds/hover2.mp3');
 
-/*webButtons.forEach(card => {
-  // Buscamos la imagen dentro de la etiqueta picture de ESTE botón web
-  const innerImg = card.querySelector('picture img');
+// 🟢 OBTENER ELEMENTOS H2 Y GUARDAR TÍTULOS PREDETERMINADOS
+const dailyH2 = document.querySelector('#daily-games h2, #diarios h2');
+const regularH2 = document.querySelector('#regular-games h2, #regulares h2');
 
-  // ENTRAR: Suena el audio y escalamos la imagen interna con GSAP
-  card.addEventListener('mouseenter', () => {
-    hoverSound.currentTime = 0;
-    hoverSound.play();
+const defaultDailyText = dailyH2 ? dailyH2.textContent : 'Diarios';
+const defaultRegularText = regularH2 ? regularH2.textContent : 'Regulares';
 
-    if (innerImg) {
-      gsap.to(innerImg, { 
-        scale: 1.05,        // Cambia este valor si quieres que se estire más o menos
-        duration: 0.4, 
-        ease: "power2.out" 
+// 🎬 FUNCIÓN PARA ANIMAR EL CAMBIO DE TEXTO EN LOS H2
+function updateH2Text(h2Element, newText) {
+  if (!h2Element || h2Element.textContent === newText) return;
+
+  gsap.killTweensOf(h2Element);
+
+  gsap.to(h2Element, {
+    autoAlpha: 0,
+    xPercent: -50,
+    yPercent: -60, // Sube ligeramente desde el centro (-50%)
+    duration: 0.12,
+    ease: "power1.in",
+    onComplete: () => {
+      h2Element.textContent = newText;
+      gsap.set(h2Element, { xPercent: -50, yPercent: -40 }); // Inicia un poco más abajo
+      gsap.to(h2Element, {
+        autoAlpha: 1,
+        xPercent: -50,
+        yPercent: -50, // Regresa a su posición centrada (-50%, -50%)
+        duration: 0.25,
+        ease: "back.out(1.5)"
       });
     }
   });
+}
 
-  // SALIR: Restauramos la imagen a su tamaño original (scale: 1)
-  card.addEventListener('mouseleave', () => {
-    if (innerImg) {
-      gsap.to(innerImg, { 
-        scale: 1, 
-        duration: 0.3, 
-        ease: "power2.out" 
-      });
-    }
+// Función auxiliar para restablecer todos los botones a su estado normal
+function resetAllGameButtons() {
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+    gsap.to(btn, { scale: 1, opacity: 1, duration: 0.3 });
   });
-});*/
+}
 
 buttons.forEach(card => {
   card.addEventListener('mouseenter', () => {
+    if (card.classList.contains('active')) return;
+
     // 1. Extraer datos del dataset del botón
-    const { bg, titulo, descripcion, img } = card.dataset;
+    const { bg, titulo } = card.dataset;
 
-    // 2. Actualizar contenido de la expo
-    //expoTitulo.textContent = titulo;
-    //expoParrafo.textContent = descripcion;
-    expo.style.backgroundImage = img;
+    // 2. Cambiar el H2 CON ANIMACIÓN según la sección
+    const parentDaily = card.closest('#diarios, #daily-games');
+    const parentRegular = card.closest('#regulares, #regular-games');
 
-    // 3. Cambiar fondo y mostrar contenedor con GSAP
-    gsap.to(expo, {
-      duration: 0.4,
-      autoAlpha: 1, // Esto maneja visibility y opacity a la vez
-      backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bg})`,
-      display: 'flex', // Asegura que se vea si estaba en none
-      ease: "power2.out"
+    if (parentDaily && dailyH2 && titulo) {
+      updateH2Text(dailyH2, titulo);
+    } else if (parentRegular && regularH2 && titulo) {
+      updateH2Text(regularH2, titulo);
+    }
+
+    // 3. Cambiar fondo dinámico con GSAP
+    if (bg && expo) {
+      gsap.to(expo, {
+        duration: 0.4,
+        autoAlpha: 1,
+        backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bg})`,
+        display: 'flex',
+        ease: "power2.out"
+      });
+    }
+
+    // 4. Reproducir sonido
+    if (typeof hoverSound !== 'undefined') {
+      hoverSound.currentTime = 0;
+      hoverSound.play();
+    }
+
+    // 5. GESTIONAR ESTADO ACTIVO DE LOS BOTONES
+    const sectionContainer = parentDaily || parentRegular || document;
+    const sectionButtons = sectionContainer.querySelectorAll('.game-button');
+
+    sectionButtons.forEach(other => {
+      if (other === card) {
+        other.classList.add('active');
+        gsap.to(other, { scale: 1.05, opacity: 1, duration: 0.3 });
+      } else {
+        other.classList.remove('active');
+        gsap.to(other, { scale: 1, opacity: 0.7, duration: 0.3 });
+      }
     });
-
-    // --- Tu lógica previa de hoverSound y opacidad de otros botones ---
-    hoverSound.currentTime = 0;
-    hoverSound.play();
-
-    buttons.forEach(other => {
-      if (other !== card) gsap.to(other, { opacity: 1, duration: 0.3 });
-    });
-    gsap.to(card, { scale: 1.05, duration: 0.3 });
   });
 
   card.addEventListener('mouseleave', () => {
-    // Opcional: Ocultar la expo al salir del botón o dejar la última seleccionada
-    // Si quieres que desaparezca:
-    
-    gsap.to(expoContainer, { autoAlpha: 0, duration: 0.3 });
-    
-
-    // Restaurar botones
-    gsap.to(card, { scale: 1, duration: 0.3 });
-    buttons.forEach(other => {
-      gsap.to(other, { opacity: 1, duration: 0.3 });
-    });
+    // Se mantiene activo hasta cambiar de botón o de sección
   });
 });
-
-
 
 
 // ANIMACION MENÚ PRINCIPAL
 const selectorLinks = document.querySelectorAll('#selector a');
 const dynamicBg = document.getElementById('dynamic-bg');
-const defaultSection = document.getElementById('default');
-const hoverSections = document.querySelectorAll('#diarios, #regulares');
+const sections = document.querySelectorAll('#diarios, #regulares');
 
-// Variables para rastrear el estado activo
-let currentActiveSection = defaultSection;
-let currentActiveLink = null;
+// 1. Definir la sección e ítem inicial por defecto (#diarios)
+const initialSection = document.getElementById('diarios');
+let currentActiveSection = initialSection;
 
-// 1. Estado inicial de secciones y sus .panel-info
-gsap.set(hoverSections, { autoAlpha: 0, display: 'none', y: 10 });
+let currentActiveLink = Array.from(selectorLinks).find(link => {
+  const href = link.getAttribute('href');
+  return href === '#diarios' || link.querySelector('p')?.textContent.trim().toLowerCase() === 'diarios';
+}) || selectorLinks[0];
 
-hoverSections.forEach(sec => {
-  const infos = sec.querySelectorAll('.panel-info');
-  gsap.set(infos, { autoAlpha: 0, y: 15 });
+// 2. Estado inicial de las secciones
+sections.forEach(sec => {
+  if (sec === initialSection) {
+    gsap.set(sec, { autoAlpha: 1, display: 'flex', y: 0 });
+    const infos = sec.querySelectorAll('.panel-info');
+    gsap.set(infos, { autoAlpha: 1, y: 0 });
+  } else {
+    gsap.set(sec, { autoAlpha: 0, display: 'none', y: 10 });
+    const infos = sec.querySelectorAll('.panel-info');
+    gsap.set(infos, { autoAlpha: 0, y: 15 });
+  }
 });
 
-if (defaultSection) {
-  gsap.set(defaultSection, { autoAlpha: 1, display: 'flex', y: 0 });
-  const defaultInfos = defaultSection.querySelectorAll('.panel-info');
-  gsap.set(defaultInfos, { autoAlpha: 1, y: 0 });
-}
-
+// 3. Inicializar enlaces y eventos hover del selector
 selectorLinks.forEach(link => {
-  // Inicializar variables CSS de las esquinas neón
-  gsap.set(link, {
-    "--arrowOpacity": 0,
-    "--arrowScale": 1.5,
-    "--arrowYTop": "-25px",
-    "--arrowYBottom": "25px"
-  });
+  const isInitialActive = (link === currentActiveLink);
+
+  if (isInitialActive) {
+    link.classList.add('active');
+    gsap.set(link, {
+      "--arrowOpacity": 1,
+      "--arrowScale": 1,
+      "--arrowYTop": "0px",
+      "--arrowYBottom": "0px"
+    });
+
+    const initBg = link.dataset.bg;
+    if (initBg && dynamicBg) {
+      dynamicBg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${initBg}')`;
+      gsap.set(dynamicBg, { opacity: 1 });
+    }
+  } else {
+    link.classList.remove('active');
+    gsap.set(link, {
+      "--arrowOpacity": 0,
+      "--arrowScale": 1.5,
+      "--arrowYTop": "-25px",
+      "--arrowYBottom": "25px"
+    });
+  }
 
   const href = link.getAttribute('href');
   let targetId = href && href.startsWith('#') ? href : null;
@@ -127,18 +164,18 @@ selectorLinks.forEach(link => {
   const targetSection = targetId ? document.querySelector(targetId) : null;
 
   link.addEventListener('mouseenter', () => {
-    // Sonido hover
+    if (link === currentActiveLink) return;
+
     if (typeof hoverSound !== 'undefined') {
       hoverSound.currentTime = 0;
       hoverSound.play();
     }
 
-    // 🟢 1. GESTIÓN ROBUSTA DE ESQUINAS NEÓN (Limpia todos los estados pendientes)
     selectorLinks.forEach(otherLink => {
-      gsap.killTweensOf(otherLink); // Detiene animaciones en curso
+      gsap.killTweensOf(otherLink);
 
       if (otherLink === link) {
-        // Encender únicamente el botón activo
+        otherLink.classList.add('active');
         gsap.to(otherLink, {
           "--arrowOpacity": 1,
           "--arrowScale": 1,
@@ -148,7 +185,7 @@ selectorLinks.forEach(link => {
           ease: "back.out(1.7)"
         });
       } else {
-        // Apagar todos los demás
+        otherLink.classList.remove('active');
         gsap.to(otherLink, {
           "--arrowOpacity": 0,
           "--arrowScale": 1.5,
@@ -162,7 +199,6 @@ selectorLinks.forEach(link => {
 
     currentActiveLink = link;
 
-    // 2. CAMBIO DE FONDO DINÁMICO
     const newBg = link.dataset.bg;
     if (newBg && dynamicBg) {
       gsap.killTweensOf(dynamicBg);
@@ -177,8 +213,16 @@ selectorLinks.forEach(link => {
       });
     }
 
-    // 3. CAMBIO DE SECCIÓN PANEL
+    // 🟢 CAMBIO DE SECCIÓN PANEL (RESTAURAR TÍTULOS CON ANIMACIÓN)
     if (targetSection && targetSection !== currentActiveSection) {
+      
+      // Restauramos los títulos con la animación suave
+      if (dailyH2) updateH2Text(dailyH2, defaultDailyText);
+      if (regularH2) updateH2Text(regularH2, defaultRegularText);
+
+      // Restauramos los botones a su estado sin selección
+      resetAllGameButtons();
+
       if (currentActiveSection) {
         gsap.killTweensOf(currentActiveSection);
         gsap.to(currentActiveSection, { 

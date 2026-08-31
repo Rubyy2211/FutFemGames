@@ -130,7 +130,7 @@ export async function play() {
     idres = columnas.map(String).concat(filas.map(String)).join('');
     const res = localStorage.getItem('res4');
     const texto = gettext('¡Pon a prueba tu conocimiento! Rellena la cuadrícula con nombres de jugadoras que hayan militado en los dos equipos que coinciden en cada celda (fila y columna). ¡Completa el tablero y demuestra que eres quien más sabe de fútbol femenino!');
-    const imagen = 'static/img/grid.webp';
+    const imagen = '/static/img/grid.webp';
     const titulo = gettext('Futfem Grid');
     if(ultimaArray && ultimaArray[ultimaArray.length - 1].answer === idres){
         await iniciar();

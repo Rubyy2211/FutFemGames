@@ -347,7 +347,7 @@ async function wordlePerder() {
 
 
 const texto = gettext('¡Bienvenida a Wordle! Adivina la palabra oculta en 6 intentos. Cada letra correcta en la posición correcta se marcará en verde, las letras correctas en la posición incorrecta se marcarán en amarillo, y las letras incorrectas se marcarán en gris. ¡Buena suerte!');
-const imagen = "static/img/wordle.webp";
+const imagen = "/static/img/wordle.webp";
 play().then(r => r);
 async function play() {
     const lastAnswer= localStorage.getItem('Attr2');
