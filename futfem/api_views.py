@@ -602,8 +602,8 @@ def jugadoras_por_equipo_y_temporada(request):
                 e_act.nombre,           -- 12
                 e_act.escudo,           -- 13
                 e_act.color,            -- 14
-                c.id_competicion,       -- 15 (Sustituye a e_act.liga)
-                c.logo AS liga_logo,    -- 16 (Logo de la competición principal)
+                ec.id_competicion,      -- 15 (ID de la liga principal)
+                l.logo AS liga_logo,    -- 16 (Logo de la tabla ligas)
 
                 -- Nacionalidades
                 GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 17
@@ -621,14 +621,16 @@ def jugadoras_por_equipo_y_temporada(request):
             LEFT JOIN trayectoria tca ON tca.jugadora = j.id_jugadora AND tca.equipo_actual = 1
             LEFT JOIN equipos e_act ON tca.equipo = e_act.id_equipo
             
-            -- Obtener la competición principal del equipo actual
+            -- Obtener la competición/liga principal del equipo actual desde equipo_competicion
             LEFT JOIN (
                 SELECT id_equipo, MIN(id_competicion) AS id_competicion
                 FROM equipo_competicion
                 WHERE es_principal = 1
                 GROUP BY id_equipo
             ) ec ON ec.id_equipo = e_act.id_equipo
-            LEFT JOIN ligas c ON c.id_liga = ec.id_competicion
+            
+            -- JOIN a la tabla 'ligas' relacionando id_liga con id_competicion
+            LEFT JOIN ligas l ON l.id_liga = ec.id_competicion
 
             LEFT JOIN `jugadora-pais` jp ON jp.jugadora = j.id_jugadora
             LEFT JOIN `paises` p ON jp.pais = p.id_pais
