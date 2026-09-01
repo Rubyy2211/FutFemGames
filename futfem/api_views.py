@@ -628,7 +628,7 @@ def jugadoras_por_equipo_y_temporada(request):
                 WHERE es_principal = 1
                 GROUP BY id_equipo
             ) ec ON ec.id_equipo = e_act.id_equipo
-            LEFT JOIN competicion c ON c.id_competicion = ec.id_competicion
+            LEFT JOIN ligas c ON c.id_competicion = ec.id_competicion
 
             LEFT JOIN `jugadora-pais` jp ON jp.jugadora = j.id_jugadora
             LEFT JOIN `paises` p ON jp.pais = p.id_pais
