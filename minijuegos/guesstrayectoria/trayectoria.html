@@ -35,7 +35,7 @@
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
     {% include 'partials/header.html' %}
 <div id="trayectoria-container">
-<h1>{% trans "Futfem Career" %}</h1>
+<!--<h1>{% trans "Futfem Career" %}</h1>-->
     <div id="racha-1" class="fire" style="display: none"></div>
 <div id="game">
     <div id="reloj">Tiempo</div>
@@ -45,7 +45,7 @@
     <img src="{% static 'img/mystery.webp' %}" class="mystery" alt="mystery player" fetchpriority="high">
             </div>
             <div class="back">
-                <img src="#" class="mystery" alt="mystery player" id="jugadora">
+                <img src="{% static 'img/predeterm.png' %}" class="mystery" alt="mystery player" id="jugadora">
             </div>
         </div>
     </div>

@@ -17,6 +17,7 @@ button{
 #game>.flip-container{
     height: 120px;
     max-height: 120px;
+    aspect-ratio: 1 / 1;
 }
 #game>.flip-container img{
     height: 100% !important;
@@ -160,7 +161,6 @@ input {
     gap: 0px;
     justify-content: start !important;
     height: stretch;
-    transform: translateY(-10px);
 }
 .front img{
     padding: 5%;
@@ -178,7 +178,6 @@ input {
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-top: 10px;
     gap: 10px;
 }
 .trayectoria-row{
@@ -223,6 +222,7 @@ input {
 
     #trayectoria img {
         flex: 1 1 0;
+        overflow: hidden;
     }
 
     input {
@@ -306,6 +306,11 @@ input {
         min-height: 75px !important;
     }
 
+    #game>.flip-container *{
+        height: 75px !important;
+        width: 75px !important;
+    }
+
     #game>.flip-container img{
         max-height: 75px !important;
     }
@@ -315,6 +320,9 @@ input {
     }
     #foto-jug{
         height: 75px !important;
+    }
+    .trayectoria-row{
+        min-width: 100%;
     }
     #trayectoria .flip-container{
         max-height: 75px !important;

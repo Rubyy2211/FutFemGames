@@ -1,7 +1,7 @@
 import { victory, wrong, correct } from "/static/js/sounds.js";
 import { Ganaste, calcularEdad } from "/static/js/games/funciones-comunes.js";
 
-let idres, currentPlayerData, paises, equipos, ligas, trofeos, lastPlayer, jugadora, jugadoraAnterior, ultimaRespuesta;
+let idres, currentPlayerData, paises, clubes, ligas, lastPlayer, jugadora, jugadoraAnterior, ultimaRespuesta;
 const skipButton = document.querySelector('.skip-button');
 
 async function iniciar(dificultad) {
@@ -11,7 +11,7 @@ async function iniciar(dificultad) {
     lastPlayer = localStorage.getItem('last-player-bingo');
 
     if (btn) {
-        btn.addEventListener('click', () => skipPlayer(paises, equipos, ligas, trofeos)); // Habilitar el botón al iniciar el juego
+        btn.addEventListener('click', () => skipPlayer(paises, clubes, ligas)); // Habilitar el botón al iniciar el juego
     }
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
@@ -34,9 +34,9 @@ async function iniciar(dificultad) {
     }
 
     if (lastPlayer) {
-        mostrarJugadora(JSON.parse(lastPlayer), paises, equipos, ligas, trofeos);
+        mostrarJugadora(JSON.parse(lastPlayer), paises, clubes, ligas);
     }else{
-        skipPlayer(paises, equipos, ligas, trofeos);
+        skipPlayer(paises, clubes, ligas);
     }
     // Definir los segundos según la dificultad
     const { inicializarCounter, startCounter, stopCounter } = await import('/static/js/utils/counter.js'); 
@@ -48,10 +48,10 @@ async function iniciar(dificultad) {
     await Promise.all([
         ponerBanderas(paises, ["c21", "c32", "c33"]),
         ponerLigas(ligas, ["c13", "c34", "c23"]),
-        ponerClubes(equipos, ["c12", "c14", "c31"]),
-        ponerTrofeos(trofeos, ["c11"])
+        ponerClubes(clubes, ["c12", "c14", "c31"]),
+        // ponerTrofeos(trofeos, ["c11"])
     ]);
-    ponerEdades("c24", "c22", '/static/img/edades/mayor30.png', '/static/img/edades/igual25.png'); // Asigna imágenes basadas en las edades.
+    ponerEdades(["c24", "c22", "c11"], ['/static/img/edades/mayor30.png', '/static/img/edades/igual25.png', '/static/img/edades/menor20.png']); // Asigna imágenes basadas en las edades.
     localStorage.setItem('res6', idres);
              
     let userAnswer = JSON.parse(localStorage.getItem('Attr6')) || [];
@@ -76,7 +76,7 @@ async function iniciar(dificultad) {
             Ganaste('bingo');
         }
         else{
-            initBingoEvents(paises, clubes, ligas, trofeos);
+            initBingoEvents(paises, clubes, ligas);
             if (!userRes || userRes.trim() === '') {
                 startCounter(segundos, "bingo", async () => {
                     console.log("El contador llegó a 0. Ejecutando acción...");
@@ -101,10 +101,9 @@ async function play() {
     let ultimaArray = JSON.parse(ultimaRespuesta);
     jugadora = await fetchData(6);
     paises = [jugadora.paises[0], jugadora.paises[1], jugadora.paises[2]];
-    equipos = [jugadora.equipos[0], jugadora.equipos[1], jugadora.equipos[2]];
+    clubes = [jugadora.equipos[0], jugadora.equipos[1], jugadora.equipos[2]];
     ligas = [jugadora.ligas[0], jugadora.ligas[1], jugadora.ligas[2]];
-    trofeos = [jugadora.trofeos[0]];
-    idres = paises.map(String).concat(equipos.map(String), ligas.map(String), trofeos.map(String)).join('');
+    idres = paises.map(String).concat(clubes.map(String), ligas.map(String)).join('');
     const res = localStorage.getItem('res6');
     const texto = gettext('¡Pon a prueba tu memoria en "Futfem Bingo"! En este juego recibirás jugadoras al azar y deberás colocarlas en las casillas de país, equipo o liga que coincidan con su trayectoria. Cada jugadora tiene varias características, y tu objetivo es encajarla correctamente en el tablero. Gana quien logre completar su tarjeta como en un bingo tradicional, ¡pero con fútbol femenino!');
     const imagen = '/static/img/Bingo.webp';
@@ -152,7 +151,7 @@ function handleCellClick(cell, jugador) {
     }
 
     // 4. VERIFICACIÓN DE TROFEOS (Corregido)
-    if (lowerClass.includes("trofeo") && jugador.trofeos) {
+    /*if (lowerClass.includes("trofeo") && jugador.trofeos) {
         let trofeoMatch = false;
         console.log('es trofeo', jugador.trofeos);
         
@@ -173,7 +172,7 @@ function handleCellClick(cell, jugador) {
         }
         
         if (trofeoMatch) hasMatch = true;
-    }
+    }*/
 
     // 5. VERIFICACIÓN DE EDAD (Más limpio)
     if (lowerClass.includes("edad")) {
@@ -223,7 +222,7 @@ export async function skipPlayer(paises, clubes, ligas, trofeos) {
         // ACTUALIZACIÓN CRUCIAL: Guardamos la que se va a mostrar ahora mismo
         jugadoraAnterior = siguienteJugadora.id; 
         
-        mostrarJugadora(siguienteJugadora, paises, clubes, ligas, trofeos);
+        mostrarJugadora(siguienteJugadora, paises, clubes, ligas) /*, trofeos)*/;
         return;
     }
 
@@ -235,7 +234,7 @@ export async function skipPlayer(paises, clubes, ligas, trofeos) {
     if (paises.length > 0) paises.forEach(pais => url.searchParams.append('nacionalidades[]', pais));
     if (clubes.length > 0) clubes.forEach(club => url.searchParams.append('equipos[]', club));
     if (ligas.length > 0) ligas.forEach(liga => url.searchParams.append('ligas[]', liga));
-    if (trofeos.length > 0) trofeos.forEach(trofeo => url.searchParams.append('trofeos[]', trofeo));
+    // if (trofeos.length > 0) trofeos.forEach(trofeo => url.searchParams.append('trofeos[]', trofeo));
 
     try {
         const response = await fetch(url);
@@ -263,7 +262,7 @@ export async function skipPlayer(paises, clubes, ligas, trofeos) {
         if (jugadoraFinal) {
             // Guardamos el ID definitivo en el historial antes de pintar
             jugadoraAnterior = jugadoraFinal.id; 
-            await mostrarJugadora(jugadoraFinal, paises, clubes, ligas, trofeos);
+            await mostrarJugadora(jugadoraFinal, paises, clubes, ligas) /*, trofeos)*/;
         } else {
             console.warn('No se pudo extraer una jugadora válida del lote.');
         }
@@ -292,7 +291,7 @@ function initBingoEvents(paises, clubes, ligas, trofeos) {
         if (esAcierto) {
             cell.classList.add('correcto');
             // Sonido de acierto si tienes uno
-            skipPlayer(paises, clubes, ligas, trofeos);
+            skipPlayer(paises, clubes, ligas); /*trofeos)*/;
         } else {
             cell.classList.add('tremble');
             wrong.currentTime = 0;
@@ -315,7 +314,7 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
         fetchJugadoraTrayectoriaById(jugadora.id),
     ]);
 
-    const palmares = await fetchJugadoraPalmaresById(jugadora.id, equipos);
+    // const palmares = await fetchJugadoraPalmaresById(jugadora.id, equipos);
 
     if (equipos && equipos.length > 0) {
         const nombresEquipos = equipos.map(e => e.equipo);
@@ -326,7 +325,7 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
             'trayectoria': nombresEquipos,
             'foto': jugadora.imagen,
             'liga': ligasEquipos,
-            'trofeos': palmares
+            //'trofeos': palmares
         };
         document.getElementById("player-name").textContent = jugadora.nombre;
         const img = document.getElementById("player-image");
@@ -465,7 +464,11 @@ async function bingoPerder() {
     const boton = document.querySelector('.skip-button');
     const resultDiv = document.getElementById('resultado');
     const celdas = document.querySelectorAll('td');
-    celdas.disabled = true;
+    celdas.forEach(celda => {
+        celda.removeEventListener('click', handleCellClick);
+        celda.style.pointerEvents = 'none'; // Deshabilitar clics en las celdas
+        celda.disabled = true; // Deshabilitar la celda
+    });
     boton.disabled = true;
     resultDiv.textContent = gettext('Has perdido');
     let grid = localStorage.getItem('Attr6');

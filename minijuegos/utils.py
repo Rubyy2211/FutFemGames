@@ -1,6 +1,6 @@
 import random
 from django.db.models import Count
-from futfem.models import Equipo, Trayectoria, Jugadora, Pais, Trofeo
+from futfem.models import Equipo, Trayectoria, Jugadora, Pais, JugadoraPais , Trofeo
 
 def api_random_player():
     jugadoras = Jugadora.objects.all()
@@ -135,7 +135,8 @@ def generar_grid():
 
 def elegir_bingo_diario():
     # 1. Seleccionar 3 Países distintos
-    paises_ids = list(Pais.objects.values_list('id_pais', flat=True))
+    paises_ids = list(JugadoraPais.objects.values_list('pais', flat=True)) # deben ser Ids únicos de países que tengan jugadoras como pais principal
+    paises_ids = list(set(paises_ids))  # Aseguramos que sean únicos
     paises = random.sample(paises_ids, 3) if len(paises_ids) >= 3 else [1, 16, 7]
 
     # 2. Seleccionar 3 Equipos distintos de ligas principales
@@ -152,8 +153,8 @@ def elegir_bingo_diario():
     ligas = random.sample(ligas_permitidas, 3)
 
     # 4. Seleccionar 1 Trofeo
-    trofeos_ids = list(Trofeo.objects.values_list('id', flat=True)) if Trofeo.objects.exists() else [1, 2, 3]
-    trofeos = [random.choice(trofeos_ids)]
+    # trofeos_ids = list(Trofeo.objects.values_list('id', flat=True)) if Trofeo.objects.exists() else [1, 2, 3]
+    # trofeos = [random.choice(trofeos_ids)]
 
     # 5. Seleccionar 2 Criterios de edad distintos
     pool_edades = [
@@ -170,6 +171,6 @@ def elegir_bingo_diario():
         "paises": paises,
         "equipos": equipos,
         "ligas": ligas,
-        "trofeos": trofeos,
+        #"trofeos": trofeos,
         "edades": edades
     }

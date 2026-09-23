@@ -113,25 +113,26 @@ export async function loadJugadoraById(id, ganaste) {
 }
 
 function displayTrayectoria(data, acertaste) {
-    // Filtrar equipos válidos (excluyendo equipo 83) para calcular correctamente los índices
+    console.log('Datos de trayectoria recibidos:', data);
+    // 1. Comprobar si el último registro de la jugadora es el equipo 83
+    const ultimoRegistro = data.length > 0 ? data[data.length - 1] : null;
+    const esEquipoActual83 = ultimoRegistro && ultimoRegistro.equipo === 83;
+    console.log(esEquipoActual83 ? 'El último equipo es el 83' : 'El último equipo no es el 83');
+    // 2. Filtrar equipos válidos (excluyendo equipo 83) para renderizar las tarjetas
     const equiposValidos = data.filter(item => item.equipo !== 83);
 
     trayectoriaDiv.setAttribute('Attr1', data[0]?.jugadora || '');
     trayectoriaDiv.style.setProperty('--num-equipos', equiposValidos.length);
     trayectoriaDiv.innerHTML = ''; // Limpiar contenido previo
 
-    const maxPerRow = 5;
-    let currentRow;
+    // Contenedor único para mantener todos los escudos en una sola fila
+    const row = document.createElement('div');
+    row.classList.add('trayectoria-row');
+    trayectoriaDiv.appendChild(row);
 
     equiposValidos.forEach((item, index) => {
         const isFirst = index === 0;
         const isLast = index === equiposValidos.length - 1;
-
-        if (index % maxPerRow === 0) {
-            currentRow = document.createElement('div');
-            currentRow.classList.add('trayectoria-row');
-            trayectoriaDiv.appendChild(currentRow);
-        }
 
         const flipContainer = document.createElement('div');
         flipContainer.classList.add('flip-container');
@@ -139,7 +140,7 @@ function displayTrayectoria(data, acertaste) {
         const flipper = document.createElement('div');
         flipper.classList.add('flipper');
 
-        // Lado frontal
+        // Lado frontal (Front)
         const front = document.createElement('div');
         front.classList.add('front');
 
@@ -157,23 +158,25 @@ function displayTrayectoria(data, acertaste) {
             `;
             escudoImg.style.borderColor = item.color;
             front.appendChild(escudoImg);
-
-            // Se pasan isFirst e isLast a la función de fechas
-            const fechasDiv = crearContenedorFechas(item.fecha_inicio, item.fecha_fin, isFirst, isLast);
-            if (fechasDiv) front.appendChild(fechasDiv);
         } else {
             const escudoImg = document.createElement('img');
             escudoImg.alt = item.nombre;
             front.appendChild(escudoImg);
         }
 
+        // Fechas en la parte frontal
+        /*const fechasDivFront = crearContenedorFechas(item.fecha_inicio, item.fecha_fin, isFirst, isLast);
+        if (fechasDivFront) front.appendChild(fechasDivFront);*/
+
         flipper.appendChild(front);
 
-        // Solo mostrar la parte trasera si el usuario ha ganado
-        if (acertaste) {
-            if (data.length > 0) {
-                myst.src = data[0].ImagenJugadora || '/static/img/predeterm.png'; // Asignar imagen de jugadora
+        // Lado trasero (Back): SOLO si acertó Y el último equipo de la jugadora es el 83
+        if (acertaste) { 
+            if (data.length > 0 && typeof myst !== 'undefined') {
+                myst.src = data[0].ImagenJugadora || '/static/img/predeterm.png';
             }
+        }
+        if (acertaste && esEquipoActual83) {
             const back = document.createElement('div');
             back.classList.add('back');
 
@@ -184,15 +187,15 @@ function displayTrayectoria(data, acertaste) {
             jugadoraImg.style.borderColor = item.color;
             back.appendChild(jugadoraImg);
 
-            // Se pasan isFirst e isLast también en la parte trasera
-            const fechasDiv = crearContenedorFechas(item.fecha_inicio, item.fecha_fin, isFirst, isLast);
-            if (fechasDiv) back.appendChild(fechasDiv);
+            // Fechas en la parte trasera
+            /*const fechasDivBack = crearContenedorFechas(item.fecha_inicio, item.fecha_fin, isFirst, isLast);
+            if (fechasDivBack) back.appendChild(fechasDivBack);*/
 
             flipper.appendChild(back);
         }
 
         flipContainer.appendChild(flipper);
-        currentRow.appendChild(flipContainer);
+        row.appendChild(flipContainer);
     });
 }
 

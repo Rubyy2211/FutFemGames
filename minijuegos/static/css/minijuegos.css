@@ -85,6 +85,7 @@ header {
     display: flex !important;
     flex-direction: row !important;
     align-items: center;
+    justify-content: center;
     width: 100%;
     min-height: 25% !important;
 }
@@ -116,12 +117,19 @@ header {
     min-height: unset !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
-    padding: 20px 15px !important; 
+    /*padding: 20px 15px !important;*/ 
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 
     /* 🖱️ ESTILOS DRAG & GRAB EN PC */
     cursor: grab;
+}
+
+@media (max-width: 1090px) {
+    #daily-games{
+        justify-content: start !important;
+        overflow-x: auto !important;
+    }
 }
 
 /* 🟢 CLASE AL ARRASTRAR CON RATÓN */
@@ -259,7 +267,8 @@ header {
         position: relative !important;
         transform: none !important;
         flex-direction: row !important;
-        width: 100%;
+        max-width: 300px !important;
+        width: 100% !important;
         justify-content: center;
     }
 
