@@ -379,7 +379,7 @@ def jugadoraxnombre(request):
     data = [{
         'id_jugadora': j.id_jugadora,
         'Nombre_Completo': formatear_nombre_corto(j.Nombre, j.Apellidos),
-        'imagen': j.imagen if j.imagen else 'static/img/predeterm.jpg',
+        'imagen': construir_url_imagen(j.imagen) if j.imagen else 'static/img/predeterm.jpg',
         'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else "",
         'Apodo': j.Apodo or "",
     } for j in jugadoras]
