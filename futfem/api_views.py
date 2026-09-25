@@ -89,7 +89,7 @@ def jugadoras_All(request):
             INNER JOIN trayectoria t ON t.jugadora = j.id_jugadora AND t.equipo_actual = TRUE
             INNER JOIN equipos e ON t.equipo = e.id_equipo
             LEFT JOIN equipo_competicion ec ON ec.id_equipo = e.id_equipo AND ec.es_principal = TRUE
-            LEFT JOIN competiciones c ON ec.id_competicion = c.id_competicion
+            LEFT JOIN ligas c ON ec.id_competicion = c.id_competicion
             LEFT JOIN `jugadora-pais` jp ON jp.jugadora = j.id_jugadora
             LEFT JOIN `paises` p ON jp.pais = p.id_pais
             LEFT JOIN `jugadora-posicion` jpos ON jpos.jugadora = j.id_jugadora
