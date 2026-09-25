@@ -76,7 +76,7 @@ def jugadoras_All(request):
                 e.color,       -- 10
                 e.id_pais AS id_pais_equipo, -- 11
                 -- Datos de la Liga / Competición
-                c.id_competicion AS id_liga, -- 12
+                c.id_liga AS id_liga, -- 12
                 c.nombre AS nombre_liga,     -- 13
                 -- Nacionalidades
                 GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 14
@@ -89,12 +89,12 @@ def jugadoras_All(request):
             INNER JOIN trayectoria t ON t.jugadora = j.id_jugadora AND t.equipo_actual = TRUE
             INNER JOIN equipos e ON t.equipo = e.id_equipo
             LEFT JOIN equipo_competicion ec ON ec.id_equipo = e.id_equipo AND ec.es_principal = TRUE
-            LEFT JOIN ligas c ON ec.id_competicion = c.id_competicion
+            LEFT JOIN ligas c ON ec.id_competicion = c.id_liga
             LEFT JOIN `jugadora-pais` jp ON jp.jugadora = j.id_jugadora
             LEFT JOIN `paises` p ON jp.pais = p.id_pais
             LEFT JOIN `jugadora-posicion` jpos ON jpos.jugadora = j.id_jugadora
             LEFT JOIN `posiciones` pos ON jpos.posicion = pos.idPosicion
-            GROUP BY j.id_jugadora, e.id_equipo, c.id_competicion
+            GROUP BY j.id_jugadora, e.id_equipo, c.id_liga
             ORDER BY j.Apellidos;
         """)
         filas = cursor.fetchall()
