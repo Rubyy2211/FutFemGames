@@ -74,36 +74,42 @@ def jugadoras_All(request):
                 e.nombre AS nombre_equipo, -- 8
                 e.escudo,      -- 9
                 e.color,       -- 10
+                e.id_pais AS id_pais_equipo, -- 11
+                -- Datos de la Liga / Competición
+                c.id_competicion AS id_liga, -- 12
+                c.nombre AS nombre_liga,     -- 13
                 -- Nacionalidades
-                GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 11
-                GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,   -- 12
+                GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 14
+                GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,   -- 15
                 -- Posiciones
-                GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 13
-                GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 14
-                j.market_value AS valor -- 15
+                GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 16
+                GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 17
+                j.market_value AS valor -- 18
             FROM jugadoras j
             INNER JOIN trayectoria t ON t.jugadora = j.id_jugadora AND t.equipo_actual = TRUE
             INNER JOIN equipos e ON t.equipo = e.id_equipo
+            LEFT JOIN equipo_competicion ec ON ec.id_equipo = e.id_equipo AND ec.es_principal = TRUE
+            LEFT JOIN competiciones c ON ec.id_competicion = c.id_competicion
             LEFT JOIN `jugadora-pais` jp ON jp.jugadora = j.id_jugadora
             LEFT JOIN `paises` p ON jp.pais = p.id_pais
             LEFT JOIN `jugadora-posicion` jpos ON jpos.jugadora = j.id_jugadora
             LEFT JOIN `posiciones` pos ON jpos.posicion = pos.idPosicion
-            GROUP BY j.id_jugadora, e.id_equipo
+            GROUP BY j.id_jugadora, e.id_equipo, c.id_competicion
             ORDER BY j.Apellidos;
         """)
         filas = cursor.fetchall()
 
     jugadoras = []
     for fila in filas:
-        # 1. Procesar nacionalidades (Índices 11 y 12)
-        lista_ids_paises = [int(x) for x in fila[11].split(',')] if fila[11] else []
-        lista_isos_paises = [x.lower() for x in fila[12].split(',')] if fila[12] else []
+        # 1. Procesar nacionalidades (Índices 14 y 15)
+        lista_ids_paises = [int(x) for x in fila[14].split(',')] if fila[14] else []
+        lista_isos_paises = [x.lower() for x in fila[15].split(',')] if fila[15] else []
 
-        # 2. Procesar posiciones (Índices 13 y 14)
-        lista_ids_posiciones = [int(x) for x in fila[13].split(',')] if fila[13] else []
-        lista_abrev_posiciones = [x for x in fila[14].split(',')] if fila[14] else []
+        # 2. Procesar posiciones (Índices 16 y 17)
+        lista_ids_posiciones = [int(x) for x in fila[16].split(',')] if fila[16] else []
+        lista_abrev_posiciones = [x for x in fila[17].split(',')] if fila[17] else []
         
-        # Posición principal (la primera de la lista por el ORDER BY es_primaria DESC)
+        # Posición principal
         posicion_display = lista_abrev_posiciones[0] if lista_abrev_posiciones else "N/A"
 
         jugadoras.append({
@@ -118,14 +124,22 @@ def jugadoras_All(request):
                 "id": fila[7],
                 "nombre": fila[8],
                 "escudo": construir_url_imagen(fila[9]),
-                "color": fila[10]
+                "color": fila[10],
+                "id_pais": fila[11],
+                "id_liga": fila[12]
             },
+            "id_pais_equipo": fila[11],
+            "id_liga": fila[12],
+            "liga": {
+                "id": fila[12],
+                "nombre": fila[13]
+            } if fila[12] else None,
             "nacionalidades_ids": lista_ids_paises,
             "nacionalidades_isos": lista_isos_paises,
             "posiciones_ids": lista_ids_posiciones,
             "posiciones_abrev": lista_abrev_posiciones,
-            "posicion": posicion_display, # Posición principal para la miniatura/lista
-            "market_value": fila[15], # Valor de mercado
+            "posicion": posicion_display,
+            "market_value": fila[18],
             "nombre_completo": formatear_nombre_corto(fila[1], fila[2])
         })
     
