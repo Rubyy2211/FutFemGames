@@ -76,15 +76,16 @@ def jugadoras_All(request):
                 e.color,       -- 10
                 e.id_pais AS id_pais_equipo, -- 11
                 -- Datos de la Liga / Competición
-                c.id_liga AS id_liga, -- 12
+                c.id_liga AS id_liga,       -- 12
                 c.nombre AS nombre_liga,     -- 13
+                c.pais AS id_pais_liga,      -- 14 (NUEVO)
                 -- Nacionalidades
-                GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 14
-                GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,   -- 15
+                GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 15
+                GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,   -- 16
                 -- Posiciones
-                GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 16
-                GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 17
-                j.market_value AS valor -- 18
+                GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 17
+                GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 18
+                j.market_value AS valor -- 19
             FROM jugadoras j
             INNER JOIN trayectoria t ON t.jugadora = j.id_jugadora AND t.equipo_actual = TRUE
             INNER JOIN equipos e ON t.equipo = e.id_equipo
@@ -94,20 +95,20 @@ def jugadoras_All(request):
             LEFT JOIN `paises` p ON jp.pais = p.id_pais
             LEFT JOIN `jugadora-posicion` jpos ON jpos.jugadora = j.id_jugadora
             LEFT JOIN `posiciones` pos ON jpos.posicion = pos.idPosicion
-            GROUP BY j.id_jugadora, e.id_equipo, c.id_liga
+            GROUP BY j.id_jugadora, e.id_equipo, c.id_liga, c.pais
             ORDER BY j.Apellidos;
         """)
         filas = cursor.fetchall()
 
     jugadoras = []
     for fila in filas:
-        # 1. Procesar nacionalidades (Índices 14 y 15)
-        lista_ids_paises = [int(x) for x in fila[14].split(',')] if fila[14] else []
-        lista_isos_paises = [x.lower() for x in fila[15].split(',')] if fila[15] else []
+        # 1. Procesar nacionalidades (Índices 15 y 16)
+        lista_ids_paises = [int(x) for x in fila[15].split(',')] if fila[15] else []
+        lista_isos_paises = [x.lower() for x in fila[16].split(',')] if fila[16] else []
 
-        # 2. Procesar posiciones (Índices 16 y 17)
-        lista_ids_posiciones = [int(x) for x in fila[16].split(',')] if fila[16] else []
-        lista_abrev_posiciones = [x for x in fila[17].split(',')] if fila[17] else []
+        # 2. Procesar posiciones (Índices 17 y 18)
+        lista_ids_posiciones = [int(x) for x in fila[17].split(',')] if fila[17] else []
+        lista_abrev_posiciones = [x for x in fila[18].split(',')] if fila[18] else []
         
         # Posición principal
         posicion_display = lista_abrev_posiciones[0] if lista_abrev_posiciones else "N/A"
@@ -130,16 +131,18 @@ def jugadoras_All(request):
             },
             "id_pais_equipo": fila[11],
             "id_liga": fila[12],
+            "id_pais_liga": fila[14],  # Agregado en la raíz
             "liga": {
                 "id": fila[12],
-                "nombre": fila[13]
+                "nombre": fila[13],
+                "id_pais": fila[14]   # Agregado dentro del objeto liga
             } if fila[12] else None,
             "nacionalidades_ids": lista_ids_paises,
             "nacionalidades_isos": lista_isos_paises,
             "posiciones_ids": lista_ids_posiciones,
             "posiciones_abrev": lista_abrev_posiciones,
             "posicion": posicion_display,
-            "market_value": fila[18],
+            "market_value": fila[19],
             "nombre_completo": formatear_nombre_corto(fila[1], fila[2])
         })
     
