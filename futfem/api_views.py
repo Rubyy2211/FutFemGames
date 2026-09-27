@@ -78,14 +78,15 @@ def jugadoras_All(request):
                 -- Datos de la Liga / Competición
                 c.id_liga AS id_liga,       -- 12
                 c.nombre AS nombre_liga,     -- 13
-                c.pais AS id_pais_liga,      -- 14 (NUEVO)
+                c.pais AS id_pais_liga,      -- 14
                 -- Nacionalidades
                 GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 15
                 GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,   -- 16
                 -- Posiciones
                 GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 17
                 GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 18
-                j.market_value AS valor -- 19
+                j.market_value AS valor, -- 19
+                j.altura       -- 20 (NUEVO)
             FROM jugadoras j
             INNER JOIN trayectoria t ON t.jugadora = j.id_jugadora AND t.equipo_actual = TRUE
             INNER JOIN equipos e ON t.equipo = e.id_equipo
@@ -113,6 +114,11 @@ def jugadoras_All(request):
         # Posición principal
         posicion_display = lista_abrev_posiciones[0] if lista_abrev_posiciones else "N/A"
 
+        # Tratamiento seguro de retiro por si viene como objeto datetime/date
+        retiro_val = fila[6]
+        if hasattr(retiro_val, 'strftime') and retiro_val:
+            retiro_val = retiro_val.strftime("%Y-%m-%d")
+
         jugadoras.append({
             "id_jugadora": fila[0],
             "nombre": fila[1],
@@ -120,7 +126,8 @@ def jugadoras_All(request):
             "apodo": fila[3],
             "nacimiento": fila[4].strftime("%Y-%m-%d") if fila[4] else None,
             "imagen": construir_url_imagen(fila[5]),
-            "retiro": fila[6],
+            "retiro": retiro_val,
+            "altura": fila[20],  # Se incluye el campo de altura
             "equipo": {
                 "id": fila[7],
                 "nombre": fila[8],
@@ -131,11 +138,11 @@ def jugadoras_All(request):
             },
             "id_pais_equipo": fila[11],
             "id_liga": fila[12],
-            "id_pais_liga": fila[14],  # Agregado en la raíz
+            "id_pais_liga": fila[14],
             "liga": {
                 "id": fila[12],
                 "nombre": fila[13],
-                "id_pais": fila[14]   # Agregado dentro del objeto liga
+                "id_pais": fila[14]
             } if fila[12] else None,
             "nacionalidades_ids": lista_ids_paises,
             "nacionalidades_isos": lista_isos_paises,
