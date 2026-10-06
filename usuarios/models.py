@@ -78,6 +78,7 @@ class Racha(models.Model):
     racha_actual = models.IntegerField(default=0)
     mejor_racha = models.IntegerField(default=0)
     ultima_respuesta = models.TextField(null=True, blank=True)
+    ultima_vez_jugado = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = 'rachas'

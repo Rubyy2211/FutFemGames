@@ -11,6 +11,13 @@ body::before {
     max-width: 100dvw !important;
 }
 
+#game-bg-image{
+    background-position: center;
+    background-repeat: no-repeat;
+    position: absolute;
+    z-index: 2;
+}
+
 .panels-stack {
     width: 100%;
     height: 100%;
@@ -26,12 +33,86 @@ body::before {
 
 .game-button {
     background: color-mix(in srgb, black 70%, var(--color-secundario) 30%);
-    border: 1px solid var(--color-secundario) !important;
+    border: none !important;
+    flex-direction: row-reverse;
+    width: fit-content;
 }
 
 .game-button.active, .game-button:hover {
-    border: 1px solid var(--color-primario) !important;
+    /*border: 1px solid var(--color-primario) !important;*/
     background: color-mix(in srgb, black 70%, var(--color-primario) 30%);
+}
+
+#boton-higher_lower{
+    background: url('/static/img/fondos-botones/hi_lo.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#boton-career{
+    background: url('/static/img/fondos-botones/career.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#boton-career:hover, #boton-career.active{
+    box-shadow: 0 0 7px rgba(0, 255, 238, 0.6),
+              0 0 10px rgba(0, 238, 255, 0.3),
+              0 0 15px rgba(0, 247, 255, 0.15) !important;
+}
+
+#boton-grid{
+    background: url('/static/img/fondos-botones/grid.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#boton-grid:hover, #boton-grid.active{
+    box-shadow: 0 0 7px rgba(0, 255, 21, 0.6),
+              0 0 10px rgba(0, 255, 30, 0.3),
+              0 0 15px rgba(17, 255, 0, 0.15) !important;
+}
+
+#boton-bingo{
+    background: url('/static/img/fondos-botones/bingo.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#boton-bingo:hover, #boton-bingo.active{
+    box-shadow: 0 0 7px rgba(255, 0, 0, 0.6),
+              0 0 10px rgba(255, 0, 0, 0.3),
+              0 0 15px rgba(255, 0, 0, 0.15) !important;
+}
+
+#boton-guess{
+    background: url('/static/img/fondos-botones/guess.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#boton-guess:hover, #boton-guess.active{
+    box-shadow: 0 0 7px rgba(255, 251, 0, 0.6),
+              0 0 10px rgba(255, 251, 0, 0.3),
+              0 0 15px rgba(255, 251, 0, 0.15) !important;
+}
+
+#boton-mates{
+    background: url('/static/img/fondos-botones/mates.webp');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+#boton-mates:hover, #boton-mates.active{
+    box-shadow: 0 0 7px rgba(255, 145, 0, 0.6),
+              0 0 10px rgba(255, 145, 0, 0.3),
+              0 0 15px rgba(255, 145, 0, 0.15) !important;
 }
 
 #game-title-container {
@@ -83,24 +164,69 @@ header {
 
 #daily-games, #regular-games {
     display: flex !important;
-    flex-direction: row !important;
+    flex-direction: column !important;
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 25% !important;
+    min-height: 100% !important;
+}
+
+#daily-games-header, #regular-games-header {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* Título centrado en pantalla */
-#daily-games > h2, #regular-games > h2 {
-    position: absolute;
-    top: 50%;
+#daily-games-header > h2, #regular-games-header > h2 {
+    position: relative;
+    /*top: 50%;*/
     left: 50%;
-    transform: translate(-50%, -50%) !important;
+    transform: translate(-50%, -0%) !important;
     margin: 0;
     text-wrap: nowrap;
     background: linear-gradient(135deg, rgb(255, 255, 255) 30%, color-mix(in srgb, var(--color-primario) 100%, transparent 0%) 100%) text;
     max-width: fit-content;
-    font-size: 12dvw;
+    -webkit-text-fill-color: transparent;
+    font-size: 10dvw;
+}
+
+h2[data-game-title="Futfem Career"]{
+    background: linear-gradient(135deg, rgb(255, 255, 255) 30%, color-mix(in srgb, rgba(0, 255, 238) 100%, transparent 0%) 100%) text !important;
+}
+
+h2[data-game-title="Futfem Grid"]{
+    background: linear-gradient(135deg, rgb(255, 255, 255) 30%, color-mix(in srgb, rgba(0, 255, 21) 100%, transparent 0%) 100%) text !important;
+}
+
+h2[data-game-title="Futfem Bingo"]{
+    background: linear-gradient(135deg, rgb(255, 255, 255) 30%, color-mix(in srgb, rgba(255, 0, 0) 100%, transparent 0%) 100%) text !important;
+}
+
+h2[data-game-title="Futfem Guess"]{
+    background: linear-gradient(135deg, rgb(255, 255, 255) 30%, color-mix(in srgb, rgba(255, 255, 0) 100%, transparent 0%) 100%) text !important;
+}
+
+h2[data-game-title="Futfem Mates"]{
+    background: linear-gradient(135deg, rgb(255, 255, 255) 30%, color-mix(in srgb, rgba(255, 145, 0) 100%, transparent 0%) 100%) text !important;
+}
+    
+
+#daily-games-status{
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.played-today{
+    color: var(--color-success) !important;
 }
 
 /* --- JUEGOS EN FILA CON SCROLL DINÁMICO --- */
@@ -113,6 +239,7 @@ header {
     justify-content: flex-start !important; 
     align-items: flex-end !important;
     width: 100%;
+    height: 25%;
     margin: 0 !important;
     min-height: unset !important;
     overflow-x: auto !important;
@@ -120,6 +247,7 @@ header {
     /*padding: 20px 15px !important;*/ 
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    gap: 0px !important;
 
     /* 🖱️ ESTILOS DRAG & GRAB EN PC */
     cursor: grab;
@@ -128,7 +256,6 @@ header {
 @media (max-width: 1090px) {
     #daily-games{
         justify-content: start !important;
-        overflow-x: auto !important;
     }
 }
 
@@ -149,6 +276,11 @@ header {
     align-items: center;
     position: relative;
     flex-shrink: 0 !important;
+    transform: scale(0.9) !important;
+}
+
+.game-button:hover, .game-button.active {
+    transform: scale(0.95) !important;
 }
 
 .game-button h4,
@@ -178,6 +310,7 @@ header {
     -webkit-user-drag: none;
     user-select: none;
     pointer-events: none;
+    opacity: 0;
 }
 
 .game-button:hover img, .game-button.active img {
@@ -256,9 +389,22 @@ header {
 
     .game-button {
         display: flex !important;
-        flex-direction: column !important;
+        flex-direction: row-reverse !important;
         flex-shrink: 0 !important;
         scroll-snap-align: center !important;
+    }
+
+    .game-button #game-title-container{
+        width: 100%;
+        justify-content: space-between;
+        align-items: start;
+        height: stretch;
+        padding: 5px;
+        padding-block: 5%;
+    }
+
+    .game-button #game-title-container h2{
+        font-size: medium;
     }
 
     #selector {

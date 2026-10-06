@@ -19,6 +19,7 @@ urlpatterns = [
     path('ligasxid', api_views.ligasxid, name='ligasxid'),
     path('ligasxpais', api_views.ligasxpais, name='ligasxpais'),
     path('jugadora_aleatoria', api_views.jugadora_aleatoria, name='jugadora_aleatoria'),
+    path('jugadoras_poll', api_views.jugadoras_poll, name='jugadoras_poll'),
     path('jugadora_apodo', api_views.jugadora_apodo, name='jugadora_apodo'),
     path('jugadora_companyeras', api_views.jugadora_companeras, name='jugadora_companyeras'),
     path('jugadoraxid', api_views.jugadoraxid, name='jugadoraxid'),

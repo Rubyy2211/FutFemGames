@@ -88,6 +88,7 @@ h1{
     flex-direction: row;
     align-items: center;
     gap: 5px;
+    padding-inline: 5px;
 }
 
 input{
@@ -120,8 +121,8 @@ input{
 
 #game #game-results .jugadora-item .jugadora-item-header img {
     border-radius: 50%;
-    width: 100px;
-    height: 100px;
+    width: 75px;
+    height: 75px;
     background: color-mix(in srgb, black 70%, var(--color-secundario) 30%);
 
     color: white; /* Color del texto */
@@ -144,9 +145,10 @@ input{
 #game #game-results .jugadora-item .jugadora-data div{
     display: flex;
     flex-direction: column;
-    height: 100px;
+    height: 80px;
     max-width: 100%;
     padding: 15px;
+    font-size: small;
     align-items: center;
     justify-content: center;
     border-radius: 15px;

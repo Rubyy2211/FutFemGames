@@ -308,11 +308,13 @@ def obtener_rachas(request):
             'usuario_id',
             'racha_actual',
             'mejor_racha',
+            'ultima_vez_jugado',
 
             # 🔽 campos del juego
             'juego__id',
             'juego__nombre',
             'juego__slug',
+            'ultima_vez_jugado'
         )
     )
 
@@ -325,7 +327,8 @@ def obtener_rachas(request):
                 'id': r['juego__id'],
                 'nombre': r['juego__nombre'],
                 'slug': r['juego__slug'],
-            }
+            },
+            'ultima_vez_jugado': r['ultima_vez_jugado']
         }
         for r in rachas_qs
     ]
@@ -365,6 +368,8 @@ def juego_racha(request):
         if racha_obj:
             # ACTUALIZAR
             racha_obj.racha_actual = racha_actual
+
+            racha_obj.ultima_vez_jugado = timezone.now()
             
             # Solo actualizamos la mejor racha si la recibida es mayor a la que ya tenemos
             if mejor_racha_input > racha_obj.mejor_racha:

@@ -38,106 +38,241 @@ def api_random_team():
 
 def verificar_grid_resoluble(cols, rows):
     """
-    Verifica que las 9 casillas (3x3) tengan al menos una jugadora 
-    y que existan al menos 9 JUGADORAS DISTINTAS para resolver todo el tablero.
+    Verifica que las 9 casillas tengan jugadoras y que exista
+    al menos una solución utilizando 9 JUGADORAS DISTINTAS.
+
+    Se utiliza backtracking con MRV:
+    siempre se intenta resolver primero la casilla que tiene
+    menos jugadoras disponibles.
     """
-    todos_equipos = cols + rows
-    
-    # 1. Traemos de una sola consulta las jugadoras de los 6 equipos seleccionados
+
+    todos_equipos = list(set(cols + rows))
+
+    # Traemos las trayectorias de los 6 equipos
     trayectorias = Trayectoria.objects.filter(
         equipo_id__in=todos_equipos
     ).values('equipo_id', 'jugadora_id')
-    
-    # Mapeamos: equipo_id -> conjunto de IDs de jugadoras
+
+    # equipo_id -> conjunto de jugadoras
     equipos_jugadoras = {eq_id: set() for eq_id in todos_equipos}
+
     for t in trayectorias:
         equipos_jugadoras[t['equipo_id']].add(t['jugadora_id'])
-        
-    # 2. Construimos la lista de jugadoras posibles para cada una de las 9 casillas
+
+    # Construimos las 9 celdas
     celdas = []
+
     for r in rows:
         for c in cols:
-            # Intersección: jugadoras que han jugado en el equipo de la fila R y de la columna C
-            jugadoras_casilla = equipos_jugadoras[r].intersection(equipos_jugadoras[c])
-            
-            # Si alguna de las 9 casillas no tiene jugadoras, el grid no sirve
+
+            jugadoras_casilla = (
+                equipos_jugadoras[r]
+                .intersection(equipos_jugadoras[c])
+            )
+
+            # Si una casilla está vacía, el grid no sirve
             if not jugadoras_casilla:
                 return False
+
             celdas.append(jugadoras_casilla)
 
-    # 3. Algoritmo de Backtracking para asegurar que se pueden elegir 9 jugadoras sin repetir
-    def resolver(casilla_idx, usadas):
-        if casilla_idx == 9:
-            return True # ¡Se encontraron 9 jugadoras distintas!
-            
-        for jugadora in celdas[casilla_idx]:
-            if jugadora not in usadas:
-                usadas.add(jugadora)
-                if resolver(casilla_idx + 1, usadas):
-                    return True
-                usadas.remove(jugadora) # Backtrack
-                
+    # ---------------------------------------------------------
+    # Backtracking con MRV
+    # ---------------------------------------------------------
+
+    def resolver(celdas_pendientes, usadas):
+
+        # Todas las casillas resueltas
+        if not celdas_pendientes:
+            return True
+
+        # Para cada casilla calculamos las jugadoras disponibles
+        opciones = []
+
+        for idx, jugadoras in celdas_pendientes:
+            disponibles = jugadoras - usadas
+
+            # Si una casilla se queda sin ninguna jugadora
+            # disponible, esta rama no puede resolverse
+            if not disponibles:
+                return False
+
+            opciones.append(
+                (len(disponibles), idx, disponibles)
+            )
+
+        # MRV:
+        # primero resolvemos la casilla con menos opciones
+        opciones.sort(key=lambda x: x[0])
+
+        _, idx, disponibles = opciones[0]
+
+        nuevas_pendientes = [
+            item
+            for item in celdas_pendientes
+            if item[0] != idx
+        ]
+
+        for jugadora in disponibles:
+
+            usadas.add(jugadora)
+
+            if resolver(nuevas_pendientes, usadas):
+                return True
+
+            usadas.remove(jugadora)
+
         return False
 
-    return resolver(0, set())
+    celdas_con_indice = list(enumerate(celdas))
+
+    return resolver(celdas_con_indice, set())
+
 
 def generar_grid():
-    ligas_permitidas = [1, 2, 3, 4, 5, 6, 17] 
-    
-    equipos_validos = list(Equipo.objects.filter(
-        equipocompeticion__competicion__id_liga__in=ligas_permitidas,
-        equipocompeticion__es_principal=True
-    ).values_list('id_equipo', flat=True).distinct())
+
+    ligas_permitidas = [1, 2, 3, 4, 5, 6, 17]
+
+    equipos_validos = list(
+        Equipo.objects.filter(
+            equipocompeticion__competicion__id_liga__in=ligas_permitidas,
+            equipocompeticion__es_principal=True
+        )
+        .values_list('id_equipo', flat=True)
+        .distinct()
+    )
 
     max_intentos = 100
     intentos = 0
 
     while intentos < max_intentos:
+
         intentos += 1
-        
-        # 1. Elegimos 3 columnas al azar
+
+        # ---------------------------------------------------------
+        # 1. Elegimos 3 columnas
+        # ---------------------------------------------------------
+
         cols = random.sample(equipos_validos, 3)
-        
-        # 2. Buscamos equipos conectados con las 3 columnas
+
+        # ---------------------------------------------------------
+        # 2. Encontramos equipos conectados con las 3 columnas
+        # ---------------------------------------------------------
+
         def obtener_equipos_conectados(equipo_id):
-            jugadoras_ids = Trayectoria.objects.filter(equipo_id=equipo_id).values('jugadora_id')
-            equipos_conectados = Trayectoria.objects.filter(jugadora_id__in=jugadoras_ids).values_list('equipo_id', flat=True)
+
+            jugadoras_ids = Trayectoria.objects.filter(
+                equipo_id=equipo_id
+            ).values('jugadora_id')
+
+            equipos_conectados = Trayectoria.objects.filter(
+                jugadora_id__in=jugadoras_ids
+            ).values_list(
+                'equipo_id',
+                flat=True
+            )
+
             return set(equipos_conectados)
-            
+
         set_col1 = obtener_equipos_conectados(cols[0])
         set_col2 = obtener_equipos_conectados(cols[1])
         set_col3 = obtener_equipos_conectados(cols[2])
-        
-        # Equipos válidos para filas (excluyendo los de las columnas y limitando a las ligas)
-        filas_posibles = set_col1.intersection(set_col2).intersection(set_col3) - set(cols)
-        filas_posibles = filas_posibles.intersection(set(equipos_validos))
-        
-        # 3. Si hay al menos 3 filas candidatas, probamos la combinación
-        if len(filas_posibles) >= 3:
-            rows = random.sample(list(filas_posibles), 3)
-            
-            # 🟢 VALIDACIÓN DE UNICIDAD: Comprobamos que las 9 casillas admitan jugadoras distintas
-            if verificar_grid_resoluble(cols, rows):
-                return {
-                    "club1": str(cols[0]),
-                    "club2": str(cols[1]),
-                    "club3": str(cols[2]),
-                    "club4": str(rows[0]),
-                    "club5": str(rows[1]),
-                    "club6": str(rows[2]),
-                }
 
-    # Grid por defecto de emergencia si supera los intentos
+        # Equipos que comparten al menos una jugadora
+        # con las 3 columnas
+        filas_posibles = (
+            set_col1
+            .intersection(set_col2)
+            .intersection(set_col3)
+        )
+
+        # No queremos repetir equipos de las columnas
+        filas_posibles -= set(cols)
+
+        # Solo equipos de las ligas permitidas
+        filas_posibles = filas_posibles.intersection(
+            set(equipos_validos)
+        )
+
+        # ---------------------------------------------------------
+        # 3. Necesitamos al menos 3 filas
+        # ---------------------------------------------------------
+
+        if len(filas_posibles) < 3:
+            continue
+
+        # ---------------------------------------------------------
+        # 4. Probamos varias combinaciones de filas
+        # ---------------------------------------------------------
+
+        filas_lista = list(filas_posibles)
+
+        random.shuffle(filas_lista)
+
+        combinaciones_probadas = 0
+
+        for i in range(len(filas_lista)):
+
+            for j in range(i + 1, len(filas_lista)):
+
+                for k in range(j + 1, len(filas_lista)):
+
+                    rows = [
+                        filas_lista[i],
+                        filas_lista[j],
+                        filas_lista[k]
+                    ]
+
+                    combinaciones_probadas += 1
+
+                    # -------------------------------------------------
+                    # 5. Comprobamos que el grid pueda resolverse
+                    #    con 9 jugadoras diferentes
+                    # -------------------------------------------------
+
+                    if verificar_grid_resoluble(cols, rows):
+
+                        return {
+                            "club1": str(cols[0]),
+                            "club2": str(cols[1]),
+                            "club3": str(cols[2]),
+                            "club4": str(rows[0]),
+                            "club5": str(rows[1]),
+                            "club6": str(rows[2]),
+                        }
+
+                    # Limitamos las combinaciones para no hacer
+                    # demasiadas consultas/procesamiento
+                    if combinaciones_probadas >= 30:
+                        break
+
+                if combinaciones_probadas >= 30:
+                    break
+
+            if combinaciones_probadas >= 30:
+                break
+
+    # ---------------------------------------------------------
+    # Grid de emergencia
+    # ---------------------------------------------------------
+
     return {
-        "club1": "1", "club2": "2", "club3": "3",
-        "club4": "4", "club5": "5", "club6": "6"
+        "club1": "1",
+        "club2": "2",
+        "club3": "3",
+        "club4": "4",
+        "club5": "5",
+        "club6": "6"
     }
 
 def elegir_bingo_diario():
     # 1. Seleccionar 3 Países distintos
-    paises_ids = list(JugadoraPais.objects.values_list('pais', flat=True)) # deben ser Ids únicos de países que tengan jugadoras como pais principal
-    paises_ids = list(set(paises_ids))  # Aseguramos que sean únicos
-    paises = random.sample(paises_ids, 3) if len(paises_ids) >= 3 else [1, 16, 7]
+    paises_ids = list(JugadoraPais.objects .filter(es_primaria=True) .values_list('pais', flat=True) .distinct()) # deben ser Ids únicos de países que tengan jugadoras como pais principal
+
+    if len(paises_ids) >= 3:
+        paises = random.sample(paises_ids, 3)
+    else:
+        paises = paises_ids
 
     # 2. Seleccionar 3 Equipos distintos de ligas principales
     ligas_permitidas = [1, 2, 3, 4, 5, 6, 17]

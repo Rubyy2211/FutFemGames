@@ -7,7 +7,8 @@ from django.utils import timezone
 from .utils import construir_url_imagen, formatear_valor_mercado
 from django.http import JsonResponse
 from django.db import connection, IntegrityError
-from django.db.models import Q, CharField, Value
+from django.db.models import Q, CharField, F, Value, CharField, OuterRef, Subquery
+from django.db.models.functions import Concat
 from django.db.models.functions import Concat
 from datetime import date, datetime
 from .models import EquipoFormacion, EquipoTrofeo, EquipoCompeticion, Jugadora, JugadoraPosicion, Posicion, Trayectoria, Equipo, Pais, Competicion, Trofeo, JugadoraPais
@@ -379,33 +380,61 @@ def jugadoraxnombre(request):
 
     # 1. Normalizamos espacios
     query_input = re.sub(' +', ' ', query_input)
+
     # 2. Dividimos por palabras
     palabras = query_input.split(' ')
 
-    # 3. Creamos el campo anotado para buscar
+    # 3. Subquery para obtener el ISO de la nacionalidad primaria
+    nacionalidad_subquery = JugadoraPais.objects.filter(
+        jugadora=OuterRef('pk'),
+        es_primaria=True
+    ).values('pais__iso')[:1]
+
+    # 4. Creamos el campo anotado para buscar
     queryset = Jugadora.objects.annotate(
-        nombre_completo=Concat('Nombre', Value(' '), 'Apellidos', output_field=CharField())
+        nombre_completo=Concat(
+            'Nombre',
+            Value(' '),
+            'Apellidos',
+            output_field=CharField()
+        ),
+        nacionalidad_iso=Subquery(nacionalidad_subquery)
     )
 
-    # 4. Filtramos iterando por las palabras de la búsqueda
+    # 5. Filtramos por las palabras de búsqueda
     for palabra in palabras:
         queryset = queryset.filter(
-            Q(nombre_completo__icontains=palabra) | Q(Apodo__icontains=palabra)
+            Q(nombre_completo__icontains=palabra) |
+            Q(Apodo__icontains=palabra)
         )
 
-    # 5.OPTIMIZACIÓN CRUCIAL: Pedimos a la BD todos los campos que sí vamos a pintar
-    jugadoras = queryset.only('id_jugadora', 'Nombre', 'Apellidos', 'imagen', 'Nacimiento', 'Apodo')[:10]
+    # 6. Solo pedimos los campos necesarios
+    jugadoras = queryset.only(
+        'id_jugadora',
+        'Nombre',
+        'Apellidos',
+        'imagen',
+        'Nacimiento',
+        'Apodo'
+    )[:10]
 
     if not jugadoras.exists():
         return JsonResponse([], safe=False)
 
-    # 6. Construimos la respuesta (Ahora va volando porque los datos ya están en memoria)
+    # 7. Construimos la respuesta
     data = [{
         'id_jugadora': j.id_jugadora,
-        'Nombre_Completo': formatear_nombre_corto(j.Nombre, j.Apellidos),
-        'imagen': construir_url_imagen(j.imagen) if j.imagen else 'static/img/predeterm.jpg',
-        'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d") if j.Nacimiento else "",
+        'Nombre_Completo': formatear_nombre_corto(
+            j.Nombre,
+            j.Apellidos
+        ),
+        'imagen': construir_url_imagen(j.imagen)
+            if j.imagen
+            else '/static/img/predeterm.png',
+        'Nacimiento': j.Nacimiento.strftime("%Y-%m-%d")
+            if j.Nacimiento else "",
         'Apodo': j.Apodo or "",
+        'nacionalidad': j.nacionalidad_iso or "",
     } for j in jugadoras]
 
     return JsonResponse(data, safe=False)
@@ -421,11 +450,14 @@ def jugadora_trayectoria(request):
     except ValueError:
         return JsonResponse({'error': 'ID de jugadora inválido'}, status=400)
 
-    # Cambiamos select_related('equipo__liga') por prefetch_related de las competiciones del equipo
+    # 🟢 Añadimos 'equipo__identidades' al prefetch para cargar las identidades históricas en memoria
     trayectorias = Trayectoria.objects.filter(
         jugadora_id=id_jugadora
     ).select_related('equipo', 'jugadora') \
-     .prefetch_related('equipo__equipocompeticion_set__competicion') \
+     .prefetch_related(
+         'equipo__identidades',
+         'equipo__equipocompeticion_set__competicion'
+     ) \
      .order_by('fecha_inicio')
 
     data = []
@@ -433,10 +465,34 @@ def jugadora_trayectoria(request):
         equipo = t.equipo
         jug = t.jugadora
 
-        escudo = equipo.escudo if equipo.escudo else None
-        imagen_jugadora = jug.imagen if jug.imagen else None
+        imagen_jugadora = jug.imagen if jug and jug.imagen else None
 
-        # 🟢 Obtenemos las competiciones del equipo cargadas en memoria
+        # ----------------------------------------------------------------------
+        # 🟢 BÚSQUEDA DE LA IDENTIDAD HISTÓRICA CORRESPONDIENTE
+        # ----------------------------------------------------------------------
+        identidades = list(equipo.identidades.all()) if equipo else []
+        identidad_match = None
+
+        if identidades and t.fecha_inicio:
+            for ident in identidades:
+                # Comprobamos si la fecha de inicio de la trayectoria entra en el rango de la identidad
+                if ident.inicio and ident.inicio <= t.fecha_inicio:
+                    if ident.fin is None or ident.fin >= t.fecha_inicio:
+                        identidad_match = ident
+                        break
+
+            # Si no hubo coincidencia por fechas y la trayectoria es actual, buscamos la marcada como es_actual
+            if not identidad_match and t.equipo_actual:
+                identidad_match = next((i for i in identidades if i.es_actual), None)
+
+        # ----------------------------------------------------------------------
+        # 🟢 ASIGNACIÓN CON FALLBACK A LOS CAMPOS DE EQUIPO
+        # ----------------------------------------------------------------------
+        nombre_final = (identidad_match.nombre if identidad_match and identidad_match.nombre else None) or (equipo.nombre if equipo else '')
+        escudo_final = (identidad_match.escudo if identidad_match and identidad_match.escudo else None) or (equipo.escudo if equipo and equipo.escudo else None)
+        color_final = (identidad_match.color if identidad_match and identidad_match.color else None) or (equipo.color if equipo else None)
+
+        # Obtenemos las competiciones del equipo cargadas en memoria
         relaciones = equipo.equipocompeticion_set.all() if equipo else []
         
         # Buscamos la principal o tomamos la primera disponible
@@ -447,19 +503,19 @@ def jugadora_trayectoria(request):
             'trayectoria_id': t.id,
             'jugadora': jug.id_jugadora,
             'equipo': equipo.id_equipo,
-            'color': equipo.color,
+            'color': color_final,  # 👈 Usará el color de la identidad o el del equipo
             'fecha_inicio': t.fecha_inicio,
             'fecha_fin': t.fecha_fin,
             'imagen': construir_url_imagen(t.imagen),
             'equipo_actual': t.equipo_actual,
-            'escudo': construir_url_imagen(escudo),
-            'liga': id_liga_principal,  # 👈 ID de la competición principal
-            'competiciones': [r.competicion.pk for r in relaciones if r.competicion],  # 🟢 Nueva lista con todos los IDs
-            'nombre': equipo.nombre,
+            'escudo': construir_url_imagen(escudo_final),  # 👈 Usará el escudo de la identidad o el del equipo
+            'liga': id_liga_principal,
+            'competiciones': [r.competicion.pk for r in relaciones if r.competicion],
+            'nombre': nombre_final,  # 👈 Usará el nombre de la identidad o el del equipo
             'ImagenJugadora': construir_url_imagen(imagen_jugadora),
             'club': equipo.id_equipo,
-            'lat': equipo.latitud,
-            'long': equipo.longitud,
+            'lat': equipo.latitud if equipo else None,
+            'long': equipo.longitud if equipo else None,
         })
 
     return JsonResponse(data, safe=False)
@@ -579,6 +635,159 @@ def jugadora_aleatoria(request):
     random.shuffle(resultado)
 
     return JsonResponse(resultado[:30], safe=False)
+
+def jugadoras_poll(request):
+    """
+    Genera un pool cerrado de hasta 30 jugadoras para el Bingo.
+
+    Las jugadoras se obtienen a partir de los criterios:
+    - nacionalidades
+    - equipos
+    - ligas
+
+    El pool se genera una única vez por Bingo y se guarda en sesión.
+    """
+
+    # ---------------------------------------------------------
+    # 1. Obtener parámetros
+    # ---------------------------------------------------------
+
+    nacionalidades = request.GET.getlist("nacionalidades[]")
+    equipos = request.GET.getlist("equipos[]")
+    ligas = request.GET.getlist("ligas[]")
+
+    try:
+        nacionalidades = [int(x) for x in nacionalidades]
+        equipos = [int(x) for x in equipos]
+        ligas = [int(x) for x in ligas]
+    except ValueError:
+        return JsonResponse(
+            {"error": "Parámetros inválidos"},
+            status=400
+        )
+
+    # ---------------------------------------------------------
+    # 2. Si ya existe un pool para este Bingo,
+    #    devolverlo directamente
+    # ---------------------------------------------------------
+
+    pool_guardado = request.session.get("bingo_jugadoras_pool")
+
+    if pool_guardado:
+        return JsonResponse(pool_guardado, safe=False)
+
+    # ---------------------------------------------------------
+    # 3. Query base
+    # ---------------------------------------------------------
+
+    base_qs = Jugadora.objects.prefetch_related(
+        'jugadorapais_set'
+    )
+
+    jugadoras_finales = {}
+
+    # ---------------------------------------------------------
+    # 4. Construir filtros
+    # ---------------------------------------------------------
+
+    filtros_q = Q()
+
+    if nacionalidades:
+        filtros_q |= Q(
+            jugadorapais__pais__in=nacionalidades,
+            jugadorapais__es_primaria=True
+        )
+
+    if equipos:
+        filtros_q |= Q(
+            trayectoria__equipo__in=equipos
+        )
+
+    if ligas:
+        filtros_q |= Q(
+            trayectoria__equipo__equipocompeticion__competicion__in=ligas
+        )
+
+    # ---------------------------------------------------------
+    # 5. Obtener TODAS las candidatas
+    # ---------------------------------------------------------
+
+    if filtros_q:
+        candidatas = list(
+            base_qs
+            .filter(filtros_q)
+            .distinct()
+        )
+    else:
+        candidatas = list(base_qs)
+
+    # ---------------------------------------------------------
+    # 6. Mezclamos aleatoriamente
+    # ---------------------------------------------------------
+
+    random.shuffle(candidatas)
+
+    # ---------------------------------------------------------
+    # 7. Seleccionamos máximo 30
+    # ---------------------------------------------------------
+
+    candidatas = candidatas[:30]
+
+    # ---------------------------------------------------------
+    # 8. Convertir a JSON
+    # ---------------------------------------------------------
+
+    for j in candidatas:
+
+        pais_rel = next(
+            (
+                p for p in j.jugadorapais_set.all()
+                if p.es_primaria
+            ),
+            None
+        )
+
+        jugadoras_finales[j.id_jugadora] = {
+            "id": j.id_jugadora,
+            "nombre": formatear_nombre_corto(
+                j.Nombre,
+                j.Apellidos
+            ),
+            "imagen": (
+                construir_url_imagen(j.imagen)
+                if j.imagen else None
+            ),
+            "pais": (
+                pais_rel.pais_id
+                if pais_rel else None
+            ),
+            "Nacimiento": (
+                j.Nacimiento.strftime("%Y-%m-%d")
+                if j.Nacimiento else None
+            ),
+        }
+
+    # ---------------------------------------------------------
+    # 9. Crear resultado final
+    # ---------------------------------------------------------
+
+    resultado = list(
+        jugadoras_finales.values()
+    )
+
+    random.shuffle(resultado)
+
+    # ---------------------------------------------------------
+    # 10. Guardar el pool cerrado en sesión
+    # ---------------------------------------------------------
+
+    request.session["bingo_jugadoras_pool"] = resultado
+    request.session.modified = True
+
+    return JsonResponse(
+        resultado,
+        safe=False
+    )
 
 def jugadoras_por_equipo_y_temporada(request):
     equipo_id = request.GET.get("equipo")

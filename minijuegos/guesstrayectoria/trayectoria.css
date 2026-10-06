@@ -265,7 +265,7 @@ input {
         width: 150px;
     }
     input {
-        width: 90% !important;
+        /*width: 90% !important;*/
         font-size: 14px;
     }
 

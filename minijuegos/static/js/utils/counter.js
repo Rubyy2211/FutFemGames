@@ -16,6 +16,7 @@ export function inicializarCounter(facil, medio, dificil, juego , dificultad){
             break;
         case "infinito":
             segundos = 86400;
+            break;
         default:
             segundos = localStorage.getItem(juego); // Valor por defecto si la dificultad no es válida
     }
@@ -84,4 +85,58 @@ function ejecutarTikFondo() {
     setTimeout(() => {
         root.classList.remove('tick-red');
     }, 150);
+}
+
+// Fucniones para contador diario
+export function iniciarContadorDiario() {
+    const contador = document.getElementById("daily-countdown");
+
+    if (!contador) return;
+
+    function obtenerHoraMadrid() {
+        return new Date(
+            new Intl.DateTimeFormat("en-US", {
+                timeZone: "Europe/Madrid",
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false
+            }).format()
+        );
+    }
+
+    function actualizar() {
+        const ahora = obtenerHoraMadrid();
+
+        const siguiente = new Date(ahora);
+        siguiente.setHours(24, 0, 0, 0);
+
+        const diferencia = siguiente - ahora;
+
+        const horas = Math.floor(diferencia / 3600000);
+        const minutos = Math.floor((diferencia % 3600000) / 60000);
+        const segundos = Math.floor((diferencia % 60000) / 1000);
+
+        contador.textContent =
+            `${String(horas).padStart(2, "0")}:` +
+            `${String(minutos).padStart(2, "0")}:` +
+            `${String(segundos).padStart(2, "0")}`;
+    }
+
+    actualizar();
+    setInterval(actualizar, 1000);
+}
+
+export function obtenerFechaFormato(fechaString) {
+    const fecha = new Date(fechaString);
+
+    return new Intl.DateTimeFormat("es-ES", {
+        timeZone: "Europe/Madrid",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+    }).format(fecha);
 }

@@ -125,11 +125,11 @@ div.cont {
 }
 
 input {
-    width: 90% !important;
+    width: 100% !important;
 }
 
 #sugerencias {
-    max-height: 125px;
+    max-height: 125px !important;
     overflow-y: scroll;
 }
 

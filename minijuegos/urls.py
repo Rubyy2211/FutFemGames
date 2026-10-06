@@ -9,7 +9,7 @@ urlpatterns = [
     path('minigames/career', views.futfemTrajectory),
     path('minigames/grid', views.futfemGrid),
     path('minigames/bingo', views.futfemBingo),
-    path('minigames/wordle', views.futfemWordle),
+    #path('minigames/wordle', views.futfemWordle),
     path('minigames/mates', views.futfemMates),
     path('minigames/guess', views.futfemGuess),
     path('minigames/higher_lower', views.futfemHigherLower, name='higher_lower'),

@@ -1,20 +1,45 @@
+// ============================================================
+// ELEMENTOS PRINCIPALES
+// ============================================================
+
 const buttons = document.querySelectorAll('.game-button');
-const expo = document.getElementById('dynamic-bg');
+const expo = document.getElementById('game-bg-image');
 const hoverSound = new Audio('/static/sounds/hover2.mp3');
 
 // Variable global para controlar si el usuario está arrastrando en PC
 let isGlobalDragging = false;
 
-// 🟢 OBTENER ELEMENTOS H2 Y GUARDAR TÍTULOS PREDETERMINADOS
-const dailyH2 = document.querySelector('#daily-games h2, #diarios h2');
-const regularH2 = document.querySelector('#regular-games h2, #regulares h2');
 
-const defaultDailyText = dailyH2 ? dailyH2.textContent : 'Diarios';
-const defaultRegularText = regularH2 ? regularH2.textContent : 'Regulares';
+// ============================================================
+// ELEMENTOS H2
+// ============================================================
 
-// 🎬 FUNCIÓN PARA ANIMAR EL CAMBIO DE TEXTO (CENTRADOS CON -50%, -50%)
+const dailyH2 = document.querySelector(
+  '#daily-games h2, #diarios h2'
+);
+
+const regularH2 = document.querySelector(
+  '#regular-games h2, #regulares h2'
+);
+
+const defaultDailyText = dailyH2
+  ? dailyH2.textContent
+  : 'Diarios';
+
+const defaultRegularText = regularH2
+  ? regularH2.textContent
+  : 'Regulares';
+
+
+// ============================================================
+// FUNCIÓN: CAMBIAR TEXTO DEL H2
+// ============================================================
+
 function updateH2Text(h2Element, newText) {
-  if (!h2Element || h2Element.textContent === newText) return;
+
+  if (!h2Element || h2Element.textContent === newText) {
+    return;
+  }
 
   gsap.killTweensOf(h2Element);
 
@@ -24,9 +49,17 @@ function updateH2Text(h2Element, newText) {
     yPercent: -60,
     duration: 0.12,
     ease: "power1.in",
+
     onComplete: () => {
+
       h2Element.textContent = newText;
-      gsap.set(h2Element, { xPercent: -50, yPercent: -40 });
+      h2Element.dataset.gameTitle = newText;
+
+      gsap.set(h2Element, {
+        xPercent: -50,
+        yPercent: -40
+      });
+
       gsap.to(h2Element, {
         autoAlpha: 1,
         xPercent: -50,
@@ -34,350 +67,1110 @@ function updateH2Text(h2Element, newText) {
         duration: 0.25,
         ease: "back.out(1.5)"
       });
+
     }
   });
 }
 
-// 🟢 FUNCIÓN PRINCIPAL PARA ACTIVAR UN JUEGO
+
+// ============================================================
+// FUNCIÓN: CAMBIAR FONDO
+// ============================================================
+
+function changeGameBackground(bg) {
+
+  if (!bg || !expo) {
+    return;
+  }
+
+  gsap.killTweensOf(expo);
+
+  gsap.to(expo, {
+    opacity: 0,
+    duration: 0.15,
+    ease: "power1.in",
+
+    onComplete: () => {
+
+      expo.style.backgroundImage =
+        `linear-gradient(
+          rgba(0,0,0,0.5),
+          rgba(0,0,0,0.5)
+        ), url("${bg}")`;
+
+      expo.style.display = 'flex';
+
+      gsap.to(expo, {
+        opacity: 1,
+        duration: 0.35,
+        ease: "power2.out"
+      });
+
+    }
+  });
+}
+
+
+// ============================================================
+// FUNCIÓN: ACTIVAR FONDO DE UNA CARTA
+// ============================================================
+
+function showCardBackground(card) {
+
+  if (!card) {
+    return;
+  }
+
+  const bg = card.dataset.bg;
+
+  if (bg) {
+    changeGameBackground(bg);
+  }
+}
+
+
+// ============================================================
+// FUNCIÓN PRINCIPAL PARA ACTIVAR UN JUEGO
+// ============================================================
+
 function activateGameButton(card, shouldScroll = true) {
-  if (!card || card.classList.contains('active')) return;
+
+  if (!card) {
+    return;
+  }
 
   const { bg, titulo } = card.dataset;
 
-  const parentDaily = card.closest('#diarios, #daily-games');
-  const parentRegular = card.closest('#regulares, #regular-games');
+  const parentDaily = card.closest(
+    '#diarios, #daily-games'
+  );
 
-  // 1. Centrar automáticamente en pantalla en móvil
-  if (window.innerWidth < 768 && shouldScroll) {
-    card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-  }
+  const parentRegular = card.closest(
+    '#regulares, #regular-games'
+  );
 
-  // 2. Cambiar título con animación
-  if (parentDaily && dailyH2 && titulo) {
-    updateH2Text(dailyH2, titulo);
-  } else if (parentRegular && regularH2 && titulo) {
-    updateH2Text(regularH2, titulo);
-  }
 
-  // 3. Cambiar imagen de fondo
-  if (bg && expo) {
-    gsap.to(expo, {
-      duration: 0.4,
-      autoAlpha: 1,
-      backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bg})`,
-      display: 'flex',
-      ease: "power2.out"
+  // ==========================================================
+  // 1. CENTRAR AUTOMÁTICAMENTE EN MÓVIL
+  // ==========================================================
+
+  if (
+    window.innerWidth < 768 &&
+    shouldScroll
+  ) {
+
+    card.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest'
     });
+
   }
 
-  // 4. Sonido
-  if (typeof hoverSound !== 'undefined') {
+
+  // ==========================================================
+  // 2. CAMBIAR H2
+  // ==========================================================
+
+  if (
+    parentDaily &&
+    dailyH2 &&
+    titulo
+  ) {
+
+    updateH2Text(
+      dailyH2,
+      titulo
+    );
+
+  } else if (
+    parentRegular &&
+    regularH2 &&
+    titulo
+  ) {
+
+    updateH2Text(
+      regularH2,
+      titulo
+    );
+
+  }
+
+
+  // ==========================================================
+  // 3. CAMBIAR FONDO
+  //
+  // IMPORTANTE:
+  // Esto ocurre incluso si la carta YA tiene .active
+  // ==========================================================
+
+  if (bg) {
+    showCardBackground(card);
+  }
+
+
+  // ==========================================================
+  // 4. SONIDO
+  // ==========================================================
+
+  if (hoverSound) {
+
     hoverSound.currentTime = 0;
-    hoverSound.play();
+
+    hoverSound.play().catch(() => {});
+
   }
 
-  // 5. Cambiar estado activo
-  const sectionContainer = parentDaily || parentRegular || document;
-  const sectionButtons = sectionContainer.querySelectorAll('.game-button');
+
+  // ==========================================================
+  // 5. CAMBIAR ESTADO ACTIVO
+  // ==========================================================
+
+  const sectionContainer =
+    parentDaily ||
+    parentRegular ||
+    null;
+
+  if (!sectionContainer) {
+    return;
+  }
+
+  const sectionButtons =
+    sectionContainer.querySelectorAll(
+      '.game-button'
+    );
+
+  if (sectionButtons.length === 0) {
+    return;
+  }
+
 
   sectionButtons.forEach(other => {
+
     if (other === card) {
+
       other.classList.add('active');
-      gsap.to(other, { scale: 1.05, opacity: 1, duration: 0.3 });
+
+      gsap.to(other, {
+        scale: 1.05,
+        opacity: 1,
+        duration: 0.3
+      });
+
     } else {
+
       other.classList.remove('active');
-      gsap.to(other, { scale: 1, opacity: 0.7, duration: 0.3 });
+
+      gsap.to(other, {
+        scale: 1,
+        opacity: 0.7,
+        duration: 0.3
+      });
+
     }
+
   });
+
 }
 
-// Resetea todos los botones al estado por defecto
+
+// ============================================================
+// FUNCIÓN: RESTABLECER TODOS LOS BOTONES
+// ============================================================
+
 function resetAllGameButtons() {
+
+  if (buttons.length === 0) {
+    return;
+  }
+
   buttons.forEach(btn => {
+
     btn.classList.remove('active');
-    gsap.to(btn, { scale: 1, opacity: 1, duration: 0.3 });
+
+    gsap.to(btn, {
+      scale: 1,
+      opacity: 1,
+      duration: 0.3
+    });
+
   });
+
 }
 
-// 🎮 EVENTOS PARA BOTONES DE JUEGOS
+
+// ============================================================
+// EVENTOS PARA BOTONES DE JUEGOS
+// ============================================================
+
 buttons.forEach(card => {
-  // En Escritorio (Hover): Solo activa si no se está arrastrando el scroll
+
+
+  // ==========================================================
+  // PC — HOVER
+  // ==========================================================
+
   card.addEventListener('mouseenter', () => {
-    if (window.innerWidth >= 768 && !isGlobalDragging) {
-      activateGameButton(card);
+
+    if (
+      window.innerWidth >= 768 &&
+      !isGlobalDragging
+    ) {
+
+      activateGameButton(
+        card,
+        false
+      );
+
     }
+
   });
 
-  // En Móvil (Click/Tap activa y centra con animación)
+
+  // ==========================================================
+  // MÓVIL — CLICK / TAP
+  // ==========================================================
+
   card.addEventListener('click', () => {
+
     if (window.innerWidth < 768) {
-      activateGameButton(card, true);
+
+      activateGameButton(
+        card,
+        true
+      );
+
     }
+
   });
+
 });
 
-// 📱 DETECTOR DE SCROLL EN MÓVIL
-const rows = document.querySelectorAll('#daily-games .row, #regular-games .row');
+
+// ============================================================
+// DETECTOR DE SCROLL EN MÓVIL
+// ============================================================
+
+const rows = document.querySelectorAll(
+  '#daily-games .row, #regular-games .row'
+);
 
 rows.forEach(row => {
+
   let isScrolling = false;
 
+
   row.addEventListener('scroll', () => {
-    if (window.innerWidth >= 768) return; // Desactivar en PC
+
+    if (window.innerWidth >= 768) {
+      return;
+    }
 
     if (!isScrolling) {
+
       window.requestAnimationFrame(() => {
-        const rowRect = row.getBoundingClientRect();
-        const screenCenter = rowRect.left + rowRect.width / 2;
+
+        const rowRect =
+          row.getBoundingClientRect();
+
+        const screenCenter =
+          rowRect.left +
+          rowRect.width / 2;
+
 
         let closestCard = null;
         let minDistance = Infinity;
 
-        const cards = row.querySelectorAll('.game-button');
+
+        const cards =
+          row.querySelectorAll(
+            '.game-button'
+          );
+
+
         cards.forEach(card => {
-          const cardRect = card.getBoundingClientRect();
-          const cardCenter = cardRect.left + cardRect.width / 2;
-          const distance = Math.abs(screenCenter - cardCenter);
+
+          const cardRect =
+            card.getBoundingClientRect();
+
+          const cardCenter =
+            cardRect.left +
+            cardRect.width / 2;
+
+          const distance =
+            Math.abs(
+              screenCenter -
+              cardCenter
+            );
+
 
           if (distance < minDistance) {
-            minDistance = distance;
-            closestCard = card;
+
+            minDistance =
+              distance;
+
+            closestCard =
+              card;
+
           }
+
         });
 
+
+        // ------------------------------------------------------
+        // ACTIVAR CARTA MÁS CERCANA
+        // ------------------------------------------------------
+
         if (closestCard) {
-          activateGameButton(closestCard, false);
+
+          activateGameButton(
+            closestCard,
+            false
+          );
+
         }
 
+
         isScrolling = false;
+
       });
+
       isScrolling = true;
+
     }
+
   });
+
 });
 
-// 🧭 ANIMACIÓN MENÚ PRINCIPAL LATERAL (#selector)
-const selectorLinks = document.querySelectorAll('#selector a');
-const dynamicBg = document.getElementById('dynamic-bg');
-const sections = document.querySelectorAll('#diarios, #regulares');
 
-const initialSection = document.getElementById('diarios');
-let currentActiveSection = initialSection;
+// ============================================================
+// ANIMACIÓN MENÚ PRINCIPAL LATERAL
+// ============================================================
 
-let currentActiveLink = Array.from(selectorLinks).find(link => {
-  const href = link.getAttribute('href');
-  return href === '#diarios' || link.querySelector('p')?.textContent.trim().toLowerCase() === 'diarios';
-}) || selectorLinks[0];
+const selectorLinks =
+  document.querySelectorAll(
+    '#selector a'
+  );
 
-// Estado inicial de las secciones
+const dynamicBg =
+  document.getElementById(
+    'dynamic-bg'
+  );
+
+const sections =
+  document.querySelectorAll(
+    '#diarios, #regulares'
+  );
+
+
+// ============================================================
+// SECCIÓN INICIAL
+// ============================================================
+
+const initialSection =
+  document.getElementById(
+    'diarios'
+  );
+
+let currentActiveSection =
+  initialSection;
+
+
+// ============================================================
+// LINK ACTIVO INICIAL
+// ============================================================
+
+let currentActiveLink =
+  Array.from(selectorLinks).find(link => {
+
+    const href =
+      link.getAttribute('href');
+
+    return (
+      href === '#diarios' ||
+      link
+        .querySelector('p')
+        ?.textContent
+        .trim()
+        .toLowerCase() === 'diarios'
+    );
+
+  }) || selectorLinks[0];
+
+
+// ============================================================
+// ESTADO INICIAL DE LAS SECCIONES
+// ============================================================
+
 sections.forEach(sec => {
+
   if (sec === initialSection) {
-    gsap.set(sec, { autoAlpha: 1, display: 'flex', y: 0 });
-    const infos = sec.querySelectorAll('.panel-info');
-    gsap.set(infos, { autoAlpha: 1, y: 0 });
+
+    gsap.set(sec, {
+      autoAlpha: 1,
+      display: 'flex',
+      y: 0
+    });
+
+    const infos =
+      sec.querySelectorAll(
+        '.panel-info'
+      );
+
+    if (infos.length > 0) {
+
+      gsap.set(infos, {
+        autoAlpha: 1,
+        y: 0
+      });
+
+    }
+
   } else {
-    gsap.set(sec, { autoAlpha: 0, display: 'none', y: 10 });
-    const infos = sec.querySelectorAll('.panel-info');
-    gsap.set(infos, { autoAlpha: 0, y: 15 });
+
+    gsap.set(sec, {
+      autoAlpha: 0,
+      display: 'none',
+      y: 10
+    });
+
+    const infos =
+      sec.querySelectorAll(
+        '.panel-info'
+      );
+
+    if (infos.length > 0) {
+
+      gsap.set(infos, {
+        autoAlpha: 0,
+        y: 15
+      });
+
+    }
+
   }
+
 });
+
+
+// ============================================================
+// INICIALIZAR LINKS DEL SELECTOR
+// ============================================================
 
 selectorLinks.forEach(link => {
-  const isInitialActive = (link === currentActiveLink);
+
+  const isInitialActive =
+    link === currentActiveLink;
+
+
+  // ==========================================================
+  // LINK ACTIVO INICIAL
+  // ==========================================================
 
   if (isInitialActive) {
+
     link.classList.add('active');
+
     gsap.set(link, {
+
       "--arrowOpacity": 1,
       "--arrowScale": 1,
       "--arrowYTop": "0px",
       "--arrowYBottom": "0px"
+
     });
 
-    const initBg = link.dataset.bg;
-    if (initBg && dynamicBg) {
-      dynamicBg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${initBg}')`;
-      gsap.set(dynamicBg, { opacity: 1 });
+
+    // --------------------------------------------------------
+    // FONDO INICIAL DE LA SECCIÓN
+    // --------------------------------------------------------
+
+    const initBg =
+      link.dataset.bg;
+
+    if (
+      initBg &&
+      dynamicBg
+    ) {
+
+      dynamicBg.style.backgroundImage =
+        `linear-gradient(
+          rgba(0,0,0,0.5),
+          rgba(0,0,0,0.5)
+        ), url('${initBg}')`;
+
+      gsap.set(
+        dynamicBg,
+        {
+          opacity: 1
+        }
+      );
+
     }
+
   } else {
-    link.classList.remove('active');
+
+    link.classList.remove(
+      'active'
+    );
+
     gsap.set(link, {
+
       "--arrowOpacity": 0,
       "--arrowScale": 1.5,
       "--arrowYTop": "-25px",
       "--arrowYBottom": "25px"
+
     });
+
   }
 
-  const href = link.getAttribute('href');
-  let targetId = href && href.startsWith('#') ? href : null;
-  
+
+  // ==========================================================
+  // OBTENER SECCIÓN DESTINO
+  // ==========================================================
+
+  const href =
+    link.getAttribute('href');
+
+  let targetId =
+    href &&
+    href.startsWith('#')
+      ? href
+      : null;
+
+
   if (!targetId) {
-    const text = link.querySelector('p')?.textContent.trim().toLowerCase();
-    if (text) targetId = `#${text}`;
+
+    const text =
+      link
+        .querySelector('p')
+        ?.textContent
+        .trim()
+        .toLowerCase();
+
+    if (text) {
+
+      targetId =
+        `#${text}`;
+
+    }
+
   }
 
-  const targetSection = targetId ? document.querySelector(targetId) : null;
 
-  link.addEventListener('mouseenter', () => {
-    if (link === currentActiveLink) return;
+  const targetSection =
+    targetId
+      ? document.querySelector(
+          targetId
+        )
+      : null;
 
-    if (typeof hoverSound !== 'undefined') {
-      hoverSound.currentTime = 0;
-      hoverSound.play();
-    }
 
-    selectorLinks.forEach(otherLink => {
-      gsap.killTweensOf(otherLink);
+  // ==========================================================
+  // HOVER DEL LINK
+  // ==========================================================
 
-      if (otherLink === link) {
-        otherLink.classList.add('active');
-        gsap.to(otherLink, {
-          "--arrowOpacity": 1,
-          "--arrowScale": 1,
-          "--arrowYTop": "0px",
-          "--arrowYBottom": "0px",
-          duration: 0.3,
-          ease: "back.out(1.7)"
-        });
-      } else {
-        otherLink.classList.remove('active');
-        gsap.to(otherLink, {
-          "--arrowOpacity": 0,
-          "--arrowScale": 1.5,
-          "--arrowYTop": "-25px",
-          "--arrowYBottom": "25px",
-          duration: 0.2,
-          ease: "power2.in"
-        });
-      }
-    });
+  link.addEventListener(
+    'mouseenter',
+    () => {
 
-    currentActiveLink = link;
+      if (
+        link ===
+        currentActiveLink
+      ) {
 
-    const newBg = link.dataset.bg;
-    if (newBg && dynamicBg) {
-      gsap.killTweensOf(dynamicBg);
-      gsap.to(dynamicBg, {
-        opacity: 0,
-        duration: 0.15,
-        ease: "power1.in",
-        onComplete: () => {
-          dynamicBg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${newBg}')`;
-          gsap.to(dynamicBg, { opacity: 1, duration: 0.35, ease: "power2.out" });
-        }
-      });
-    }
+        return;
 
-    // CAMBIO DE SECCIÓN
-    if (targetSection && targetSection !== currentActiveSection) {
-      if (dailyH2) updateH2Text(dailyH2, defaultDailyText);
-      if (regularH2) updateH2Text(regularH2, defaultRegularText);
-
-      resetAllGameButtons();
-
-      if (currentActiveSection) {
-        gsap.killTweensOf(currentActiveSection);
-        gsap.to(currentActiveSection, { 
-          autoAlpha: 0, 
-          display: 'none', 
-          y: -10, 
-          duration: 0.15 
-        });
       }
 
-      gsap.killTweensOf(targetSection);
-      gsap.set(targetSection, { y: 15 });
-      gsap.to(targetSection, {
-        duration: 0.35,
-        autoAlpha: 1,
-        display: 'flex',
-        y: 0,
-        delay: 0.1,
-        ease: "power2.out",
-        onComplete: () => {
-          if (window.innerWidth < 768) {
-            const firstCard = targetSection.querySelector('.game-button');
-            if (firstCard) {
-              activateGameButton(firstCard, true);
-            }
+
+      // ------------------------------------------------------
+      // SONIDO
+      // ------------------------------------------------------
+
+      if (hoverSound) {
+
+        hoverSound.currentTime = 0;
+
+        hoverSound.play().catch(() => {});
+
+      }
+
+
+      // ------------------------------------------------------
+      // ANIMACIÓN DE FLECHAS
+      // ------------------------------------------------------
+
+      selectorLinks.forEach(
+        otherLink => {
+
+          gsap.killTweensOf(
+            otherLink
+          );
+
+
+          if (
+            otherLink ===
+            link
+          ) {
+
+            otherLink.classList.add(
+              'active'
+            );
+
+            gsap.to(
+              otherLink,
+              {
+
+                "--arrowOpacity": 1,
+                "--arrowScale": 1,
+                "--arrowYTop": "0px",
+                "--arrowYBottom": "0px",
+
+                duration: 0.3,
+
+                ease:
+                  "back.out(1.7)"
+
+              }
+            );
+
+          } else {
+
+            otherLink.classList.remove(
+              'active'
+            );
+
+            gsap.to(
+              otherLink,
+              {
+
+                "--arrowOpacity": 0,
+                "--arrowScale": 1.5,
+                "--arrowYTop": "-25px",
+                "--arrowYBottom": "25px",
+
+                duration: 0.2,
+
+                ease:
+                  "power2.in"
+
+              }
+            );
+
           }
-        }
-      });
 
-      currentActiveSection = targetSection;
+        }
+      );
+
+
+      // ------------------------------------------------------
+      // ACTUALIZAR LINK ACTIVO
+      // ------------------------------------------------------
+
+      currentActiveLink =
+        link;
+
+
+      // ------------------------------------------------------
+      // CAMBIAR FONDO DE LA SECCIÓN
+      // ------------------------------------------------------
+
+      const newBg =
+        link.dataset.bg;
+
+      if (
+        newBg &&
+        dynamicBg
+      ) {
+
+        gsap.killTweensOf(
+          dynamicBg
+        );
+
+        gsap.to(
+          dynamicBg,
+          {
+
+            opacity: 0,
+
+            duration: 0.15,
+
+            ease:
+              "power1.in",
+
+            onComplete: () => {
+
+              dynamicBg.style.backgroundImage =
+                `linear-gradient(
+                  rgba(0,0,0,0.5),
+                  rgba(0,0,0,0.5)
+                ), url('${newBg}')`;
+
+              gsap.to(
+                dynamicBg,
+                {
+
+                  opacity: 1,
+
+                  duration: 0.35,
+
+                  ease:
+                    "power2.out"
+
+                }
+              );
+
+            }
+
+          }
+        );
+
+      }
+
+
+      // ======================================================
+      // CAMBIO DE SECCIÓN
+      // ======================================================
+
+      if (
+        targetSection &&
+        targetSection !==
+        currentActiveSection
+      ) {
+
+
+        // ----------------------------------------------------
+        // RESTAURAR TÍTULOS
+        // ----------------------------------------------------
+
+        if (dailyH2) {
+
+          updateH2Text(
+            dailyH2,
+            defaultDailyText
+          );
+
+        }
+
+        if (regularH2) {
+
+          updateH2Text(
+            regularH2,
+            defaultRegularText
+          );
+
+        }
+
+
+        // ----------------------------------------------------
+        // RESTAURAR BOTONES
+        // ----------------------------------------------------
+
+        resetAllGameButtons();
+
+
+        // ----------------------------------------------------
+        // OCULTAR SECCIÓN ACTUAL
+        // ----------------------------------------------------
+
+        if (
+          currentActiveSection
+        ) {
+
+          gsap.killTweensOf(
+            currentActiveSection
+          );
+
+          gsap.to(
+            currentActiveSection,
+            {
+
+              autoAlpha: 0,
+
+              display: 'none',
+
+              y: -10,
+
+              duration: 0.15
+
+            }
+          );
+
+        }
+
+
+        // ----------------------------------------------------
+        // MOSTRAR NUEVA SECCIÓN
+        // ----------------------------------------------------
+
+        gsap.killTweensOf(
+          targetSection
+        );
+
+        gsap.set(
+          targetSection,
+          {
+            y: 15
+          }
+        );
+
+        gsap.to(
+          targetSection,
+          {
+
+            duration: 0.35,
+
+            autoAlpha: 1,
+
+            display: 'flex',
+
+            y: 0,
+
+            delay: 0.1,
+
+            ease:
+              "power2.out",
+
+            onComplete: () => {
+
+              // ----------------------------------------------
+              // MÓVIL:
+              // ACTIVAR PRIMERA CARTA
+              // ----------------------------------------------
+
+              if (
+                window.innerWidth <
+                768
+              ) {
+
+                const firstCard =
+                  targetSection.querySelector(
+                    '.game-button'
+                  );
+
+                if (firstCard) {
+
+                  activateGameButton(
+                    firstCard,
+                    true
+                  );
+
+                }
+
+              }
+
+            }
+
+          }
+        );
+
+
+        currentActiveSection =
+          targetSection;
+
+      }
+
     }
-  });
+  );
+
 });
 
-// 🚀 ACTIVACIÓN INICIAL AL CARGAR LA PÁGINA (MÓVIL)
-if (window.innerWidth < 768) {
-  const initialCard = initialSection?.querySelector('.game-button');
-  if (initialCard) {
-    setTimeout(() => {
-      activateGameButton(initialCard, true);
-    }, 100);
-  }
-}
 
-// 🖱️ LÓGICA DE SCROLL POR ARRASTRE (DRAG & GRAB) EN PC
-const dragRows = document.querySelectorAll('#daily-games .row, #regular-games .row');
+// ============================================================
+// ACTIVACIÓN INICIAL AL CARGAR LA PÁGINA
+// ============================================================
+
+/*if (
+  window.innerWidth < 768
+) {*/
+
+  const initialCard =
+    initialSection?.querySelector(
+      '.game-button'
+    );
+
+  if (initialCard) {
+
+    setTimeout(() => {
+
+      activateGameButton(
+        initialCard,
+        true
+      );
+
+    }, 100);
+
+  }
+
+/*}*/
+
+
+// ============================================================
+// LÓGICA DE SCROLL POR ARRASTRE EN PC
+// ============================================================
+
+const dragRows =
+  document.querySelectorAll(
+    '#daily-games .row, #regular-games .row'
+  );
+
 
 dragRows.forEach(row => {
+
   let isMouseDown = false;
   let startX = 0;
   let scrollLeftPos = 0;
   let hasDragged = false;
 
-  row.addEventListener('mousedown', (e) => {
-    if (window.innerWidth < 768 || e.button !== 0) return; // Solo clic izquierdo en PC
-    
-    isMouseDown = true;
-    hasDragged = false;
-    isGlobalDragging = false;
 
-    row.classList.add('is-dragging');
-    
-    startX = e.pageX - row.offsetLeft;
-    scrollLeftPos = row.scrollLeft;
-  });
+  // ----------------------------------------------------------
+  // MOUSE DOWN
+  // ----------------------------------------------------------
 
-  const stopDragging = () => {
-    if (!isMouseDown) return;
-    isMouseDown = false;
-    row.classList.remove('is-dragging');
-    
-    // Pequeño retardo para evitar activar hover inmediatamente al soltar
-    setTimeout(() => {
+  row.addEventListener(
+    'mousedown',
+    e => {
+
+      if (
+        window.innerWidth < 768 ||
+        e.button !== 0
+      ) {
+
+        return;
+
+      }
+
+      isMouseDown = true;
+      hasDragged = false;
       isGlobalDragging = false;
-    }, 50);
-  };
 
-  row.addEventListener('mouseleave', stopDragging);
-  window.addEventListener('mouseup', stopDragging);
+      row.classList.add(
+        'is-dragging'
+      );
 
-  row.addEventListener('mousemove', (e) => {
-    if (!isMouseDown || window.innerWidth < 768) return;
-    
-    const x = e.pageX - row.offsetLeft;
-    const walk = (x - startX) * 1.5; // Multiplicador de velocidad de scroll
+      startX =
+        e.pageX -
+        row.offsetLeft;
 
-    if (Math.abs(walk) > 5) {
-      hasDragged = true;
-      isGlobalDragging = true; // Activa el flag global para ignorar hovers
+      scrollLeftPos =
+        row.scrollLeft;
+
     }
+  );
 
-    if (hasDragged) {
-      e.preventDefault();
-      row.scrollLeft = scrollLeftPos - walk;
-    }
-  });
 
-  // Evita abrir enlaces o ejecutar acciones de clic si el usuario estaba arrastrando
-  row.addEventListener('click', (e) => {
-    if (hasDragged && window.innerWidth >= 768) {
-      e.stopPropagation();
-      e.preventDefault();
+  // ----------------------------------------------------------
+  // DETENER DRAG
+  // ----------------------------------------------------------
+
+  const stopDragging =
+    () => {
+
+      if (!isMouseDown) {
+        return;
+      }
+
+      isMouseDown = false;
+
+      row.classList.remove(
+        'is-dragging'
+      );
+
+
+      setTimeout(() => {
+
+        isGlobalDragging = false;
+
+      }, 50);
+
+    };
+
+
+  row.addEventListener(
+    'mouseleave',
+    stopDragging
+  );
+
+  window.addEventListener(
+    'mouseup',
+    stopDragging
+  );
+
+
+  // ----------------------------------------------------------
+  // MOVIMIENTO
+  // ----------------------------------------------------------
+
+  row.addEventListener(
+    'mousemove',
+    e => {
+
+      if (
+        !isMouseDown ||
+        window.innerWidth < 768
+      ) {
+
+        return;
+
+      }
+
+
+      const x =
+        e.pageX -
+        row.offsetLeft;
+
+      const walk =
+        (x - startX) * 1.5;
+
+
+      if (
+        Math.abs(walk) > 5
+      ) {
+
+        hasDragged = true;
+
+        isGlobalDragging = true;
+
+      }
+
+
+      if (hasDragged) {
+
+        e.preventDefault();
+
+        row.scrollLeft =
+          scrollLeftPos -
+          walk;
+
+      }
+
     }
-  }, true);
+  );
+
+
+  // ----------------------------------------------------------
+  // EVITAR CLICK DESPUÉS DE DRAG
+  // ----------------------------------------------------------
+
+  row.addEventListener(
+    'click',
+    e => {
+
+      if (
+        hasDragged &&
+        window.innerWidth >= 768
+      ) {
+
+        e.stopPropagation();
+        e.preventDefault();
+
+      }
+
+    },
+    true
+  );
+
 });

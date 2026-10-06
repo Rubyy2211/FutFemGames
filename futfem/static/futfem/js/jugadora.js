@@ -1,3 +1,4 @@
+import { ajustarAlturaSugerencias } from "/static/js/utils/combo.js";
 // static/js/api/jugadoras.js
 let min = 1;
 let max = 476;
@@ -41,8 +42,12 @@ export async function handleAutocompletePlayer(event) {
             // Evitar duplicados visuales en el DOM
             const idsMostrados = new Set();
 
+            ajustarAlturaSugerencias(input, suggestionsList);
+
             results.forEach(jugadora => {
-                const { id_jugadora, Nombre_Completo, imagen, Nacimiento, Apodo } = jugadora;
+                const { id_jugadora, Nombre_Completo, imagen, Nacimiento, Apodo, nacionalidad } = jugadora;
+
+                console.log('Procesando jugadora:', jugadora);
 
                 if (!idsMostrados.has(id_jugadora)) {
                     idsMostrados.add(id_jugadora);
@@ -50,10 +55,23 @@ export async function handleAutocompletePlayer(event) {
                     const listItem = document.createElement('li');
                     listItem.classList.add('suggestion-item');
 
+                    console.log(imagen)
+
+                    if (!imagen || imagen.trim() === '') imagen = '/static/img/predeterm.png'; // Imagen por defecto si no hay imagen
+
                     listItem.innerHTML = `
-                        <img src="/${imagen}" alt="${Nombre_Completo}" class="jugadora-img">
+                        <img
+                            src="${imagen}"
+                            alt="${Nombre_Completo}"
+                            class="jugadora-img"
+                        >
+
                         <div class="jugadora-info">
                             <strong>${Nombre_Completo}</strong>
+                            <div>
+                            <span class="fi fi-${nacionalidad}"></span>
+                                ${Nacimiento ?`${Nacimiento}` : ''}
+                            </div>
                         </div>
                     `;
 

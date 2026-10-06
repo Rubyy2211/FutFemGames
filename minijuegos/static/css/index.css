@@ -352,6 +352,8 @@ body::before {
     letter-spacing: 2px;
     margin-bottom: 10px;
     max-width: 100%;
+    -webkit-text-fill-color: transparent;
+    background: linear-gradient(135deg, rgb(255, 255, 255) 30%, rgb(224, 170, 255) 100%) text;
 }
 
 @media (max-width: 768px){
@@ -772,8 +774,8 @@ section .container .web-button .web-button-text{
     /*background: color-mix(in srgb, var(--color-primario) 100%, transparent 0%); /* Color de fondo primario */
     background: color-mix(in srgb, #1e1e24 40%, var(--color-primario) 60%);
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    flex-direction: column-reverse !important;
+    align-items: start;
     border-radius: 15px 15px 0 0;
 }
 
@@ -816,6 +818,7 @@ section .container .web-button .web-button-text{
     height: 100%; /* El título ocupa el espacio restante debajo de la imagen */
     width: fit-content !important;
     color: var(--color-texto);
+    font-family: 'Oswald', sans-serif !important;
     /*font-family: 'Oswald', sans-serif !important; /* Fuente personalizada para el título */
     /*background: color-mix(in srgb, var(--color-primario) 100%, transparent 0%); /* Color de fondo primario */
 }
@@ -931,11 +934,10 @@ section .container .web-button .web-button-text{
     }
 
     .game-button #game-title-container{
-        flex-direction: column;
         width: 100%;
         justify-content: space-between;
-        align-items: center;
-        height: 40%;
+        align-items: start;
+        height: 90%;
         padding: 5px;
     }
 
@@ -944,7 +946,7 @@ section .container .web-button .web-button-text{
         padding-top: 0;
         height: fit-content;
         margin-bottom: 0 !important;
-        padding-bottom: 0 ;
+        padding-bottom: 0;
     }
 }
 

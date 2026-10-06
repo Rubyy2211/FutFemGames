@@ -50,7 +50,7 @@ buttons.forEach(card => {
     gsap.to(expo, {
       duration: 0.4,
       autoAlpha: 1, // Esto maneja visibility y opacity a la vez
-      backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${bg})`,
+      backgroundImage: `linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0)), url(${bg})`,
       display: 'flex', // Asegura que se vea si estaba en none
       ease: "power2.out"
     });
@@ -218,7 +218,7 @@ selectorLinks.forEach(link => {
         duration: 0.15,
         ease: "power1.in",
         onComplete: () => {
-          dynamicBg.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('${newBg}')`;
+          dynamicBg.style.backgroundImage = `url('${newBg}'`;
           gsap.to(dynamicBg, { opacity: 1, duration: 0.35, ease: "power2.out" });
         }
       });

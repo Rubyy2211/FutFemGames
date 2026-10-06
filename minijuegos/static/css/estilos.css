@@ -608,7 +608,7 @@ input::placeholder{
     border-radius: 20px; /* Bordes redondeados */
     text-align: center; /* Centrar el contenido dentro del botón */
     padding: 10px; /* Espaciado interior */
-    background-color: color-mix(in srgb, var(--color-secundario) 45%, transparent); /* Color de fondo primario */
+    background-color: color-mix(in srgb, var(--color-secundario) 30%, black); /* Color de fondo primario */
     color: white; /* Color del texto */
     margin-bottom: 20px; /* Espaciado inferior entre botones */
     transition: transform 0.2s; /* Suavizar el efecto de transformación */
@@ -819,7 +819,7 @@ canvas.canvas-bg {
 .video-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55); 
+    background: rgba(0, 0, 0, 0.40); 
     z-index: 1;
 }
 

@@ -1,6 +1,10 @@
+import { obtenerFechaFormato } from "/static/js/utils/counter.js";
+
 let usuario = await getSesion();
 console.log(usuario)
 usuario = usuario.id;
+
+
 export async function getSesion() {
     try {
         const respuesta = await fetch('/accounts/sesion/');
@@ -203,10 +207,11 @@ export async function obtenerUltimaRespuesta(juego) {
     return data.ultima_respuesta; // number | null
 }
 
-
-
-export function displayRacha(racha, juego){
+export function displayRacha(racha, juego, ultima_vez_jugado) {
     const displayJuego = document.getElementById('racha-'+juego)
+    // buscar el padre del displayJuego con clase .game-button
+    const gameButton = displayJuego.closest('.game-button');
+    gameButton.dataset.ultimaVezJugado = obtenerFechaFormato(ultima_vez_jugado);
     if(racha === 0 || !racha){
         displayJuego.classList.remove('fire')
         displayJuego.style.display = '100%';

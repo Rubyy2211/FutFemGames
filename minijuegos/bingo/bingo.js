@@ -1,7 +1,13 @@
 import { victory, wrong, correct } from "/static/js/sounds.js";
 import { Ganaste, calcularEdad } from "/static/js/games/funciones-comunes.js";
 
-let idres, currentPlayerData, paises, clubes, ligas, lastPlayer, jugadora, jugadoraAnterior, ultimaRespuesta;
+let idres, currentPlayerData, paises, clubes, ligas, lastPlayer, jugadora, ultimaRespuesta;
+
+let jugadorasCache = [];
+let indexJugadora = 0;
+
+let jugadorasColocadas = new Set();
+let jugadoraAnterior = null;
 const skipButton = document.querySelector('.skip-button');
 
 async function iniciar(dificultad) {
@@ -209,67 +215,162 @@ function handleCellClick(cell, jugador) {
     return hasMatch;
 }
 
-let jugadorasCache = [];
-let indexJugadora = 0;
-
 export async function skipPlayer(paises, clubes, ligas, trofeos) {
-    requestAnimationFrame(() => { iniciarHoverFondos(); });
-    
-    // 1. Si ya hay jugadoras en la caché local, pasamos a la siguiente sin tocar el servidor
-    if (jugadorasCache.length > 0 && indexJugadora < jugadorasCache.length) {
-        const siguienteJugadora = jugadorasCache[indexJugadora++];
-        
-        // ACTUALIZACIÓN CRUCIAL: Guardamos la que se va a mostrar ahora mismo
-        jugadoraAnterior = siguienteJugadora.id; 
-        
-        mostrarJugadora(siguienteJugadora, paises, clubes, ligas) /*, trofeos)*/;
-        return;
-    }
 
-    // Si la caché se vació, limpiamos índices
-    indexJugadora = 0;
-    jugadorasCache = [];
+    requestAnimationFrame(() => {
+        iniciarHoverFondos();
+    });
 
-    const url = new URL('../api/jugadora_aleatoria', window.location.origin);
-    if (paises.length > 0) paises.forEach(pais => url.searchParams.append('nacionalidades[]', pais));
-    if (clubes.length > 0) clubes.forEach(club => url.searchParams.append('equipos[]', club));
-    if (ligas.length > 0) ligas.forEach(liga => url.searchParams.append('ligas[]', liga));
-    // if (trofeos.length > 0) trofeos.forEach(trofeo => url.searchParams.append('trofeos[]', trofeo));
+    // ---------------------------------------------------------
+    // 1. Si no tenemos pool, lo pedimos al servidor
+    // ---------------------------------------------------------
 
-    try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Error en la respuesta del servidor');
-        
-        const data = await response.json();
-        if (!Array.isArray(data) || data.length === 0) {
-            console.warn('No se encontraron jugadoras.');
+    if (jugadorasCache.length === 0) {
+
+        const url = new URL(
+            '../api/jugadoras_poll',
+            window.location.origin
+        );
+
+        if (paises.length > 0) {
+            paises.forEach(pais => {
+                url.searchParams.append(
+                    'nacionalidades[]',
+                    pais
+                );
+            });
+        }
+
+        if (clubes.length > 0) {
+            clubes.forEach(club => {
+                url.searchParams.append(
+                    'equipos[]',
+                    club
+                );
+            });
+        }
+
+        if (ligas.length > 0) {
+            ligas.forEach(liga => {
+                url.searchParams.append(
+                    'ligas[]',
+                    liga
+                );
+            });
+        }
+
+        try {
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error(
+                    'Error en la respuesta del servidor'
+                );
+            }
+
+            const data = await response.json();
+
+            if (
+                !Array.isArray(data) ||
+                data.length === 0
+            ) {
+                console.warn(
+                    'No se encontraron jugadoras para el Bingo.'
+                );
+                return;
+            }
+
+            // Pool cerrado
+            jugadorasCache = data;
+
+            // Empezamos desde el principio
+            indexJugadora = 0;
+
+            console.log(
+                `Pool del Bingo creado: ${jugadorasCache.length} jugadoras`
+            );
+
+        } catch (error) {
+
+            console.error(
+                'Error obteniendo el pool del Bingo:',
+                error
+            );
+
             return;
         }
-
-        jugadorasCache = data;
-        indexJugadora = 0;
-
-        // 2. CONTROL ANTIDUPLICADOS SEGURO:
-        // Solo saltamos a la siguiente si el lote tiene más de una jugadora para evitar un crash
-        if (jugadorasCache.length > 1 && jugadoraAnterior === jugadorasCache[indexJugadora].id) {
-            console.log("La jugadora aleatoria es la misma que la anterior, pasando a la siguiente del lote...");
-            indexJugadora++; // Saltamos del índice 0 al 1
-        }
-        
-        // Extraemos la jugadora definitiva usando el índice actual y luego lo incrementamos
-        const jugadoraFinal = jugadorasCache[indexJugadora++];
-        
-        if (jugadoraFinal) {
-            // Guardamos el ID definitivo en el historial antes de pintar
-            jugadoraAnterior = jugadoraFinal.id; 
-            await mostrarJugadora(jugadoraFinal, paises, clubes, ligas) /*, trofeos)*/;
-        } else {
-            console.warn('No se pudo extraer una jugadora válida del lote.');
-        }
-    
-    } catch (error) {
-        console.error('Hubo un problema con la solicitud fetch:', error);
     }
+
+    // ---------------------------------------------------------
+    // 2. Buscar la siguiente jugadora disponible
+    // ---------------------------------------------------------
+
+    const totalJugadoras = jugadorasCache.length;
+
+    // Como podemos dar una vuelta completa al pool,
+    // guardamos el índice desde el que empezamos.
+    const indiceInicial = indexJugadora;
+
+    do {
+
+        // Si llegamos al final, volvemos al principio
+        if (indexJugadora >= totalJugadoras) {
+            indexJugadora = 0;
+        }
+
+        const siguienteJugadora =
+            jugadorasCache[indexJugadora];
+
+        indexJugadora++;
+
+        // -----------------------------------------------------
+        // Saltar jugadoras que ya están colocadas
+        // -----------------------------------------------------
+
+        if (
+            jugadorasColocadas.has(
+                siguienteJugadora.id
+            )
+        ) {
+            continue;
+        }
+
+        // -----------------------------------------------------
+        // Evitar repetir inmediatamente la anterior
+        // -----------------------------------------------------
+
+        if (
+            siguienteJugadora.id === jugadoraAnterior &&
+            totalJugadoras > 1
+        ) {
+            continue;
+        }
+
+        // -----------------------------------------------------
+        // Mostrar jugadora
+        // -----------------------------------------------------
+
+        jugadoraAnterior = siguienteJugadora.id;
+
+        await mostrarJugadora(
+            siguienteJugadora,
+            paises,
+            clubes,
+            ligas
+        );
+
+        return;
+
+    } while (indexJugadora !== indiceInicial);
+
+    // ---------------------------------------------------------
+    // 3. No queda ninguna jugadora disponible
+    // ---------------------------------------------------------
+
+    console.log(
+        'Todas las jugadoras del pool están colocadas.'
+    );
 }
 
 // 2. Configura el evento de clic UNA SOLA VEZ al cargar el Bingo
