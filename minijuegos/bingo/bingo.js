@@ -199,6 +199,9 @@ function handleCellClick(cell, jugador) {
     if (hasMatch) {
         bloquearCeldaEstilo(cell, jugador.foto);
         gestionarAciertos(cellId, jugador.foto);
+
+        console.log(jugador)
+        eliminarJugadoraDelPool(jugador.id);
         if (typeof correct !== 'undefined') correct.play();
         
         // Verificar si se ha completado el tablero
@@ -373,6 +376,25 @@ export async function skipPlayer(paises, clubes, ligas, trofeos) {
     );
 }
 
+function eliminarJugadoraDelPool(idJugadora) {
+    // Eliminar del pool
+    jugadorasCache = jugadorasCache.filter(
+        jugadora => String(jugadora.id) !== String(idJugadora)
+    );
+
+    // Evitar problemas con el índice después de eliminar
+    if (indexJugadora >= jugadorasCache.length) {
+        indexJugadora = 0;
+    }
+
+    // Marcarla como colocada para evitar duplicados
+    jugadorasColocadas.add(Number(idJugadora));
+
+    console.log(
+        `Jugadora ${idJugadora} eliminada del pool. Quedan ${jugadorasCache.length}.`
+    );
+}
+
 // 2. Configura el evento de clic UNA SOLA VEZ al cargar el Bingo
 function initBingoEvents(paises, clubes, ligas, trofeos) {
     const table = document.querySelector('table'); 
@@ -383,8 +405,6 @@ function initBingoEvents(paises, clubes, ligas, trofeos) {
 
         // Si el clic no fue en una celda, o no hay jugadora, o ya está marcada: ignorar
         if (!cell || !currentPlayerData || cell.classList.contains('correcto')) return;
-
-        console.log("Celda detectada:", cell); // Para depurar
 
         // PASO CLAVE: Pasamos la 'cell' directamente, no el evento genérico
         let esAcierto = handleCellClick(cell, currentPlayerData);
@@ -421,6 +441,8 @@ async function mostrarJugadora(jugadora, paises, clubes, ligas, trofeos) {
         const nombresEquipos = equipos.map(e => e.equipo);
         const ligasEquipos = equipos.map(e => e.liga);
         currentPlayerData = {
+            "id": jugadora.id,
+            'nombre': jugadora.nombre,
             'pais': pais,
             'edad': edad,
             'trayectoria': nombresEquipos,

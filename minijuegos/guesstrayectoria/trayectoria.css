@@ -163,7 +163,6 @@ input {
     height: stretch;
 }
 .front img{
-    padding: 5%;
     aspect-ratio: 1 / 1;
     height: auto !important;
 }

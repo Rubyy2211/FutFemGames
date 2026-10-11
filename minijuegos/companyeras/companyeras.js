@@ -246,7 +246,7 @@ async function companyerasPerder() {
     }, 1000);
 }
 
-const texto = '"Futfem Relations" es un juego de trivia en el que los jugadores deben adivinar el nombre de una jugadora de fútbol basándose en los equipos en los que ha jugado a lo largo de su carrera. El juego presenta una serie de pistas sobre los clubes y selecciones nacionales en los que la jugadora ha jugado, y el objetivo es identificar correctamente a la jugadora lo más rápido posible. A medida que avanzas, las pistas se hacen más desafiantes y los jugadores deben demostrar su conocimiento sobre el fútbol femenino y sus estrellas. ¡Pon a prueba tus conocimientos y compite para ver quién adivina más jugadoras correctamente!';
+const texto = '"Futfem Relations" es un juego en el que los jugadores deben adivinar el nombre de una jugadora de fútbol basándose en sus compañeras a lo largo de su carrera. El juego presenta una serie de pistas sobre compañeras con las que la jugadora ha jugado, y el objetivo es identificar correctamente a la jugadora lo más rápido posible. ¡Pon a prueba tus conocimientos!';
 const imagen = '/static/img/ComingSoon.webp';
 play().then(r => r);
 async function play() {

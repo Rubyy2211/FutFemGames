@@ -941,10 +941,10 @@ selectorLinks.forEach(link => {
               // ACTIVAR PRIMERA CARTA
               // ----------------------------------------------
 
-              if (
+              /*if (
                 window.innerWidth <
                 768
-              ) {
+              ) {*/
 
                 const firstCard =
                   targetSection.querySelector(
@@ -960,7 +960,7 @@ selectorLinks.forEach(link => {
 
                 }
 
-              }
+              //}
 
             }
 

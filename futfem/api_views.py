@@ -638,106 +638,181 @@ def jugadora_aleatoria(request):
 
 def jugadoras_poll(request):
     """
-    Genera un pool cerrado de hasta 30 jugadoras para el Bingo.
+    Genera un pool cerrado de jugadoras para el Bingo.
 
-    Las jugadoras se obtienen a partir de los criterios:
-    - nacionalidades
-    - equipos
-    - ligas
+    Garantiza al menos 2 jugadoras por cada país, equipo y liga
+    seleccionado, siempre que existan suficientes candidatas.
 
-    El pool se genera una única vez por Bingo y se guarda en sesión.
+    Los equipos y las ligas se comprueban mediante la trayectoria
+    histórica de las jugadoras.
     """
 
     # ---------------------------------------------------------
-    # 1. Obtener parámetros
+    # 1. Obtener y validar parámetros
     # ---------------------------------------------------------
 
-    nacionalidades = request.GET.getlist("nacionalidades[]")
-    equipos = request.GET.getlist("equipos[]")
-    ligas = request.GET.getlist("ligas[]")
-
     try:
-        nacionalidades = [int(x) for x in nacionalidades]
-        equipos = [int(x) for x in equipos]
-        ligas = [int(x) for x in ligas]
-    except ValueError:
+        nacionalidades = list(dict.fromkeys(
+            int(x) for x in request.GET.getlist("nacionalidades[]")
+        ))
+        equipos = list(dict.fromkeys(
+            int(x) for x in request.GET.getlist("equipos[]")
+        ))
+        ligas = list(dict.fromkeys(
+            int(x) for x in request.GET.getlist("ligas[]")
+        ))
+    except (ValueError, TypeError):
         return JsonResponse(
             {"error": "Parámetros inválidos"},
             status=400
         )
 
-    # ---------------------------------------------------------
-    # 2. Si ya existe un pool para este Bingo,
-    #    devolverlo directamente
-    # ---------------------------------------------------------
+    # La sesión debe distinguir los pools generados con
+    # diferentes combinaciones de criterios.
+    parametros = {
+        "nacionalidades": sorted(nacionalidades),
+        "equipos": sorted(equipos),
+        "ligas": sorted(ligas),
+    }
 
     pool_guardado = request.session.get("bingo_jugadoras_pool")
+    parametros_guardados = request.session.get(
+        "bingo_jugadoras_pool_parametros"
+    )
 
-    if pool_guardado:
+    if pool_guardado and parametros_guardados == parametros:
         return JsonResponse(pool_guardado, safe=False)
 
     # ---------------------------------------------------------
-    # 3. Query base
+    # 2. Función auxiliar para obtener IDs sin duplicados
     # ---------------------------------------------------------
 
-    base_qs = Jugadora.objects.prefetch_related(
-        'jugadorapais_set'
-    )
-
-    jugadoras_finales = {}
-
-    # ---------------------------------------------------------
-    # 4. Construir filtros
-    # ---------------------------------------------------------
-
-    filtros_q = Q()
-
-    if nacionalidades:
-        filtros_q |= Q(
-            jugadorapais__pais__in=nacionalidades,
-            jugadorapais__es_primaria=True
-        )
-
-    if equipos:
-        filtros_q |= Q(
-            trayectoria__equipo__in=equipos
-        )
-
-    if ligas:
-        filtros_q |= Q(
-            trayectoria__equipo__equipocompeticion__competicion__in=ligas
-        )
-
-    # ---------------------------------------------------------
-    # 5. Obtener TODAS las candidatas
-    # ---------------------------------------------------------
-
-    if filtros_q:
-        candidatas = list(
-            base_qs
-            .filter(filtros_q)
+    def obtener_ids(filtro):
+        return list(
+            Jugadora.objects
+            .filter(filtro)
+            .order_by()
+            .values_list("id_jugadora", flat=True)
             .distinct()
         )
-    else:
-        candidatas = list(base_qs)
+
+    # IDs de todas las candidatas que cumplen al menos un criterio.
+    ids_candidatos = set()
+
+    # IDs de las jugadoras que debemos incluir obligatoriamente.
+    ids_seleccionados = set()
 
     # ---------------------------------------------------------
-    # 6. Mezclamos aleatoriamente
+    # 3. Países: mínimo 2 jugadoras por nacionalidad primaria
     # ---------------------------------------------------------
 
-    random.shuffle(candidatas)
+    for pais_id in nacionalidades:
+        ids_pais = obtener_ids(
+            Q(
+                jugadorapais__pais_id=pais_id,
+                jugadorapais__es_primaria=True
+            )
+        )
+
+        ids_candidatos.update(ids_pais)
+
+        seleccion_pais = random.sample(
+            ids_pais,
+            min(2, len(ids_pais))
+        )
+
+        ids_seleccionados.update(seleccion_pais)
 
     # ---------------------------------------------------------
-    # 7. Seleccionamos máximo 30
+    # 4. Equipos: mínimo 2 jugadoras por equipo histórico
     # ---------------------------------------------------------
 
-    candidatas = candidatas[:30]
+    for equipo_id in equipos:
+        ids_equipo = obtener_ids(
+            Q(trayectoria__equipo_id=equipo_id)
+        )
+
+        ids_candidatos.update(ids_equipo)
+
+        seleccion_equipo = random.sample(
+            ids_equipo,
+            min(2, len(ids_equipo))
+        )
+
+        ids_seleccionados.update(seleccion_equipo)
 
     # ---------------------------------------------------------
-    # 8. Convertir a JSON
+    # 5. Ligas: mínimo 2 jugadoras por liga histórica
     # ---------------------------------------------------------
 
-    for j in candidatas:
+    for liga_id in ligas:
+        ids_liga = obtener_ids(
+            Q(
+                trayectoria__equipo__equipocompeticion__competicion_id=liga_id
+            )
+        )
+
+        ids_candidatos.update(ids_liga)
+
+        seleccion_liga = random.sample(
+            ids_liga,
+            min(2, len(ids_liga))
+        )
+
+        ids_seleccionados.update(seleccion_liga)
+
+    # ---------------------------------------------------------
+    # 6. Si no hay criterios, usar todas las jugadoras
+    # ---------------------------------------------------------
+
+    if not (nacionalidades or equipos or ligas):
+        ids_candidatos = set(
+            Jugadora.objects
+            .order_by()
+            .values_list("id_jugadora", flat=True)
+        )
+
+    # ---------------------------------------------------------
+    # 7. Completar el pool hasta 30
+    # ---------------------------------------------------------
+
+    ids_restantes = list(
+        ids_candidatos - ids_seleccionados
+    )
+    random.shuffle(ids_restantes)
+
+    plazas_restantes = max(0, 30 - len(ids_seleccionados))
+
+    ids_pool = list(ids_seleccionados)
+    ids_pool.extend(ids_restantes[:plazas_restantes])
+
+    # Si la cobertura obligatoria supera 30 por el número de
+    # criterios, se conservan todas las jugadoras seleccionadas.
+    random.shuffle(ids_pool)
+
+    # ---------------------------------------------------------
+    # 8. Obtener jugadoras y sus nacionalidades
+    # ---------------------------------------------------------
+
+    jugadoras = (
+        Jugadora.objects
+        .filter(id_jugadora__in=ids_pool)
+        .prefetch_related("jugadorapais_set")
+    )
+
+    jugadoras_por_id = {
+        j.id_jugadora: j
+        for j in jugadoras
+    }
+
+    resultado = []
+
+    # Conservamos el orden aleatorio del pool.
+    for jugadora_id in ids_pool:
+        j = jugadoras_por_id.get(jugadora_id)
+
+        if not j:
+            continue
 
         pais_rel = next(
             (
@@ -747,7 +822,7 @@ def jugadoras_poll(request):
             None
         )
 
-        jugadoras_finales[j.id_jugadora] = {
+        resultado.append({
             "id": j.id_jugadora,
             "nombre": formatear_nombre_corto(
                 j.Nombre,
@@ -757,37 +832,22 @@ def jugadoras_poll(request):
                 construir_url_imagen(j.imagen)
                 if j.imagen else None
             ),
-            "pais": (
-                pais_rel.pais_id
-                if pais_rel else None
-            ),
+            "pais": pais_rel.pais_id if pais_rel else None,
             "Nacimiento": (
                 j.Nacimiento.strftime("%Y-%m-%d")
                 if j.Nacimiento else None
             ),
-        }
+        })
 
     # ---------------------------------------------------------
-    # 9. Crear resultado final
-    # ---------------------------------------------------------
-
-    resultado = list(
-        jugadoras_finales.values()
-    )
-
-    random.shuffle(resultado)
-
-    # ---------------------------------------------------------
-    # 10. Guardar el pool cerrado en sesión
+    # 9. Guardar el pool cerrado en sesión
     # ---------------------------------------------------------
 
     request.session["bingo_jugadoras_pool"] = resultado
+    request.session["bingo_jugadoras_pool_parametros"] = parametros
     request.session.modified = True
 
-    return JsonResponse(
-        resultado,
-        safe=False
-    )
+    return JsonResponse(resultado, safe=False)
 
 def jugadoras_por_equipo_y_temporada(request):
     equipo_id = request.GET.get("equipo")

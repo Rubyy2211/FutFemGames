@@ -266,8 +266,14 @@ def generar_grid():
     }
 
 def elegir_bingo_diario():
-    # 1. Seleccionar 3 Países distintos
-    paises_ids = list(JugadoraPais.objects .filter(es_primaria=True) .values_list('pais', flat=True) .distinct()) # deben ser Ids únicos de países que tengan jugadoras como pais principal
+    # 1. Seleccionar 3 países distintos con jugadoras de nacionalidad primaria
+    paises_ids = list(
+        JugadoraPais.objects
+        .filter(es_primaria=True)
+        .order_by('pais')
+        .values_list('pais', flat=True)
+        .distinct()
+    )
 
     if len(paises_ids) >= 3:
         paises = random.sample(paises_ids, 3)
@@ -276,13 +282,18 @@ def elegir_bingo_diario():
 
     # 2. Seleccionar 3 Equipos distintos de ligas principales
     ligas_permitidas = [1, 2, 3, 4, 5, 6, 17]
-    equipos_qs = Equipo.objects.filter(
-        equipocompeticion__competicion__id_liga__in=ligas_permitidas,
-        equipocompeticion__es_principal=True
-    ).values_list('id_equipo', flat=True).distinct()
+
+    equipos_ids = list(
+        Trayectoria.objects
+        .exclude(equipo__isnull=True)
+        .values_list('equipo', flat=True)
+        .distinct()
+    )
     
-    equipos_ids = list(equipos_qs)
-    equipos = random.sample(equipos_ids, 3) if len(equipos_ids) >= 3 else [1, 18, 2]
+    if len(equipos_ids) >= 3:
+        equipos = random.sample(equipos_ids, 3)
+    else:
+        equipos = equipos_ids
 
     # 3. Seleccionar 3 Ligas distintas
     ligas = random.sample(ligas_permitidas, 3)

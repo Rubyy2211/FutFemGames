@@ -249,6 +249,7 @@ body::before {
 #selector a p{
     color: var(--color-detalles);
     font-family: 'Oswald', sans-serif;
+    margin: 0;
 }
 
 
