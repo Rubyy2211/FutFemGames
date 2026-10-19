@@ -63,20 +63,20 @@
 <body {% if usuario_sesion.equipo_favorito.id_equipo %}data-team="{{ usuario_sesion.equipo_favorito.id_equipo }}"{% endif %}>
 
     <div id="video-bg-container">
-        <canvas id="canvas" width="500" height="500" class="canvas-bg"></canvas>
-        <div id="particles-js" class="absolute inset-0 z-0 pointer-events-none"></div>
-        <div class="video-overlay"></div>
+        <!-- <canvas id="canvas" width="500" height="500" class="canvas-bg"></canvas> -->
+        <!-- <div id="particles-js" class="absolute inset-0 z-0 pointer-events-none"></div> -->
+        <!-- <div class="video-overlay"></div> -->
 
-        <video class="bg-video-item active" autoplay muted loop playsinline preload="auto">
+        <!-- <video class="bg-video-item active" autoplay muted loop playsinline preload="auto">
             <source src="" type="video/mp4">
         </video>
         <!-- Vídeos dedicados y precargados -->
         <!--<video id="video-games" class="bg-video-item" autoplay muted loop playsinline preload="auto">
             <source src="{% static 'videos/games.mp4' %}" type="video/mp4">
         </video>-->
-        <video id="video-globe" class="bg-video-item" autoplay muted loop playsinline preload="auto">
+        <!--<video id="video-globe" class="bg-video-item" autoplay muted loop playsinline preload="auto">
             <source src="{% static 'videos/globe.mp4' %}" type="video/mp4">
-        </video>
+        </video>-->
     </div>
     {% include 'partials/header.html' %}
 
@@ -84,7 +84,7 @@
         <!--<div id="dynamic-bg"></div>-->
         <div id="selector" role="main">
             <a data-video-id="video-games" href="/minigames"><p>Juegos</p></a>
-            <a href="https://fut-fem-wiki.vercel.app/" id="wiki-link"><p>Wiki</p></a>
+            <a href="#wiki" id="wiki-link"><p>Wiki</p></a>
             <a data-video-id="video-globe" href="/online"><p>Online</p></a>
             <a href="#nosotros" id="nosotros-link"><p>Nosotros</p></a>
         </div>
@@ -102,8 +102,22 @@
             </div>
             <div id="wiki" class="panel-info">
                 <!--<img src="/static/img/logo-wiki.webp" alt="futfemwiki logo">-->
-                <h2>FUTFEM<span>·</span>WIKI</h2>
-                <p>Descubre, analiza y explora nuestra base de datos del fútbol femenino.</p>
+                <h2 style="order: 1;">FUTFEM<span>·</span>WIKI</h2>
+                <p style="order: 2;">Descubre, analiza y explora nuestra base de datos del fútbol femenino.</p>
+                <div class="wiki-preview">
+                    <iframe
+                        src="https://fut-fem-wiki.vercel.app/"
+                        title="Vista previa de FutfemWiki"
+                        loading="lazy">
+                    </iframe>
+                </div>
+                <a
+                        href="https://fut-fem-wiki.vercel.app/"
+                        rel="noopener noreferrer"
+                        class="wiki-preview-link"
+                        style="order: 3;">
+                        Explorar FutfemWiki ↗
+                    </a>
             </div>
             <div id="online" class="panel-info">
                 <!--<img src="/static/img/logo2.webp" alt="futfemgames logo">-->
@@ -333,6 +347,77 @@
             }
         });
     });
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Flip.min.js"></script>
+
+<script defer>
+gsap.registerPlugin(Flip);
+
+const wikiPreview = document.querySelector('#wiki .wiki-preview');
+const wikiLink = document.querySelector('#wiki .wiki-preview-link');
+
+if (wikiPreview && wikiLink) {
+    let entrandoEnWiki = false;
+
+    // Detectar si el usuario ha vuelto usando el botón "Atrás" del navegador
+    window.addEventListener('pageshow', (event) => {
+        const navEntries = performance.getEntriesByType('navigation');
+        const isBackForward = (event.persisted) || (navEntries.length > 0 && navEntries[0].type === 'back_forward');
+
+        if (isBackForward) {
+            // Si venimos de visitar la wiki, limpiamos y forzamos una recarga limpia para evitar el bucle de la caché
+            if (sessionStorage.getItem('futfem_wiki_visited')) {
+                sessionStorage.removeItem('futfem_wiki_visited');
+                window.location.reload();
+                return;
+            }
+            
+            entrandoEnWiki = false;
+            gsap.set(wikiPreview, { clearProps: 'all' });
+        }
+    });
+
+    wikiLink.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        if (entrandoEnWiki) return;
+        entrandoEnWiki = true;
+
+        // Marcamos en la sesión que estamos saliendo hacia la wiki
+        sessionStorage.setItem('futfem_wiki_visited', 'true');
+
+        const destino = wikiLink.href;
+
+        // 1. Capturamos el estado inicial exacto del elemento
+        const state = Flip.getState(wikiPreview);
+
+        // 2. Aplicamos los estilos finales de pantalla completa
+        gsap.set(wikiPreview, {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            margin: 0,
+            zIndex: 99999,
+            borderRadius: '0px'
+        });
+
+        // 3. Animación Flip optimizada
+        Flip.from(state, {
+            duration: 1.05,
+            ease: 'power2.inOut',
+            scale: true,
+            nested: true,
+            absolute: true,
+            onComplete: () => {
+                window.location.href = destino;
+            }
+        });
+    });
+}
 </script>
 </body>
 </html>

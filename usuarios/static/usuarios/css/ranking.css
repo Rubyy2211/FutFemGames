@@ -7,18 +7,52 @@
     display: flex;
     /*height: 100%;*/
     width: 100vw;
+    flex-direction: column;
+    align-items: center;
     /*align-items: center;*/
     justify-content: center;
     margin-top: 0 !important;
-        height: 100%;
+    height: 100%;
+}
+
+#selector{
+    margin-bottom: 5% !important;
 }
 
 h2{
     margin-bottom: 0 !important;
 }
 
-#tabla-ranking-container{
+.filtros{
+    display: flex;
+    flex-direction: column;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    background: color-mix(in srgb, var(--color-primario) 10%, black) !important;
+    margin-bottom: 0 !important;
+    padding-block: 5px !important;
+}
+
+#tabla-ranking-container {
     height: 100%;
+    overflow-y: overlay; /* Hace que la barra flote sobre el contenido */
+    position: relative;
+    scrollbar-color: var(--color-primario) transparent;
+}
+
+#tabla-ranking-container::-webkit-scrollbar {
+    width: 6px;
+    background: color-mix(in srgb, color-mix(in srgb, var(--color-primario) 10%, black) 50%, transparent) !important
+}
+
+#tabla-ranking-container::-webkit-scrollbar-thumb {
+    background: var(--color-primario);
+    border-radius: 4px;
+}
+
+#tabla-ranking-container::-webkit-scrollbar-track {
+        background: color-mix(in srgb, color-mix(in srgb, var(--color-primario) 10%, black) 50%, transparent) !important
 }
 
 table{
@@ -49,10 +83,15 @@ table{
     /*border: 0.5px solid var(--color-secundario) !important;*/
     background: none;
     backdrop-filter: none;
-    border: none !important;
     box-shadow: none;
     display: flex;
     flex-direction: column;
+    padding-top: 0 !important;
+    transform: none !important;
+    border: 1px solid color-mix(in srgb, var(--color-secundario) 50%, white 50%) !important;
+    padding: 0px !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
 }
 
 tbody{
@@ -61,41 +100,133 @@ tbody{
 }
 
 tbody tr{
-    border-radius: 20px;
+    border-radius: 0px !important;
     border: none !important;
-    height: 10%;
-    max-height: 10%;
+    height: 6dvh;
+    min-height: 6dvh;
+    min-width: 100%;
+    max-height: 6dvh;
+    background: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    margin-bottom: 0px !important;
+    transform: none !important;
 }
 
-tbody tr:nth-child(1){
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-dorado) 60%, transparent), 
-    color-mix(in srgb, transparent 30%, transparent));
+tbody tr:hover{
+    color: black !important;
+    background: color-mix(in srgb, var(--color-primario) 10%, black) !important;
 }
 
-tbody tr:nth-child(2){
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-plata) 60%, transparent), 
-    color-mix(in srgb, transparent 30%, transparent));
+tbody tr:nth-child(1) td:nth-child(1){
+    background: var(--color-primario) !important;
 }
 
-tbody tr:nth-child(3){
-    background: linear-gradient(to bottom, 
-    color-mix(in srgb, var(--color-bronce) 60%, transparent), 
-    color-mix(in srgb, transparent 30%, transparent));
+tbody tr td:nth-child(1){
+    background: color-mix(in srgb, var(--color-primario) 10%, black) !important;
+    font-family: 'Oswald', sans-serif !important;
+    width: 5% !important;
+    height: 100% !important;
+    align-content: center !important;
+}
+
+tbody tr td:nth-child(2){
+    font-weight: 900;
+    text-transform: uppercase;
+    font-family: 'Oswald', sans-serif;
+    height: 100% !important;
+    width: 85% !important;
+}
+
+@media (max-width: 768px){
+    tbody tr td:nth-child(1){
+        width: 10% !important;
+    }
+
+    tbody tr td:nth-child(2){
+        width: 80% !important;
+    }
+}
+
+tbody tr td:nth-child(3){
+    width: 10% !important;
+}
+
+tbody tr td:nth-child(2) a, tbody tr td:nth-child(2) div{
+    height: 100% !important;
+}
+
+tbody tr td:nth-child(3){
+    display: none;
+}
+
+tbody tr{
+    background: color-mix( in srgb,  color-mix(in srgb, var(--color-primario) 10%, black) 50%, transparent) !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding-inline: 0px !important;
+}
+
+tbody tr:hover{
+    background: color-mix(in srgb, var(--color-primario) 10%, white) !important;
+}
+
+tbody tr:hover td:nth-child(1){
+    background: color-mix(in srgb, var(--color-primario) 30%, white) !important;
+    font-family: 'Oswald', sans-serif !important;
+}
+
+tbody tr:hover td:nth-child(2) a{
+    color: black !important;
+}
+
+tbody tr:hover td:nth-child(2) .avatar{
+    background: color-mix(in srgb, var(--equipo-color) 100%, white) !important;
+}
+
+/*tbody tr:nth-child(2) td:nth-child(1){
+    background: var(--color-plata) !important;
+}
+
+tbody tr:nth-child(3) td:nth-child(1){
+    background: var(--color-bronce) !important;
+}*/
+
+tbody tr a{
+    color: var(--color-detalles) !important;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 10px !important;
 }
 
 table td{
     border-top: none !important;
+    gap: 10px;
 }
 
-table tr td:nth-child(1){
+tr .avatar{
+    border: none !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    border-radius: 0px !important;
+    max-height: 100% !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: hidden !important;
+    object-fit: contain !important;
+    padding: 5px !important;
+}
+
+/*table tr td:nth-child(1){
     border-radius: 20px 0 0 20px;
 }
 
 table tr td:last-child{
     border-radius: 0 20px 20px 0;
-}
+}*/
 
 #sugerencias::-webkit-scrollbar{
     display: none !important;
@@ -112,7 +243,6 @@ table tr td:last-child{
     .container-ranking .p-4{
         width: 90%;
         cursor: default;
-        padding-inline: 7.5px !important;
     }
 
     table td, table th{
@@ -139,7 +269,6 @@ table tr td:last-child{
 @media (max-width: 465px){
     .container-ranking .p-4 .filtros{
         max-width: 100%;
-        margin-bottom: 1rem !important;
     }
     .container-ranking .p-4 .avatar{
         width: 30px !important;
@@ -157,9 +286,9 @@ table tr td:last-child{
         padding: 2px;
         text-align: center;
     }
-    table td, table th{
+    /*table td, table th{
         font-size: xx-small;
-    }
+    }*/
     #tabla-ranking-container table th:nth-child(4),
     #tabla-ranking-container table td:nth-child(4) {
         width: 1%;               /* Fuerza a la columna a colapsar al mínimo */

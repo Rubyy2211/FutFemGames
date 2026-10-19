@@ -1,6 +1,11 @@
 body{
     height: 100vh;
 }
+
+header{
+    position: absolute !important;
+}
+
 #game{
     display: flex;
     flex-direction: row;
@@ -8,11 +13,11 @@ body{
     width: 100%;
     align-items: center;
     justify-content: space-around;
-    background: linear-gradient(
+    /*background: linear-gradient(
         to right,
         var(--color-primario) 50%,
         var(--color-secundario) 50%
-    );
+    );*/
 }
 
 #game-logo{

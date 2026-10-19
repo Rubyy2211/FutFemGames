@@ -10,25 +10,28 @@
 }
 .container-perfil{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     /*height: 80vh;
     width: 70%;*/
+    /*border: 1px solid color-mix(in srgb, var(--color-secundario) 50%, white 50%) !important;
+    border-radius: 10px !important;*/
     align-items: center;
     /*gap: 15px;*/
-    padding: 80px;
+    /*padding: 80px;*/
     padding-bottom: 20px;
-    padding-block: 40px;
+    padding-block: 20px;
     background-image: none !important; /* Quitamos el fondo del padre */
-    background: none;
+    /*background: color-mix(in srgb, var(--color-primario) 10%, black) !important;*/
     backdrop-filter: none;
     box-shadow: none;
-    border: none !important;
     overflow-y: hidden;
     max-width: 800px;
     width: 100%;
     max-height: 100%;
     position: absolute;
     top: 50%;
+    gap: 15px;
+    border: none !important;
     transform: translateY(-50%);
 }
 
@@ -74,10 +77,12 @@ hr {
     background-position: center calc(50% - 40px);
 }
 .profile-img{
-    border-radius: 100%;
-    background: color-mix(in srgb, var(--color-secundario) 70%);
-    border: 2px solid var(--color-secundario) !important;
+    border-radius: 0;
+    background: none !important;
+    backdrop-filter: none !important;
+    border: none !important;
     box-shadow: none;
+    align-self: center;
 }
 .glass{
     border: 0.25px solid var(--color-secundario);
@@ -87,31 +92,75 @@ hr {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    align-items: start;
-    padding-block: 10px;
+    align-items: center;
+    padding-block: 0px;
+    background: color-mix(in srgb, var(--color-primario) 10%, black) !important;
+    border: 1px solid color-mix(in srgb, var(--color-secundario) 50%, white 50%) !important;
+    border-radius: 10px !important;
+    height: stretch;
+}
+
+.container-perfil #datos-personales>.row{
+    padding: 2.5%;
+    height: 100%;
 }
 
 .container-perfil #datos-personales #bio{
     text-align: start;
+    display: none;
 }
 
 .container-perfil #datos-personales #resto-info{
     display: flex;
     flex-direction: column;
     width: fit-content;
-    justify-content: center
+    justify-content: center;
+    padding: 0;
+    width: 100%;
 }
 
 .container-perfil #datos-personales .row{
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     margin-inline: 0;
+    width: 100%;
+    gap: 5px;
+}
+
+.container-perfil #datos-personales #resto-info #nombre-usuario .row{
+    flex-direction: row;
+    align-items: center;
+    padding-inline: 2.5%;
+    margin-bottom: 5px;
+    width: 100%;
 }
 
 .container-perfil #datos-personales #resto-info>.row .field-container{
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
+    padding-inline: 2.5%;
+    padding-block: 2px;
+}
+
+.container-perfil #datos-personales #resto-info>.row .field-container span{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.container-perfil #datos-personales #resto-info>.row .field-container span p{
+    margin-bottom: 0;
+    font-size: small;
+}
+
+.container-perfil #datos-personales .fila-dato{
+    background: color-mix(in srgb, var(--color-primario) 30%, black) !important;
+    border: none !important;
+    border-radius: 5px !important;
+    width: 100% !important;
+    height: 40px;
 }
 
 .container-perfil #datos-personales #nombre-usuario{
@@ -132,9 +181,11 @@ hr {
 }
 
 .container-perfil #datos-personales h2{
-    font-size: large;
+    font-size: small;
     height: fit-content;
     margin-bottom: 0;
+    text-transform: none !important;
+    font-family: unset !important;
 }
 
 .container-perfil #datos-personales #username-container{
@@ -142,6 +193,7 @@ hr {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
 .container-perfil #datos-personales .row .field-container{
@@ -160,20 +212,26 @@ hr {
     justify-content: center;
     gap: 30px;
     width: 100%;
+    height: stretch;
 }
 
 .container-perfil .right>div{
     width: 100%;
     height: 100%;
     max-width: 100%;
+    margin-bottom: 0;
+    background: color-mix(in srgb, var(--color-primario) 10%, black) !important;
+    border: 1px solid color-mix(in srgb, var(--color-secundario) 50%, white 50%) !important;
+    border-radius: 10px !important;
+    box-shadow: none !important;
     display: flex;
     flex-direction: column;
-    justify-content: center;
     cursor: default !important;
+    transform: none !important;
 }
 
 .container-perfil .field-container img{
-    max-height: 50px;
+    max-height: 25px;
 }
 
 /*****/
@@ -183,12 +241,12 @@ hr {
     justify-content: space-between;
     align-items: center;
     /*margin-bottom: 15px;*/
-    padding-left: 20px;
+    padding-left: 10px;
     padding-top: 10px;
 }
 
 .slider-controls {
-    display: flex;
+    display: none;
     gap: 8px;
 }
 
@@ -215,13 +273,15 @@ hr {
 /* Viewport y Track */
 .streak-slider-viewport {
     width: 100%;
-    overflow: hidden; /* Esconde lo que sobra */
-    padding: 5px 0; /* Para que las sombras no se corten */
+    overflow-y: auto; /* Esconde lo que sobra */
+    max-height: 80%;
+    /*padding: 5px 0; /* Para que las sombras no se corten */
 }
 
 .streak-grid {
     display: flex; /* En línea */
-    gap: 12px;
+    flex-direction: column;
+    gap: 0px;
     will-change: transform; /* Optimización para GSAP */
 }
 
@@ -229,44 +289,101 @@ hr {
 
 .discord-streak-card {
     background: color-mix(in srgb, var(--color-secundario) 60%, #2b2d31 40%); /* El gris exacto de Discord */
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: 0px;
+    padding: 0;
     border: 1px solid transparent;
     transition: background 0.2s, transform 0.2s;
     position: relative;
-    width: max-content !important;
+    width: 100% !important;
     min-width: fit-content;
-    height: max-content !important;
+    height: 40px !important;
 }
 
 .discord-streak-card:hover {
     background: #35373c;
-    transform: translateY(-2px);
+    /*transform: translateY(-2px);*/
+}
+
+.discord-streak-card a{
+    color: var(--color-detalles);
+    text-decoration: none;
 }
 
 .card-inner {
     display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    height: 100%;
+}
+
+#posicion{
+    flex-direction: row;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.rank{
+    min-height: 100%;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    background: color-mix(in srgb, var(--color-secundario) 20%, black);
+}
+
+.streak-grid > :nth-child(1) .rank {
+    background: var(--color-primario);
+}
+
+.game-icon-wrapper{
+    display: flex;
+    flex-direction: row;
+    overflow: hidden;
+    height: 100%;
 }
 
 .game-mini-icon {
-    width: 48px;
-    height: 48px;
+    height: 100%;
+    aspect-ratio: 1/1;
+    width: auto;
+    overflow: hidden;
     border-radius: 8px;
     object-fit: cover;
+    height: 80%;
 }
 
 .game-name {
     color: #f2f3f5;
     font-weight: 600;
-    font-size: 14px;
+    font-size: x-small;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-details{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    width: 100%;
 }
 
 .streak-stats {
     color: #b5bac1;
     font-size: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: end;
+    width: 70%;
+}
+
+.streak-stats span{
+    width: 25%;
 }
 
 /* El punto de "Online" pero usado para indicar racha activa */
@@ -280,6 +397,14 @@ hr {
     border: 3px solid #2b2d31;
     border-radius: 50%;
 }
+
+.separator{
+    display: none;
+}
+
+.account{
+        display: none;
+    }
 
 .progress-container {
     width: 100%;
@@ -313,10 +438,14 @@ hr {
     .container-perfil{
         padding: 0;
         width: 100%;
-        gap: 0px;
-        height: max-content;
+        gap: 10px;
+        height: 80%;
         flex-direction: column;
         padding: 5px;
+        padding-inline: 0;
+        margin-bottom: 0;
+        transform: none !important;
+        top: unset;
         max-width: 450px;
     }
     .container-perfil::before {
@@ -330,8 +459,7 @@ hr {
     }
 
     .container-perfil #datos-personales{
-        height: fit-content;
-        padding-top: 30px;
+        height: 50%;
         align-items: baseline;
     }
 
@@ -354,7 +482,12 @@ hr {
     .container-perfil .right{
         flex-direction: column;
         width: 100%;
+        height: 100%;
         gap: 15px;
+    }
+
+    .account{
+        display: none;
     }
 
     .slider-header {
@@ -362,11 +495,28 @@ hr {
     }
     .container-perfil .right>div{
         max-width: 100%;
-        height: max-content;
+        height: 100%;
     }
     
     .container-perfil .right div td:not([class]){
         font-size: xx-small;
+    }
+
+    .game-details{
+        width: 100%;
+    }
+
+    .progress-container{
+        width: 40%;
+    }
+
+    .game-name{
+        font-size: 10px;
+    }
+
+    .streak-stats span{
+        font-size: 10px;
+        width: 30%;
     }
 }
 

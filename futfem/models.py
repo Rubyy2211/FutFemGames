@@ -25,7 +25,6 @@ class Pais(models.Model):
     def __str__(self):
         return self.nombre
 
-
 class TipoCompeticion(models.Model):
     id = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=50) # Ej: "Liga Nacional", "Copa Nacional", "Internacional de Clubes"
@@ -39,7 +38,6 @@ class TipoCompeticion(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 class Competicion(models.Model):
     id_liga = models.AutoField(primary_key=True)
@@ -55,7 +53,6 @@ class Competicion(models.Model):
 
     def __str__(self):
         return self.nombre
-
 
 class Equipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
@@ -124,7 +121,6 @@ class EquipoTrofeo(models.Model):
     def __str__(self):
         return f"{self.equipo.nombre} - {self.trofeo.nombre} ({self.temporada})"
 
-
 class Posicion(models.Model):
     idPosicion = models.IntegerField(primary_key=True)
     nombre = models.TextField()
@@ -144,7 +140,6 @@ class Posicion(models.Model):
 
     def __str__(self):
         return f"{self.nombre} {self.abreviatura}"
-
 
 class Jugadora(models.Model):
     id_jugadora = models.AutoField(primary_key=True)
@@ -166,7 +161,6 @@ class Jugadora(models.Model):
 
     def __str__(self):
         return self.Nombre + self.Apellidos
-
 
 class JugadoraPais(models.Model):
     id = models.AutoField(primary_key=True)

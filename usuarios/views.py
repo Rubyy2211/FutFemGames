@@ -199,33 +199,39 @@ def online(request):
 
 def api_rankings(request):
     juego_id = request.GET.get('juego', 'all')
-    
-    # Traemos el usuario, su jugadora favorita y el juego en una sola consulta
-    query = Racha.objects.select_related('usuario__jugadora_favorita', 'juego')
-    
+
+    # Traemos el usuario, su equipo favorito y el juego
+    query = Racha.objects.select_related(
+        'usuario__equipo_favorito',
+        'juego'
+    )
+
     if juego_id != 'all':
         query = query.filter(juego_id=juego_id)
-        
-    rankings = query.order_by('-mejor_racha')[:10]
-    
-    data = []
-    for r in rankings:
-        # Obtenemos la imagen o una por defecto si no tiene jugadora favorita
-        foto_url = None
-        if r.usuario.jugadora_favorita and r.usuario.jugadora_favorita.imagen:
-            foto_url = f"/{r.usuario.jugadora_favorita.imagen}" # Ajusta según tu MEDIA_URL
-        else:
-            foto_url = "/static/img/default-avatar.png" # Imagen por defecto
 
+    rankings = query.order_by('-mejor_racha')[:10]
+
+    data = []
+
+    for r in rankings:
+        equipo = r.usuario.equipo_favorito
+
+        # Escudo del equipo favorito o imagen por defecto
+        if equipo and equipo.escudo:
+            foto_url = equipo.escudo
+            color = equipo.color if equipo.color else None
+        else:
+            foto_url = "/static/img/default-avatar.png"
         data.append({
             'username': r.usuario.username,
             'nombre_juego': r.juego.nombre,
             'mejor_racha': r.mejor_racha,
-            'foto_perfil': foto_url,
+            'foto_perfil': construir_url_imagen(foto_url),
+            'equipo-color': color,
             'es_jugadora': r.usuario.es_jugadora,
             'miembro': r.usuario.is_staff or r.usuario.is_superuser
         })
-    
+
     return JsonResponse(data, safe=False)
 
 def usuarioxnombre(request):

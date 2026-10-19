@@ -41,16 +41,18 @@
 
     <div id="game">
         <!-- <h1>{% trans "Futfem Guess" %}</h1> -->
-        <div id="resultado"></div>
-        <p id="vidas"></p>
         <div id="game-header">
-            <div>
-                <input type="search" name="jugadora" id="jugadoraInput">
-                <div id="sugerencias-container">
-                    <ul id="sugerencias"></ul>
+            <div id="resultado"></div>
+            <p id="vidas"></p>
+            <div id="header">
+                <div>
+                    <input type="search" name="jugadora" id="jugadoraInput">
+                    <div id="sugerencias-container">
+                        <ul id="sugerencias"></ul>
+                    </div>
                 </div>
+                <button id="botonVerificar">{% trans "Verificar" %}</button>
             </div>
-            <button id="botonVerificar">{% trans "Verificar" %}</button>
         </div>
         <div id="game-results">
             <template id="jugadora-template">

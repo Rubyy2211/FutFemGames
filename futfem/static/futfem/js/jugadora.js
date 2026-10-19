@@ -67,7 +67,7 @@ export async function handleAutocompletePlayer(event) {
                         >
 
                         <div class="jugadora-info">
-                            <strong>${Nombre_Completo}</strong>
+                            <strong>${Apodo}</strong>
                             <div>
                             <span class="fi fi-${nacionalidad}"></span>
                                 ${Nacimiento ?`${Nacimiento}` : ''}
@@ -76,7 +76,7 @@ export async function handleAutocompletePlayer(event) {
                     `;
 
                     listItem.addEventListener('click', () => {
-                        input.value = Nombre_Completo;
+                        input.value = Apodo;
                         input.setAttribute('data-id', id_jugadora);
                         suggestionsList.innerHTML = '';  // Limpiar al seleccionar
                     });

@@ -79,7 +79,7 @@ body::before {
     display: flex;
     flex-direction: row;
     width: 40%;
-    position: absolute;
+    /*position: absolute;*/
     bottom: 5%;
     order: 2;
 }
@@ -152,7 +152,7 @@ body::before {
 @media (max-width: 768px) {
     #selector{
         width: 100%;
-        position: absolute;
+        margin-bottom: 5%;
     }
 
     #selector a{
@@ -274,6 +274,7 @@ body::before {
     position: relative;
     justify-items: center;
     width: 100%;
+    height: 100%;
 }
 
 /* Todos los paneles comparten la misma celda de la rejilla */
@@ -333,9 +334,10 @@ body::before {
 
 .panel-info{
     min-height: 100%;
+    height: 100%;
     max-height: 100%;
     width: 100%;
-    padding: 10px;
+    /*padding: 10px;*/
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -849,6 +851,60 @@ section .container .web-button .web-button-text{
     color: var(--color-detalles); /* Cambiar el color del texto en hover */
 }
 
+
+#wiki h2{
+    font-size: 3rem;
+    display: none;
+}
+
+#wiki .wiki-preview {
+    position: relative;
+    width: 50%;
+    height: 80%;
+    margin-bottom: 10px;
+    overflow: hidden;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--color-secundario) 50%, white 50%);
+    background: #111;
+    isolation: isolate;
+    will-change: top, left, width, height, border-radius;
+}
+
+@media (max-width: 768px) {
+    #wiki .wiki-preview {
+        width: 100%;
+        height: 60%; /* Ajusta la altura según tus necesidades */
+    }
+}
+
+#wiki .wiki-preview iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+    background: white;
+    pointer-events: none; /* Evita la interacción con el iframe */
+}
+
+#wiki .wiki-preview-link {
+    right: 12px;
+    bottom: 12px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    background: rgba(20, 20, 20, 0.9);
+    color: white;
+    text-decoration: none;
+    font-size: 0.85rem;
+    z-index: 2;
+    transition: background 0.2s, transform 0.2s;
+}
+
+#wiki .wiki-preview-link:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
+}
+
+
 @media (min-width: 768px){
     #container-index{
         padding-block: 2.5%;
@@ -907,7 +963,6 @@ section .container .web-button .web-button-text{
     }
 
     #container-index #daily-games .row{
-        min-width: max-content;
         max-width: max-content;
         min-height: fit-content;
     }

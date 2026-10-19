@@ -61,7 +61,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="row" style="gap: 5px;">
+                        <div class="row fila-dato" style="gap: 5px;">
                         <div class="field-container editable-group" data-field="first_name">
                             <!--<span>{% trans "Nombre" %}:</span>-->
                             <span class="display-value">{{ usuario.first_name|default:"---" }}</span>
@@ -90,9 +90,9 @@
                         </div>
                     </div>
                     <div class="row">
-                        <div class="field-container editable-group" data-field="equipo_favorito">
-                            <!--<h2>{% trans "Equipo favorito" %}:</h2>-->
-                            <span class="display-value">{% if usuario.equipo_favorito %} <img src="/{{ usuario.equipo_favorito.escudo }}">{% else %}{% trans "Ninguno" %}{% endif %}</span>
+                        <div class="field-container editable-group fila-dato" data-field="equipo_favorito" id="equipo-fav">
+                            <h2>{% trans "Equipo favorito" %}:</h2>
+                            <span class="display-value" id="equipo">{% if usuario.equipo_favorito %}<p>{{ usuario.equipo_favorito.nombre }}</p> <img src="/{{ usuario.equipo_favorito.escudo }}">{% else %}{% trans "Ninguno" %}{% endif %}</span>
                             {% if es_propio %}
                                 <i class="bi bi-pencil ms-2 edit-trigger"></i>
                                 <div class="edit-mode" style="display: none;">
@@ -106,11 +106,11 @@
                                 
                             {% endif %}
                         </div>
-                        <div class="field-container editable-group" data-field="jugadora_favorita">
+                        <div class="field-container editable-group fila-dato" data-field="jugadora_favorita">
                             
-                            {% if es_propio %}
                             <h2>{% trans "Jugadora favorita" %}:</h2>
                             <span class="display-value">{% if jugadora_favorita %}{{ jugadora_favorita.Apodo }}{% else %}{% trans "Ninguna" %}{% endif %}</span>
+                            {% if es_propio %}
                                 <i class="bi bi-pencil ms-2 edit-trigger"></i>
                                 <div class="edit-mode" style="display: none;">
                                     <div id="input-boton2">
@@ -130,8 +130,6 @@
             </div>
 
         </div>
-
-        <hr>
 
         <div class="right">
         <div id="rachas" class="glass">
