@@ -943,23 +943,23 @@ def jugadoras_por_equipo_y_temporada(request):
 
     resultado = []
     for fila in filas:
-        # Procesamiento de listas (Nacionalidades y Posiciones)
-        lista_ids_paises = [int(x) for x in fila[17].split(',')] if fila[17] else []
-        lista_isos_paises = [x.lower() for x in fila[18].split(',')] if fila[18] else []
-        lista_ids_posiciones = [int(x) for x in fila[19].split(',')] if fila[19] else []
-        lista_abrev_posiciones = fila[20].split(',') if fila[20] else []
+        # Procesamiento de listas (Nacionalidades y Posiciones) usando los nuevos índices tras añadir altura
+        lista_ids_paises = [int(x) for x in fila[18].split(',')] if fila[18] else []
+        lista_isos_paises = [x.lower() for x in fila[19].split(',')] if fila[19] else []
+        lista_ids_posiciones = [int(x) for x in fila[20].split(',')] if fila[20] else []
+        lista_abrev_posiciones = fila[21].split(',') if fila[21] else []
         
         # Lógica para Equipo y Liga (Si no hay equipo actual, es retirada)
-        es_retirada = fila[11] is None
-        escudo_path = fila[13] if fila[13] else 'static/img/equipo-predeterm.svg'
+        es_retirada = fila[12] is None
+        escudo_path = fila[14] if fila[14] else 'static/img/equipo-predeterm.svg'
         
         equipo_obj = {
-            "id": fila[11],
-            "nombre": "Retirada" if es_retirada else fila[12],
+            "id": fila[12],
+            "nombre": "Retirada" if es_retirada else fila[13],
             "escudo": "static/img/retirada.svg" if es_retirada else construir_url_imagen(escudo_path),
-            "color": fila[14] if fila[14] else "#808080",
-            "liga_id": fila[15],
-            "liga_logo": "static/img/retirada.svg" if es_retirada else construir_url_imagen(fila[16]),
+            "color": fila[15] if fila[15] else "#808080",
+            "liga_id": fila[16],
+            "liga_logo": "static/img/retirada.svg" if es_retirada else construir_url_imagen(fila[17]),
         }
 
         resultado.append({
