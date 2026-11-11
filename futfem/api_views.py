@@ -450,14 +450,11 @@ def jugadora_trayectoria(request):
     except ValueError:
         return JsonResponse({'error': 'ID de jugadora inválido'}, status=400)
 
-    # 🟢 Añadimos 'equipo__identidades' al prefetch para cargar las identidades históricas en memoria
+    # Cambiamos select_related('equipo__liga') por prefetch_related de las competiciones del equipo
     trayectorias = Trayectoria.objects.filter(
         jugadora_id=id_jugadora
     ).select_related('equipo', 'jugadora') \
-     .prefetch_related(
-         'equipo__identidades',
-         'equipo__equipocompeticion_set__competicion'
-     ) \
+     .prefetch_related('equipo__equipocompeticion_set__competicion') \
      .order_by('fecha_inicio')
 
     data = []
@@ -465,34 +462,10 @@ def jugadora_trayectoria(request):
         equipo = t.equipo
         jug = t.jugadora
 
-        imagen_jugadora = jug.imagen if jug and jug.imagen else None
+        escudo = equipo.escudo if equipo.escudo else None
+        imagen_jugadora = jug.imagen if jug.imagen else None
 
-        # ----------------------------------------------------------------------
-        # 🟢 BÚSQUEDA DE LA IDENTIDAD HISTÓRICA CORRESPONDIENTE
-        # ----------------------------------------------------------------------
-        identidades = list(equipo.identidades.all()) if equipo else []
-        identidad_match = None
-
-        if identidades and t.fecha_inicio:
-            for ident in identidades:
-                # Comprobamos si la fecha de inicio de la trayectoria entra en el rango de la identidad
-                if ident.inicio and ident.inicio <= t.fecha_inicio:
-                    if ident.fin is None or ident.fin >= t.fecha_inicio:
-                        identidad_match = ident
-                        break
-
-            # Si no hubo coincidencia por fechas y la trayectoria es actual, buscamos la marcada como es_actual
-            if not identidad_match and t.equipo_actual:
-                identidad_match = next((i for i in identidades if i.es_actual), None)
-
-        # ----------------------------------------------------------------------
-        # 🟢 ASIGNACIÓN CON FALLBACK A LOS CAMPOS DE EQUIPO
-        # ----------------------------------------------------------------------
-        nombre_final = (identidad_match.nombre if identidad_match and identidad_match.nombre else None) or (equipo.nombre if equipo else '')
-        escudo_final = (identidad_match.escudo if identidad_match and identidad_match.escudo else None) or (equipo.escudo if equipo and equipo.escudo else None)
-        color_final = (identidad_match.color if identidad_match and identidad_match.color else None) or (equipo.color if equipo else None)
-
-        # Obtenemos las competiciones del equipo cargadas en memoria
+        # 🟢 Obtenemos las competiciones del equipo cargadas en memoria
         relaciones = equipo.equipocompeticion_set.all() if equipo else []
         
         # Buscamos la principal o tomamos la primera disponible
@@ -503,19 +476,19 @@ def jugadora_trayectoria(request):
             'trayectoria_id': t.id,
             'jugadora': jug.id_jugadora,
             'equipo': equipo.id_equipo,
-            'color': color_final,  # 👈 Usará el color de la identidad o el del equipo
+            'color': equipo.color,
             'fecha_inicio': t.fecha_inicio,
             'fecha_fin': t.fecha_fin,
             'imagen': construir_url_imagen(t.imagen),
             'equipo_actual': t.equipo_actual,
-            'escudo': construir_url_imagen(escudo_final),  # 👈 Usará el escudo de la identidad o el del equipo
-            'liga': id_liga_principal,
-            'competiciones': [r.competicion.pk for r in relaciones if r.competicion],
-            'nombre': nombre_final,  # 👈 Usará el nombre de la identidad o el del equipo
+            'escudo': construir_url_imagen(escudo),
+            'liga': id_liga_principal,  # 👈 ID de la competición principal
+            'competiciones': [r.competicion.pk for r in relaciones if r.competicion],  # 🟢 Nueva lista con todos los IDs
+            'nombre': equipo.nombre,
             'ImagenJugadora': construir_url_imagen(imagen_jugadora),
             'club': equipo.id_equipo,
-            'lat': equipo.latitud if equipo else None,
-            'long': equipo.longitud if equipo else None,
+            'lat': equipo.latitud,
+            'long': equipo.longitud,
         })
 
     return JsonResponse(data, safe=False)
