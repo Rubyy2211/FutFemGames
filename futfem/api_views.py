@@ -884,28 +884,29 @@ def jugadoras_por_equipo_y_temporada(request):
                 j.imagen,               -- 5
                 j.retiro,               -- 6
                 j.market_value,         -- 7
+                j.altura,               -- 8 (👈 NUEVO: Campo de altura)
                 
                 -- Trayectoria de la etapa COMPARADA (tc)
-                tc.fecha_inicio,        -- 8
-                tc.fecha_fin,           -- 9
-                tc.equipo_actual,       -- 10
+                tc.fecha_inicio,        -- 9
+                tc.fecha_fin,           -- 10
+                tc.equipo_actual,       -- 11
 
                 -- Datos del equipo ACTUAL (tca / e_act)
-                e_act.id_equipo,        -- 11
-                e_act.nombre,           -- 12
-                e_act.escudo,           -- 13
-                e_act.color,            -- 14
-                ec.id_competicion,      -- 15 (ID de la liga principal)
-                l.logo AS liga_logo,    -- 16 (Logo de la tabla ligas)
+                e_act.id_equipo,        -- 12
+                e_act.nombre,           -- 13
+                e_act.escudo,           -- 14
+                e_act.color,            -- 15
+                ec.id_competicion,      -- 16 (ID de la liga principal)
+                l.logo AS liga_logo,    -- 17 (Logo de la tabla ligas)
 
                 -- Nacionalidades
-                GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 17
-                GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,  -- 18
+                GROUP_CONCAT(DISTINCT jp.pais ORDER BY jp.es_primaria DESC) AS ids_paises, -- 18
+                GROUP_CONCAT(DISTINCT p.iso ORDER BY jp.es_primaria DESC) AS isos_paises,  -- 19
 
                 -- Posiciones
-                GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 19
-                GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 20
-                GROUP_CONCAT(DISTINCT pos.nombre ORDER BY jpos.es_primaria DESC) AS nombres_posiciones -- 21
+                GROUP_CONCAT(DISTINCT pos.idPosicion ORDER BY jpos.es_primaria DESC) AS ids_posiciones, -- 20
+                GROUP_CONCAT(DISTINCT pos.abreviatura ORDER BY jpos.es_primaria DESC) AS abrev_posiciones, -- 21
+                GROUP_CONCAT(DISTINCT pos.nombre ORDER BY jpos.es_primaria DESC) AS nombres_posiciones -- 22
 
             FROM trayectoria tc 
             JOIN jugadoras j ON j.id_jugadora = tc.jugadora
@@ -971,14 +972,15 @@ def jugadoras_por_equipo_y_temporada(request):
             "imagen": construir_url_imagen(fila[5]),
             "retiro": fila[6],
             "market_value": fila[7],
+            "altura": fila[8],  # 👈 NUEVO: Se incluye en el objeto devuelto al cliente
             "equipo": equipo_obj,
             "PosicionesIds": lista_ids_posiciones,
             "TodasNacionalidades": lista_ids_paises,
             "pais_iso": lista_isos_paises,
             "trayectoria": {
-                "inicio": str(fila[8]) if fila[8] else None,
-                "fin": str(fila[9]) if (fila[9] and fila[10] == 0) else "act",
-                "actual": bool(fila[10])
+                "inicio": str(fila[9]) if fila[9] else None,
+                "fin": str(fila[10]) if (fila[10] and fila[11] == 0) else "act",
+                "actual": bool(fila[11])
             },
             "nacionalidades_ids": lista_ids_paises,
             "nacionalidades_isos": lista_isos_paises,
