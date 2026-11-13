@@ -59,7 +59,7 @@
                         <label for="filtro-juego" class="form-label mb-0">{% trans "Juego:" %}</label>
                         <select id="filtro-juego" class="form-select bg-dark text-white border-0 shadow-sm" style="width: 250px;">
                             <option value="1">{% trans "Futfem Career" %}</option>
-                            <option value="2">{% trans "Futfem Wordle" %}</option>
+                            <!-- <option value="2">{% trans "Futfem Wordle" %}</option> -->
                             <option value="3">{% trans "Futfem Guess" %}</option>
                             <option value="4">{% trans "Futfem Grid" %}</option>
                             <option value="5">{% trans "Futfem Mates" %}</option>
@@ -225,6 +225,9 @@
                             0
                         </td>
                     `;
+
+                    tr.style.opacity = 0;
+                    tr.style.pointerEvents = 'none';
 
                     tbody.appendChild(tr);
                     continue;

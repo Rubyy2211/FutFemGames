@@ -67,7 +67,7 @@ body::before {
 #boton-grid{
     background: url('/static/img/fondos-botones/grid.webp');
     background-repeat: no-repeat;
-    background-position: center;
+    background-position: right;
     background-size: cover;
 }
 
@@ -267,9 +267,10 @@ h2[data-game-title="Futfem Mates"]{
 }
 
 #daily-games .row::-webkit-scrollbar, #regular-games .row::-webkit-scrollbar {
-    height: 4px;
+    height: 5px;
     background: transparent;
     cursor: grab;
+    z-index: 5;
 }
 
 #daily-games .row::-webkit-scrollbar-thumb, #regular-games .row::-webkit-scrollbar-thumb {

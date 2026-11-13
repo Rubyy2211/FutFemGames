@@ -204,7 +204,7 @@ export async function obtenerUltimaRespuesta(juego) {
         `/accounts/ultima_respuesta/?usuario=${usuario}&juego=${juego}`
     );
     const data = await res.json();
-    return data.ultima_respuesta; // number | null
+    return data; // number | null
 }
 
 export function displayRacha(racha, juego, ultima_vez_jugado) {
@@ -220,6 +220,20 @@ export function displayRacha(racha, juego, ultima_vez_jugado) {
         displayJuego.style.display = '100%';
         displayJuego.textContent = racha;
     }
+}
+
+export function comprobarRacha(racha) {
+    
+    let ultimoDia = new Date(racha.ultima_vez_jugado);
+    let hoy = new Date();
+    let diferenciaDias = Math.floor((hoy - ultimoDia) / (1000 * 60 * 60 * 24));
+    let result = true;
+
+   if (diferenciaDias > 1) {
+        result = false; // La racha se rompe
+    }
+
+    return {result, ultimoDia, hoy, diferenciaDias}; // Devuelve un objeto con la información
 }
 
 

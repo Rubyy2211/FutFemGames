@@ -39,6 +39,9 @@ h2{
     overflow-y: overlay; /* Hace que la barra flote sobre el contenido */
     position: relative;
     scrollbar-color: var(--color-primario) transparent;
+    background: 
+color-mix(in srgb, 
+color-mix(in srgb, var(--color-primario) 10%, black) 50%, transparent) !important;
 }
 
 #tabla-ranking-container::-webkit-scrollbar {
@@ -161,7 +164,7 @@ tbody tr td:nth-child(3){
 }
 
 tbody tr{
-    background: color-mix( in srgb,  color-mix(in srgb, var(--color-primario) 10%, black) 50%, transparent) !important;
+    background: color-mix( in srgb,  color-mix(in srgb, var(--color-primario) 10%, black) 20%, transparent) !important;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -258,22 +261,11 @@ table tr td:last-child{
         width: fit-content !important; /* Permite que la columna se ajuste al contenido */
     }
 
-    .container-ranking .p-4 .avatar{
-        width: 40px !important;
-        height: 40px !important;
-        border-radius: 10px;
-    }
-
 }
 
 @media (max-width: 465px){
     .container-ranking .p-4 .filtros{
         max-width: 100%;
-    }
-    .container-ranking .p-4 .avatar{
-        width: 30px !important;
-        height: 30px !important;
-        border-radius: 10px;
     }
     .container-ranking .p-4 .filtros div{
         max-width: 50%;

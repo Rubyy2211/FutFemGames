@@ -25,18 +25,18 @@ async function iniciar(dificultad) {
 
     const {updateRacha} = await import('/static/usuarios/js/rachas.js');
     window.updateRacha = updateRacha; // Hacer updateRacha global para poder usarlo en Ganaste()
-    let ultimaArray = JSON.parse(ultimaRespuesta);
+    let ultimaArray = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]');
     let usuarioAnswer = null;   // ← AQUÍ sí
     if(Array.isArray(ultimaArray)){usuarioAnswer = ultimaArray[ultimaArray.length - 1].answer || null;}
 
     if(usuarioAnswer === idres){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr6', ultimaRespuesta);
+        localStorage.setItem('Attr6', ultimaRespuesta.ultima_respuesta);
     }
     
     if(usuarioAnswer === 'loss'+idres){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr6', ultimaRespuesta);
+        localStorage.setItem('Attr6', ultimaRespuesta.ultima_respuesta);
     }
 
     if (lastPlayer) {
@@ -103,8 +103,17 @@ async function iniciar(dificultad) {
 play().then(r => r)
 async function play() {
     const {obtenerUltimaRespuesta} = await import('/static/usuarios/js/rachas.js');
+    const {comprobarRacha} = await import('/static/usuarios/js/rachas.js');
     ultimaRespuesta = await obtenerUltimaRespuesta(6);
-    let ultimaArray = JSON.parse(ultimaRespuesta);
+    let ultimaArray = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]');
+
+    let comprobarRachaResult = comprobarRacha(ultimaRespuesta);
+    if (comprobarRachaResult.result === false) {
+        console.log('Racha rota, actualizando...');
+        const {updateRacha} = await import("/static/usuarios/js/rachas.js");
+        await updateRacha(6, 0, 'loss'+ultimaRespuesta.ultima_respuesta);
+    }
+
     jugadora = await fetchData(6);
     paises = [jugadora.paises[0], jugadora.paises[1], jugadora.paises[2]];
     clubes = [jugadora.equipos[0], jugadora.equipos[1], jugadora.equipos[2]];

@@ -133,10 +133,13 @@ rachasDiv.innerHTML = `
 const track = document.getElementById('streakTrack');
 
 // ordenar por mejor_racha
-rachas.sort((a, b) => b.mejor_racha - a.mejor_racha);
+// Filtramos para excluir los que tengan racha.juego.id === 2 y luego los ordenamos
+const rachasFiltradas = rachas
+    .filter(racha => racha.juego.id !== 2)
+    .sort((a, b) => b.mejor_racha - a.mejor_racha);
 
-rachas.forEach((racha, index) => {
-    console.log(index)
+rachasFiltradas.forEach((racha, index) => {
+
     const card = document.createElement('div');
     const porcentaje = Math.min((racha.racha_actual / racha.mejor_racha) * 100, 100);
     const foto = racha.juego.slug 

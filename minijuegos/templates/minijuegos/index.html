@@ -83,27 +83,27 @@
     <div id="container-index" class="container">
         <!--<div id="dynamic-bg"></div>-->
         <div id="selector" role="main">
-            <a data-video-id="video-games" href="/minigames"><p>Juegos</p></a>
-            <a href="#wiki" id="wiki-link"><p>Wiki</p></a>
-            <a data-video-id="video-globe" href="/online"><p>Online</p></a>
-            <a href="#nosotros" id="nosotros-link"><p>Nosotros</p></a>
+            <a data-video-id="video-games" href="/minigames" data-section="juegos"><p>{% trans "Juegos" %}</p></a>
+            <a href="#wiki" id="wiki-link" data-section="wiki"><p>Wiki</p></a>
+            <a data-video-id="video-globe" href="/online" data-section="online"><p>{% trans "Online" %}</p></a>
+            <a href="#nosotros" id="nosotros-link" data-section="nosotros"><p>{% trans "Nosotros" %}</p></a>
         </div>
 
 
         <div class="panels-stack">
             <div id="default" class="panel-info">
                 <img src="/static/img/logo.webp" alt="futfemgames logo">
-                <p>¡Bienvenid@ a FutFem Games!</p>
+                <p>{% trans "¡Bienvenid@ a FutFem Games!" %}</p>
             </div>
             <div id="juegos" class="panel-info">
                 <!--<img src="/static/img/logo2.webp" alt="futfemgames logo">-->
-                <h2>JUEGOS</h2>
-                <p>¡Disfruta y aprende con nuestros retos sobre fútbol femenino!</p>
+                <h2>{% trans "Juegos" %}</h2>
+                <p>{% trans "¡Disfruta y aprende con nuestros retos sobre fútbol femenino!" %}</p>
             </div>
             <div id="wiki" class="panel-info">
                 <!--<img src="/static/img/logo-wiki.webp" alt="futfemwiki logo">-->
                 <h2 style="order: 1;">FUTFEM<span>·</span>WIKI</h2>
-                <p style="order: 2;">Descubre, analiza y explora nuestra base de datos del fútbol femenino.</p>
+                <p style="order: 2;">{% trans "Descubre, analiza y explora nuestra base de datos del fútbol femenino." %}</p>
                 <div class="wiki-preview">
                     <iframe
                         src="https://fut-fem-wiki.vercel.app/"
@@ -116,18 +116,18 @@
                         rel="noopener noreferrer"
                         class="wiki-preview-link"
                         style="order: 3;">
-                        Explorar FutfemWiki ↗
+                        {% trans "Explorar FutfemWiki" %} ↗
                     </a>
             </div>
             <div id="online" class="panel-info">
                 <!--<img src="/static/img/logo2.webp" alt="futfemgames logo">-->
                 <h2>ONLINE</h2>
-                <p>¡Mira tus rachas y compite por ver quién sabe más!</p>
+                <p>{% trans "¡Mira tus rachas y compite por ver quién sabe más!" %}</p>
             </div>
             <div id="nosotros" class="panel-info">
                 <!--<img src="/static/img/logo.webp" alt="futfemgames logo">-->
-                <h2>NOSOTROS</h2>
-                <p>Descubre quienes somos y nuestros objetivos</p>
+                <h2>{% trans "Nosotros" %}</h2>
+                <p>{% trans "Descubre quienes somos y nuestros objetivos" %}</p>
             </div>
         </div>
 

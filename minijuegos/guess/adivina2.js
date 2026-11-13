@@ -23,7 +23,7 @@ async function iniciar(dificultad) {
     
     btn.addEventListener('click', verificar); // Habilitar el botón al iniciar el juego
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
-    const ultimaObj = JSON.parse(ultimaRespuesta); 
+    const ultimaObj = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]'); 
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
     }
@@ -35,12 +35,12 @@ async function iniciar(dificultad) {
 
     if(ultimaObj.answer === jugadoraId){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr3', ultimaRespuesta);
+        localStorage.setItem('Attr3', ultimaRespuesta.ultima_respuesta);
     }
 
     if(ultimaObj.answer === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr3', ultimaRespuesta);
+        localStorage.setItem('Attr3', ultimaRespuesta.ultima_respuesta);
     }
 
     let userAnswer = JSON.parse(localStorage.getItem('Attr3')) || [];
@@ -75,9 +75,18 @@ async function iniciar(dificultad) {
 
 play().then(r => r);
 async function play() {
+    const{comprobarRacha} = await import('/static/usuarios/js/rachas.js');
     let jugadora = await fetchData(3);
     ultimaRespuesta = await obtenerUltimaRespuesta(3);
-    const ultimaArray = JSON.parse(ultimaRespuesta); 
+    const ultimaArray = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]');
+
+    let comprobarRachaResult = comprobarRacha(ultimaRespuesta);
+    if (comprobarRachaResult.result === false) {
+        console.log('Racha rota, actualizando...');
+        const {updateRacha} = await import("/static/usuarios/js/rachas.js");
+        await updateRacha(3, 0, 'loss'+ultimaRespuesta.ultima_respuesta);
+    }
+
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res3');
     if(ultimaArray && ultimaArray.answer === jugadoraId){

@@ -1,3 +1,19 @@
+input{
+    background: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    padding: 3px !important;
+    width: 60% !important;
+    border-bottom: 2px solid color-mix(in srgb, var(--color-primario), transparent 30%) !important;
+}
+
+.edit-mode{
+    height: 100%;
+    width: 60%;
+}
+
 #amigos{
     display: none;
 }
@@ -24,7 +40,6 @@
     /*background: color-mix(in srgb, var(--color-primario) 10%, black) !important;*/
     backdrop-filter: none;
     box-shadow: none;
-    overflow-y: hidden;
     max-width: 800px;
     width: 100%;
     max-height: 100%;
@@ -42,7 +57,7 @@
 hr {
     border: none; /* Quitamos el borde gris por defecto */
     height: 1.5px;  /* Le damos el grosor mínimo */
-    width: 100%;
+    width: 80%;
     
     /* Usamos color-mix para que sea una línea sutil que no rompa el diseño */
     background-color: color-mix(in srgb, var(--color-detalles) 80%, transparent); 
@@ -102,6 +117,7 @@ hr {
 
 .container-perfil #datos-personales>.row{
     padding: 2.5%;
+    gap: 0 !important;
     height: 100%;
 }
 
@@ -230,7 +246,7 @@ hr {
     transform: none !important;
 }
 
-.container-perfil .field-container img{
+.container-perfil .field-container span img{
     max-height: 25px;
 }
 
@@ -291,7 +307,6 @@ hr {
     background: color-mix(in srgb, var(--color-secundario) 60%, #2b2d31 40%); /* El gris exacto de Discord */
     border-radius: 0px;
     padding: 0;
-    border: 1px solid transparent;
     transition: background 0.2s, transform 0.2s;
     position: relative;
     width: 100% !important;

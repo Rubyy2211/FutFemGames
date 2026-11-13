@@ -158,14 +158,14 @@ selectorLinks.forEach(link => {
   });
 
   const href = link.getAttribute('href');
-  let targetId = href && href.startsWith('#') ? href : null;
+  const targetId = link.getAttribute('data-section') ? `#${link.getAttribute('data-section')}` : link.getAttribute('href');
+  const targetSection = targetId && targetId.startsWith('#') ? document.querySelector(targetId) : null;
   
   if (!targetId) {
     const text = link.querySelector('p')?.textContent.trim().toLowerCase();
     if (text) targetId = `#${text}`;
   }
 
-  const targetSection = targetId ? document.querySelector(targetId) : null;
 
   link.addEventListener('mouseenter', () => {
     // Sonido hover
@@ -226,28 +226,28 @@ selectorLinks.forEach(link => {
 
     // 3. CAMBIO DE SECCIÓN PANEL
     if (targetSection && targetSection !== currentActiveSection) {
-      if (currentActiveSection) {
-        gsap.killTweensOf(currentActiveSection);
-        gsap.to(currentActiveSection, { 
-          autoAlpha: 0, 
-          display: 'none', 
-          y: -10, 
-          duration: 0.15 
-        });
-      }
+            if (currentActiveSection) {
+                gsap.killTweensOf(currentActiveSection);
+                gsap.to(currentActiveSection, { 
+                    autoAlpha: 0, 
+                    display: 'none', 
+                    y: -10, 
+                    duration: 0.15 
+                });
+            }
 
-      gsap.killTweensOf(targetSection);
-      gsap.set(targetSection, { y: 15 });
-      gsap.to(targetSection, {
-        duration: 0.35,
-        autoAlpha: 1,
-        display: 'flex',
-        y: 0,
-        delay: 0.1,
-        ease: "power2.out"
-      });
+            gsap.killTweensOf(targetSection);
+            gsap.set(targetSection, { y: 15 });
+            gsap.to(targetSection, {
+                duration: 0.35,
+                autoAlpha: 1,
+                display: 'flex',
+                y: 0,
+                delay: 0.1,
+                ease: "power2.out"
+            });
 
-      currentActiveSection = targetSection;
-    }
+            currentActiveSection = targetSection;
+        }
   });
 });

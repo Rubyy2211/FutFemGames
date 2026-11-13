@@ -5,6 +5,8 @@
 const botones = document.querySelectorAll('.game-button');
 const linksSelector = document.querySelectorAll('#selector a');
 const bgContainer = document.getElementById('video-bg-container');
+const message = document.getElementById('daily-status-message');
+let mensaje = message.textContent;
 
 
 // ============================================================
@@ -96,6 +98,7 @@ function updateH2Text(h2Element, newText) {
 
       console.log("Nuevo texto del H2:", newText);
       h2Element.dataset.gameTitle = newText;
+      h2Element.id = newText;
 
       gsap.set(h2Element, {
         y: -40
@@ -177,7 +180,6 @@ function actualizarEstadoDiario(ultimaVezJugado) {
 
   const dailyStatusContainer = document.getElementById('daily-games-status');
   const icon = document.getElementById('daily-status-icon');
-  const message = document.getElementById('daily-status-message');
 
   if (!icon || !message) {
     return;
@@ -195,7 +197,7 @@ function actualizarEstadoDiario(ultimaVezJugado) {
     dailyStatusContainer.classList.add('not-played-today');
     dailyStatusContainer.classList.remove('played-today');
     icon.textContent = '🎮';
-    message.textContent = 'Juega los diarios de hoy';
+    message.textContent = mensaje;
 
   }
 

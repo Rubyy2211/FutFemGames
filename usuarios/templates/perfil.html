@@ -40,7 +40,8 @@
 
         <div id="datos-personales">
             <div class="row">
-                <img src="{% if jugadora_favorita %}/{{ jugadora_favorita.imagen }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" class="glass profile-img" alt="Avatar" style="width:120px; height:auto; padding-inline: unset;">
+                <img src="{% if jugadora_favorita %}/{{ jugadora_favorita.imagen }}{% else %}{% static 'img/default-avatar.png' %}{% endif %}" class="glass profile-img" alt="Avatar" style="width:150px; height:auto; padding-inline: unset;">
+                <hr>
                 <div id="resto-info">
                     <div id="nombre-usuario">
                         <div class="field-container editable-group" data-field="username" id="username-container">
@@ -157,10 +158,12 @@
     import { handleAutocompletePlayer } from "{% static 'futfem/js/jugadora.js' %}";
     import { handleAutocompleteEquipo } from "{% static 'futfem/js/equipos.js' %}";
     // La forma correcta de pasar parámetros en un listener
-    document.getElementById("equipo-input").addEventListener("input", (event) => {
-        handleAutocompleteEquipo(event, 'sugerencias-equipo');
-    });
-    document.getElementById("jugadora-input").addEventListener("input", handleAutocompletePlayer);
+    if(document.getElementById("equipo-input")){
+        document.getElementById("equipo-input").addEventListener("input", (event) => {
+            handleAutocompleteEquipo(event, 'sugerencias-equipo');
+        });
+        document.getElementById("jugadora-input").addEventListener("input", handleAutocompletePlayer);
+    }
 </script>
 <script src="{% static 'js/animations/header.js' %}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>

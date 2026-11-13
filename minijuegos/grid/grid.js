@@ -30,7 +30,7 @@ async function iniciar(dificultad) {
     // ----------------------------------------------------- 
     // 3. Comprobar si el usuario ya jugó antes 
     // -----------------------------------------------------
-    let ultimaArray = JSON.parse(ultimaRespuesta);
+    let ultimaArray = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]');
     let usuarioAnswer = null;   // ← AQUÍ sí
     
     if(Array.isArray(ultimaArray)){
@@ -40,13 +40,13 @@ async function iniciar(dificultad) {
     // Guardar si coincide con la respuesta correcta
     if(usuarioAnswer === idres){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr4', ultimaRespuesta);
+        localStorage.setItem('Attr4', ultimaRespuesta.ultima_respuesta);
     }
     
     // Guardar si coincide con la respuesta incorrecta
     if(usuarioAnswer === 'loss'+idres){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr4', ultimaRespuesta);
+        localStorage.setItem('Attr4', ultimaRespuesta.ultima_respuesta);
     }
 
     // ----------------------------------------------------- 
@@ -116,8 +116,18 @@ async function iniciar(dificultad) {
 // ---------------------------------------------------------
 export async function play() {
     const {obtenerUltimaRespuesta} = await import('/static/usuarios/js/rachas.js');
+    const {comprobarRacha} = await import('/static/usuarios/js/rachas.js');
     ultimaRespuesta = await obtenerUltimaRespuesta(4);
-    let ultimaArray = JSON.parse(ultimaRespuesta);
+    let ultimaArray = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]');
+    console.log('Ultima respuesta obtenida:', ultimaRespuesta, 'Array:', ultimaArray);
+
+    let comprobarRachaResult = comprobarRacha(ultimaRespuesta);
+    if (comprobarRachaResult.result === false) {
+        console.log('Racha rota, actualizando...');
+        const {updateRacha} = await import("/static/usuarios/js/rachas.js");
+        await updateRacha(4, 0, 'loss'+ultimaRespuesta.ultima_respuesta);
+    }
+
     let jugadora = await fetchData(4);
     const {handleAutocompletePlayer} = await import("/static/futfem/js/jugadora.js");
     const {crearPopupInicialJuego} = await import("/static/js/games/funciones-comunes.js");

@@ -1,5 +1,4 @@
 import json
-from multiprocessing import context
 import uuid
 
 from django.shortcuts import render, redirect
@@ -16,9 +15,9 @@ from django.utils.html import strip_tags
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.models import update_last_login # Importa esto
+from django.contrib.auth.models import update_last_login
 from django.views.decorators.csrf import csrf_exempt
-from futfem.utils import construir_url_imagen
+from futfem.utils import construir_url_imagen, formatear_nombre_corto
 
 # Create your views here.
 def login_view(request):
@@ -422,14 +421,15 @@ def obtener_ultima_respuesta(request):
     racha = (
         Racha.objects
         .filter(usuario_id=usuario_id, juego_id=juego_id)
-        .values('ultima_respuesta')
+        .values('ultima_respuesta', 'ultima_vez_jugado')
         .first()
     )
 
     return JsonResponse({
         'usuario_id': int(usuario_id),
         'juego_id': int(juego_id),
-        'ultima_respuesta': racha['ultima_respuesta'] if racha else None
+        'ultima_respuesta': racha['ultima_respuesta'] if racha else None,
+        'ultima_vez_jugado': racha['ultima_vez_jugado'] if racha else None
     })
 
 @csrf_exempt

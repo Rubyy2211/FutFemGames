@@ -32,14 +32,14 @@ async function iniciar(dificultad) {
     let jugadora = await fetchData(1);
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     localStorage.setItem('res1', jugadoraId);
-    console.log('Jugadora ID asignada:', localStorage.getItem('res1'), ultimaRespuesta);
+    console.log('Jugadora ID asignada:', localStorage.getItem('res1'), ultimaRespuesta.ultima_respuesta);
 
-    if(ultimaRespuesta === jugadoraId){
+    if(ultimaRespuesta.ultima_respuesta === jugadoraId){
         console.log('Se ha guardado la respuesta'); 
         localStorage.setItem('Attr1', ultimaRespuesta);
     }
 
-    if(ultimaRespuesta === 'loss'+jugadoraId){
+    if(ultimaRespuesta.ultima_respuesta === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
         localStorage.setItem('Attr1', 'loss'+jugadoraId);
     }
@@ -80,16 +80,24 @@ async function iniciar(dificultad) {
 play().then(r => r);
 async function play() {
     const {obtenerUltimaRespuesta} = await import("/static/usuarios/js/rachas.js");
+    const {comprobarRacha} = await import("/static/usuarios/js/rachas.js");
     ultimaRespuesta = await obtenerUltimaRespuesta(1);
-    const lastAnswer= localStorage.getItem('Attr1');
+
+    let comprobarRachaResult = comprobarRacha(ultimaRespuesta);
+    if (comprobarRachaResult.result === false) {
+        console.log('Racha rota, actualizando...');
+        const {updateRacha} = await import("/static/usuarios/js/rachas.js");
+        await updateRacha(1, 0, 'loss'+ultimaRespuesta.ultima_respuesta);
+    }
+
     let jugadora = await fetchData(1);
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura
     const res = localStorage.getItem('res1');
-    console.log('Jugadora ID asignada:', jugadoraId, ultimaRespuesta, res);
+
     const texto = gettext('Adivina la Jugadora de Fútbol es un juego de trivia donde debes identificar a una futbolista según los equipos en los que ha jugado. Usa las pistas, demuestra tu conocimiento y compite para ver quién acierta más.');
     const imagen = '/static/img/trayectoria.png';
     const {crearPopupInicialJuego} = await import("/static/js/games/funciones-comunes.js");
-    if(ultimaRespuesta && ultimaRespuesta === jugadoraId){       
+    if(ultimaRespuesta.ultima_respuesta && ultimaRespuesta.ultima_respuesta === jugadoraId){       
         await iniciar('');
     }else if(res !== jugadoraId || !res){
         /*if(lastAnswer !== res || !lastAnswer){

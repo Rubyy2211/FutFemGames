@@ -16,7 +16,7 @@ textoInput.addEventListener('input', debounce(handleAutocompletePlayer, 200)); /
 async function iniciar(dificultad) {
     const popup = document.getElementById('popup-ex'); // Selecciona el primer elemento con la clase 'popup-ex'
     //const name = await sacarJugadora(jugadoraId);
-    const ultimaObj = JSON.parse(ultimaRespuesta); 
+    const ultimaObj = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]'); 
 
     if (popup) {
         popup.style.display = 'none'; // Cambia el estilo para ocultarlo
@@ -34,12 +34,12 @@ async function iniciar(dificultad) {
 
     if(ultimaObj.answer === jugadoraId){
         console.log('Se ha guardado la respuesta'); 
-        localStorage.setItem('Attr8', ultimaRespuesta);
+        localStorage.setItem('Attr8', ultimaRespuesta.ultima_respuesta);
     }
 
     if(ultimaObj.answer === 'loss'+jugadoraId){
         console.log('Se ha guardado la perdida'); 
-        localStorage.setItem('Attr8', ultimaRespuesta);
+        localStorage.setItem('Attr8', ultimaRespuesta.ultima_respuesta);
     }
 
     let userAnswer = JSON.parse(localStorage.getItem('Attr8')) || [];
@@ -250,8 +250,17 @@ const texto = '"Futfem Relations" es un juego en el que los jugadores deben adiv
 const imagen = '/static/img/ComingSoon.webp';
 play().then(r => r);
 async function play() {
+    const {comprobarRacha} = await import('/static/usuarios/js/rachas.js');
     ultimaRespuesta = await obtenerUltimaRespuesta(5);
-    const ultimaArray = JSON.parse(ultimaRespuesta); 
+    const ultimaArray = JSON.parse(ultimaRespuesta.ultima_respuesta || '[]');
+
+    let comprobarRachaResult = comprobarRacha(ultimaRespuesta);
+    if (comprobarRachaResult.result === false) {
+        console.log('Racha rota, actualizando...');
+        const {updateRacha} = await import("/static/usuarios/js/rachas.js");
+        await updateRacha(5, 0, 'loss'+ultimaRespuesta.ultima_respuesta);
+    }
+
     const lastAnswer= localStorage.getItem('Attr8');
     let jugadora = await fetchData(5);
     jugadoraId = jugadora.idJugadora.toString(); // Convertir a string para comparación segura

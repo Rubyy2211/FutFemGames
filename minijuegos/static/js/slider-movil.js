@@ -32,16 +32,38 @@ const defaultRegularText = regularH2
 
 
 // ============================================================
+// ELEMENTOS P
+// ============================================================
+
+const dailyP = document.querySelector(
+  '#daily-games p, #diarios p'
+);
+
+const regularP = document.querySelector(
+  '#regular-games p, #regulares p'
+);
+
+const defaultDailyPText = dailyP
+  ? dailyP.textContent
+  : '';
+
+const defaultRegularPText = regularP
+  ? regularP.textContent
+  : '';
+
+
+// ============================================================
 // FUNCIÓN: CAMBIAR TEXTO DEL H2
 // ============================================================
 
-function updateH2Text(h2Element, newText) {
+function updateText(h2Element, newText, pElement, newPText) {
 
   if (!h2Element || h2Element.textContent === newText) {
     return;
   }
 
   gsap.killTweensOf(h2Element);
+  gsap.killTweensOf(pElement);
 
   gsap.to(h2Element, {
     autoAlpha: 0,
@@ -53,7 +75,10 @@ function updateH2Text(h2Element, newText) {
     onComplete: () => {
 
       h2Element.textContent = newText;
+      h2Element.id = newText;
       h2Element.dataset.gameTitle = newText;
+
+      pElement.textContent = newPText || '';
 
       gsap.set(h2Element, {
         xPercent: -50,
@@ -139,7 +164,7 @@ function activateGameButton(card, shouldScroll = true) {
     return;
   }
 
-  const { bg, titulo } = card.dataset;
+  const { bg, titulo, descripcion } = card.dataset;
 
   const parentDaily = card.closest(
     '#diarios, #daily-games'
@@ -178,9 +203,11 @@ function activateGameButton(card, shouldScroll = true) {
     titulo
   ) {
 
-    updateH2Text(
+    updateText(
       dailyH2,
-      titulo
+      titulo,
+      dailyP,
+      descripcion
     );
 
   } else if (
@@ -189,9 +216,11 @@ function activateGameButton(card, shouldScroll = true) {
     titulo
   ) {
 
-    updateH2Text(
+    updateText(
       regularH2,
-      titulo
+      titulo,
+      regularP,
+      descripcion
     );
 
   }
@@ -848,18 +877,22 @@ selectorLinks.forEach(link => {
 
         if (dailyH2) {
 
-          updateH2Text(
+          updateText(
             dailyH2,
-            defaultDailyText
+            defaultDailyText,
+            dailyP,
+            defaultDailyPText
           );
 
         }
 
         if (regularH2) {
 
-          updateH2Text(
+          updateText(
             regularH2,
-            defaultRegularText
+            defaultRegularText,
+            regularP,
+            defaultRegularPText
           );
 
         }

@@ -82,8 +82,8 @@
 
     <div id="container-index" class="container">
         <div id="selector" role="main" style="z-index: 50;">
-            <a data-bg="" href="#diarios"><p>Diarios</p></a>
-            <a data-bg="" href="#regulares"><p>Regulares</p></a>
+            <a data-bg="" href="#diarios"><p>{% trans "Diarios" %}</p></a>
+            <a data-bg="" href="#regulares"><p>{% trans "Regulares" %}</p></a>
         </div>
 
 
@@ -92,7 +92,7 @@
                 <div id="daily-games">
                     <div id="daily-games-header" class="d-flex justify-content-center align-items-center">
                         <h2>{% trans "Diarios" %}</h2>
-                        <p id="daily-games-description"> Descubre juegos diarios de Futfem</p>
+                        <p id="daily-games-description">{% trans "Descubre juegos diarios de Futfem" %}</p>
                     </div>
 
                      <!-- Estado de los diarios -->
@@ -100,12 +100,12 @@
                         <div id="daily-games-status-text">
                             <span id="daily-status-icon">🎮</span>
                             <span id="daily-status-message">
-                                Juega los diarios de hoy
+                                {% trans "Juega los diarios de hoy" %}
                             </span>
                         </div>
 
                         <div id="daily-games-reset">
-                            Reinicio en
+                            {% trans "Reinicio en" %}
                             <strong id="daily-countdown">00:00:00</strong>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                 <div id="regular-games">
                     <div id="regular-games-header" class="d-flex justify-content-center align-items-center">
                         <h2>{% trans "Regulares" %}</h2>
-                        <p id="regular-games-description"> Descubre juegos regulares de Futfem</p>
+                        <p id="regular-games-description">{% trans "Descubre juegos regulares de Futfem" %}</p>
                     </div>
 
                     <div class="row sibling-fade d-flex justify-content-center">
